@@ -1,0 +1,7 @@
+name = "TrihpFEM"
+uuid = "6f95704f-31d0-4cfb-aa9d-6d40374f9d53"
+authors = ["Ignacio Ojea <iojea@dm.uba.ar>"]
+version = "0.1.0"
+
+[compat]
+julia = "1.12"
