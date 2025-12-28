@@ -1,5 +1,5 @@
 module MeshTests
-    using TrihpFEM.Meshes
+    using ..TrihpFEM.Meshes
     using Test
     using Dictionaries
 
