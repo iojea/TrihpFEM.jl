@@ -13,9 +13,6 @@ abstract type SetTuple{L,I<:Integer} <: StaticArray{Tuple{L},I,1} end
 function data(v::SetTuple) end
 
 #Indexing
-(t::Type{T})(x::AbstractVector) where {T<:SetTuple} = t(tuple(x))
-(t::Type{T})(x...) where {T<:SetTuple} = t(x)
-
 Base.getindex(v::SetTuple, i::Int) = data(v)[i]
 
 

@@ -8,7 +8,12 @@ struct Triangle{I} <: SetTuple{3,I}
     data::NTuple{3,I}
 end
 
-
+Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x)))
+Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x)))
+function Triangle{I}(x::AbstractArray) where I
+    typeof(x)<:AbstractVector || throw(ArgumentError("Triangle can only be created from a one dimensional array."))
+    Triangle{I}(I.(x))
+end
 """
     _eval(t::Triangle,k)
 

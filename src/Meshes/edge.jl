@@ -5,8 +5,15 @@ a struct for storing an edge of a triangulation. It contains an `NTuple{2,I}` th
 struct Edge{I} <: SetTuple{2,I}
     data::NTuple{2,I}
 end
-
+Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
+Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
+function Edge{I}(x::AbstractArray) where I
+    typeof(x)<:AbstractVector || throw(ArgumentError("Edge can only be created from a one dimensional array."))
+    Edge{I}(I.(x))
+end
+    
 data(e::Edge) = getproperty(e,:data)
+
 
 """
     EdgeAttributes(degree::P,marker::P,refine::Bool) where P<:Integer
