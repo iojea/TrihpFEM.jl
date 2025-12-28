@@ -1,4 +1,3 @@
-module MeshTests
     using ..TrihpFEM.Meshes
     using Test
     using Dictionaries
@@ -47,5 +46,3 @@ module MeshTests
     @test degree(de[e₁]) == 3
     @test !isinterior(de[e₂])
     @test data(e₁) == (3,4)
-
-end;
