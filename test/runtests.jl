@@ -6,5 +6,6 @@ using Aqua
     @testset "Code quality (Aqua.jl)" begin
         Aqua.test_all(TrihpFEM)
     end
-    # Write your tests here.
+    @testset "Meshes" begin include("mesh.jl") end
 end
+
