@@ -78,8 +78,7 @@ struct TriangleAttributes{P<:Integer,F<:AbstractFloat}
     refine::Base.RefValue{P}
     η::Base.RefValue{F}
     ηₚ::Base.RefValue{F}
-    TriangleAttributes(val::P,η::F,ηₚ::F) where {P,F} = new{P,F}(Ref(val),Ref(η),Ref(ηₚ))
-    TriangleAttributes{P,F}(val,η,ηₚ) where{P,F} = new{P,F}(P(val),F(η),F(ηₚ))
+    TriangleAttributes{P,F}(val,η,ηₚ) where{P,F} = new{P,F}(Ref(P(val)),Ref(F(η)),Ref(F(ηₚ)))
 end
 TriangleAttributes{P,F}() where {P,F} = TriangleAttributes(zero(P),zero(F),zero(F))
 

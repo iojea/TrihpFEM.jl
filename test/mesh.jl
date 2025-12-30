@@ -6,7 +6,6 @@
     e₁ = Edge(3,4)
     e₂ = Edge((4,3))
     @test isequal(e₁,e₂)
-
     ea₁ = Meshes.EdgeAttributes{UInt8}(0,1,false)
 
     de = Dictionary([e₁],[ea₁])

@@ -30,6 +30,7 @@ struct EdgeAttributes{P<:Integer}
     marker::Base.RefValue{P}
     refine::Base.RefValue{Bool}
     #adjacent::SVector{2,I}
+    EdgeAttributes{P}(d,m,r) where P = new{P}(Ref(P(d)),Ref(P(m)),Ref(r))
 end
 EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes(Ref(d),Ref(m),Ref(r))
 EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.marker,e.refine)
