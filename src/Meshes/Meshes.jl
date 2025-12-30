@@ -14,7 +14,7 @@ using DocStringExtensions
 export Edge,Triangle,HPMesh
 export hpmesh
 export inttype,floattype,degtype
-export degrees,psortperm,edges,triangles,psortednodes,psortededges,degree
+export degree,degrees,psortperm,edges,triangles,psortednodes,psortededges
 export tridof,edgedof
 export circmesh,circmesh_graded_center,rectmesh,l_mesh,l_graded
 export plothpmesh
