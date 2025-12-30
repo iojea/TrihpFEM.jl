@@ -132,7 +132,7 @@ uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 version = "1.11.0"
 
     [deps.Artifacts.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Automa]]
 deps = ["PrecompileTools", "SIMD", "TranscodingStreams"]
@@ -169,7 +169,7 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 version = "1.11.0"
 
     [deps.Base64.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.BaseDirs]]
 git-tree-sha1 = "bca794632b8a9bbe159d56bf9e31c422671b35e0"
@@ -204,7 +204,7 @@ uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
 version = "1.11.0"
 
     [deps.CRC32c.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.CRlibm]]
 deps = ["CRlibm_jll"]
@@ -425,7 +425,7 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 version = "1.11.0"
 
     [deps.Dates.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.DelaunayTriangulation]]
 deps = ["AdaptivePredicates", "EnumX", "ExactPredicates", "Random"]
@@ -636,7 +636,7 @@ uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
 version = "1.11.0"
 
     [deps.FileWatching.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra"]
@@ -744,7 +744,7 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
 
     [deps.Future.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.GPUArraysCore]]
 deps = ["Adapt"]
@@ -912,10 +912,10 @@ version = "0.9.10"
 
 [[deps.Imath_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "0936ba688c6d201805a83da835b55c61a180db52"
+git-tree-sha1 = "dcc8d0cd653e55213df9b75ebc6fe4a8d3254c65"
 registries = "General"
 uuid = "905a6f67-0a94-5f89-b386-d35d92009cd1"
-version = "3.1.11+0"
+version = "3.2.2+0"
 
     [deps.Imath_jll.syntax]
     julia_version = "1.6.0"
@@ -963,7 +963,7 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 version = "1.11.0"
 
     [deps.InteractiveUtils.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Interpolations]]
 deps = ["Adapt", "AxisAlgorithms", "ChainRulesCore", "LinearAlgebra", "OffsetArrays", "Random", "Ratios", "SharedArrays", "SparseArrays", "StaticArrays", "WoodburyMatrices"]
@@ -1252,7 +1252,7 @@ uuid = "76f85450-5226-5b5a-8eaa-529ad045b433"
 version = "1.11.0"
 
     [deps.LibGit2.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.LibGit2_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "LibSSH2_jll", "Libdl", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
@@ -1275,7 +1275,7 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 version = "1.11.0"
 
     [deps.Libdl.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Libffi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
@@ -1343,7 +1343,7 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 version = "1.13.0"
 
     [deps.LinearAlgebra.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
@@ -1370,7 +1370,7 @@ uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
     [deps.Logging.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.MKL_jll]]
 deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl", "oneTBB_jll"]
@@ -1422,7 +1422,7 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
 
     [deps.Markdown.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
@@ -1449,7 +1449,7 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 version = "1.11.0"
 
     [deps.Mmap.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.MosaicViews]]
 deps = ["MappedArrays", "OffsetArrays", "PaddedViews", "StackViews"]
@@ -1466,7 +1466,7 @@ uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
 version = "2025.12.2"
 
     [deps.MozillaCACerts_jll.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1547,10 +1547,10 @@ version = "0.3.3"
 
 [[deps.OpenEXR_jll]]
 deps = ["Artifacts", "Imath_jll", "JLLWrappers", "Libdl", "Zlib_jll"]
-git-tree-sha1 = "8292dd5c8a38257111ada2174000a33745b06d4e"
+git-tree-sha1 = "df9b7c88c2e7a2e77146223c526bf9e236d5f450"
 registries = "General"
 uuid = "18a262bb-aa17-5467-a713-aee519bc75cb"
-version = "3.2.4+0"
+version = "3.4.4+0"
 
     [deps.OpenEXR_jll.syntax]
     julia_version = "1.6.0"
@@ -1771,7 +1771,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 version = "1.11.0"
 
     [deps.Printf.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.ProgressMeter]]
 deps = ["Distributed", "Printf"]
@@ -1824,7 +1824,7 @@ uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 version = "1.11.0"
 
     [deps.REPL.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Random]]
 deps = ["SHA"]
@@ -1832,7 +1832,7 @@ uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 version = "1.11.0"
 
     [deps.Random.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.RangeArrays]]
 git-tree-sha1 = "b9039e93773ddcfc828f12aadf7115b4b4d225f5"
@@ -1943,10 +1943,10 @@ version = "3.7.2"
     julia_version = "1.6.0"
 
 [[deps.SciMLPublic]]
-git-tree-sha1 = "ed647f161e8b3f2973f24979ec074e8d084f1bee"
+git-tree-sha1 = "0ba076dbdce87ba230fff48ca9bca62e1f345c9b"
 registries = "General"
 uuid = "431bcebd-1456-4ced-9d72-93c2757fff0b"
-version = "1.0.0"
+version = "1.0.1"
 
     [deps.SciMLPublic.syntax]
     julia_version = "1.0.0"
@@ -1966,7 +1966,7 @@ uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
 version = "1.11.0"
 
     [deps.Serialization.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Setfield]]
 deps = ["ConstructionBase", "Future", "MacroTools", "StaticArraysCore"]
@@ -1994,7 +1994,7 @@ uuid = "1a1011a3-84de-559e-8e89-a11a2f7dc383"
 version = "1.11.0"
 
     [deps.SharedArrays.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Showoff]]
 deps = ["Dates", "Grisu"]
@@ -2007,11 +2007,14 @@ version = "1.0.3"
     julia_version = "1.0.0"
 
 [[deps.SignedDistanceFields]]
-deps = ["Random", "Statistics", "Test"]
-git-tree-sha1 = "d263a08ec505853a5ff1c1ebde2070419e3f28e9"
+deps = ["Statistics"]
+git-tree-sha1 = "3949ad92e1c9d2ff0cd4a1317d5ecbba682f4b92"
 registries = "General"
 uuid = "73760f76-fbc4-59ce-8f25-708e95d2df96"
-version = "0.4.0"
+version = "0.4.1"
+
+    [deps.SignedDistanceFields.syntax]
+    julia_version = "0.7.0"
 
 [[deps.SimpleTraits]]
 deps = ["InteractiveUtils", "MacroTools"]
@@ -2038,7 +2041,7 @@ uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
 version = "1.11.0"
 
     [deps.Sockets.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
@@ -2119,10 +2122,10 @@ weakdeps = ["OffsetArrays", "StaticArrays"]
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "PrecompileTools", "Random", "StaticArraysCore"]
-git-tree-sha1 = "b8693004b385c842357406e3af647701fe783f98"
+git-tree-sha1 = "eee1b9ad8b29ef0d936e3ec9838c7ec089620308"
 registries = "General"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.9.15"
+version = "1.9.16"
 weakdeps = ["ChainRulesCore", "Statistics"]
 
     [deps.StaticArrays.extensions]
@@ -2366,7 +2369,7 @@ uuid = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 version = "1.11.0"
 
     [deps.Test.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.TiffImages]]
 deps = ["ColorTypes", "DataStructures", "DocStringExtensions", "FileIO", "FixedPointNumbers", "IndirectArrays", "Inflate", "Mmap", "OffsetArrays", "PkgVersion", "PrecompileTools", "ProgressMeter", "SIMD", "UUIDs"]
@@ -2418,7 +2421,7 @@ version = "3.0.0"
     julia_version = "1.6.0"
 
 [[deps.TrihpFEM]]
-deps = ["CommonSolve", "Dictionaries", "DocStringExtensions", "EllipsisNotation", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "TensorCast", "TensorOperations", "Test", "Triangulate"]
+deps = ["Aqua", "CommonSolve", "Dictionaries", "DocStringExtensions", "EllipsisNotation", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "TensorCast", "TensorOperations", "Test", "Triangulate"]
 path = "."
 uuid = "6f95704f-31d0-4cfb-aa9d-6d40374f9d53"
 version = "0.1.0"
@@ -2450,14 +2453,14 @@ uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 version = "1.11.0"
 
     [deps.UUIDs.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 version = "1.11.0"
 
     [deps.Unicode.syntax]
-    julia_version = "1.14.0-DEV.1420"
+    julia_version = "1.14.0-DEV.1443"
 
 [[deps.UnicodeFun]]
 deps = ["REPL"]
@@ -2528,10 +2531,10 @@ version = "1.0.0"
 
 [[deps.XZ_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl"]
-git-tree-sha1 = "fee71455b0aaa3440dfdd54a9a36ccef829be7d4"
+git-tree-sha1 = "9cce64c0fdd1960b597ba7ecda2950b5ed957438"
 registries = "General"
 uuid = "ffd25f8a-64ca-5728-b0f7-c24cf3aae800"
-version = "5.8.1+0"
+version = "5.8.2+0"
 
     [deps.XZ_jll.syntax]
     julia_version = "1.6.0"
