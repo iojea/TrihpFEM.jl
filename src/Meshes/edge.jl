@@ -7,6 +7,8 @@ struct Edge{I} <: SetTuple{2,I}
 end
 Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
 Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
+Edge{I}(x...) where I = Edge(I.(x))
+Edge(x,y) = Edge(promote(x,y))
 function Edge{I}(x::AbstractArray) where I
     typeof(x)<:AbstractVector || throw(ArgumentError("Edge can only be created from a one dimensional array."))
     Edge{I}(I.(x))
@@ -25,11 +27,11 @@ constructs a `struct` for storing attributes of an edge. These attributes are:
 """
 struct EdgeAttributes{P<:Integer} 
     degree::Base.RefValue{P}
-    marker::P
+    marker::Base.RefValue{P}
     refine::Base.RefValue{Bool}
     #adjacent::SVector{2,I}
 end
-EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes(Ref(d),m,Ref(r))
+EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes(Ref(d),Ref(m),Ref(r))
 EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.marker,e.refine)
 
 
@@ -47,7 +49,10 @@ returs the degree of `e`.
     marker(e::EdgeAttributes)
 returs the marker of `e`. The marker indicates if `e` is a boundary edge with Dirichlet or Neumann condition, an interior boundary, etc. 
 """
-@inline marker(e::EdgeAttributes)          = e.marker
+@inline marker(e::EdgeAttributes)          = e.marker[]
+@inline ismarked(e::EdgeAttributes,i::Integer) = marker(e)==i
+@inline ismarked(i::Integer) = Base.Fix{2}(ismarked,i)
+@inline setmarker!(e::EdgeAttributes{P},i::Integer)where P = e.marker[] = P.(i)
 """
     mark!(e::EdgeAttributes)
 marks `e` for refinement.  
@@ -62,7 +67,7 @@ sets the degree of `e`.
     isinterior(e::EdgeAttributes)
 returns `true` if the edge is an interior one.  
 """
-@inline isinterior(e::EdgeAttributes)      = e.marker != 1
+@inline isinterior(e::EdgeAttributes)      = e.marker[] == 0
 
 
             

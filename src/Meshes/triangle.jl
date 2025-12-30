@@ -10,10 +10,14 @@ end
 
 Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x)))
 Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x)))
+Triangle{I}(x...) where I = Triangle(I.(x))
+Triangle(x,y,z) = Triangle(promote(x,y,z))
 function Triangle{I}(x::AbstractArray) where I
     typeof(x)<:AbstractVector || throw(ArgumentError("Triangle can only be created from a one dimensional array."))
     Triangle{I}(I.(x))
 end
+
+data(t::Triangle) = t.data
 """
     _eval(t::Triangle,k)
 

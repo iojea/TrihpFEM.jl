@@ -1,4 +1,19 @@
 """
+    $(SIGNATURES)
+
+builds a `HPMesh` with elements of size `h` of the circle with center `center` and radius `rad`. If the center is ommited, it is assumed to be the origin. If the radius is also ommited, it is assumed to be 1. 
+"""
+function circmesh(center,rad,h)
+    cx,cy = center
+    n     = Int(1+2π*rad÷h)
+    θ     = range(start=0.,stop=2π,length=n)[1:end-1]
+    verts = [cx .+ cos.(θ');cy .+ sin.(θ')]
+    hpmesh(verts,h)
+end
+circmesh(rad,h) = circmesh((0.,0.),rad,h)
+circmesh(h) = circmesh(1.,h)
+
+"""
    correct_boundary_circular(mesh::HPMesh)
 corrects the boundary nodes of `mesh` projecting them to the boundary.  
 """
@@ -55,12 +70,6 @@ function l_mesh(h)
     m0 = length(y0) 
     points   =  [-1. -1;1. -1.;1. 0.;0. 0.;0. 1;-1 1]'
     
-    # [x fill(0,n);
-    #              fill(2,m0-2) y0[2:end-1];
-    #              reverse(x0.+1) fill(1,n0);
-    #              fill(1,n0-2) y0[2:end-1].+1;
-    #              reverse(x0) fill(2,n0);
-    #              fill(0,n-2) reverse(y[2:end-1])]'
     edgelist = hcat([[i,i+1] for i in 1:size(points,2)-1]...,
                           [size(points,2),1])
     marks    = Vector{Int8}(ones(Int8,size(edgelist,2)))

@@ -1,16 +1,17 @@
+# Makie.convert_arguments(::Type{<:AbstractPlot}, x::SVector) = Point(x)
 
-@recipe(PlotHPMesh, mesh) do scene
-    Attributes(
-               linewidth = 0.5,
-               annotate  = false,
-               title = "",
-               
-            )
+function plothpmesh end
+
+
+@recipe PlotHPMesh (mesh,) begin
+    linewidth = 0.5
+    annotate  = false
+    title = ""
 end
 
 
 """
-    plot!(m::HPMesh)
+    plothpmesh(m::HPMesh)
 Plots `m` using `Makie`.   
 """
 function Makie.plot!(p::PlotHPMesh)
@@ -47,8 +48,8 @@ function Makie.plot!(p::PlotHPMesh)
         lines!(p,x,y,linewidth=lw,color= ∂cols[marker(edgelist[e])])
     end
     if p[:annotate][]
-        for (i,dot) in enumerate(eachcol(points))
-            text!(p,Point2f(dot...),text=string(i))
+        for (i,dot) in enumerate(points)
+            text!(p,dot,text=string(i))
         end
     end
     end

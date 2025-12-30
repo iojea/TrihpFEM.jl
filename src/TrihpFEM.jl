@@ -13,6 +13,7 @@ TrihpFEM implements an hp-adaptive Finite Element Method based on triangular mes
 \$(isnothing(get(ENV, "CI", nothing)) ? ("\n" * "Package local path: " * pathof(TrihpFEM)) : "") 
 """
 
+
 using CommonSolve
 using Dictionaries
 using DocStringExtensions
@@ -34,5 +35,8 @@ using Triangulate
 
 include("Meshes/Meshes.jl")
 # Write your package code here.
+#
 
+using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,set_dirichlet!,set_neumann!
+export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,set_dirichlet!,set_neumann!
 end

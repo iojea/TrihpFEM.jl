@@ -2,12 +2,12 @@
 # Base.show(io::IO,mime::MIME"text/plain",t::HPTriangle) = show(io,mime,Int.(t))
 # Base.show(io::IO,t::HPTriangle) = show(io,Int.(t))
 
-#Show TriangleProperties
-function Base.show(io::IO,mime::MIME"text/plain",t::TriangleProperties) 
+#Show TriangleAttributes
+function Base.show(io::IO,mime::MIME"text/plain",t::TriangleAttributes) 
     symbs = Dictionary(0:3,[:noref,:green,:blue,:red])
     show(io,symbs[t.refine[]])
 end
-function Base.show(io::IO,t::TriangleProperties) 
+function Base.show(io::IO,t::TriangleAttributes) 
     symbs = Dictionary(0:3,[:noref,:green,:blue,:red])
     show(io,symbs[t.refine[]])
 end
@@ -16,28 +16,28 @@ end
 # Base.show(io::IO,mime::MIME"text/plain",t::HPEdge) = show(io,mime,Int.(t))
 # Base.show(io::IO,t::HPEdge) = show(io,Int.(t.nodes[:]))
 
-# Show EdgeProperties
-function Base.show(io::IO,mime::MIME"text/plain",t::EdgeProperties) 
-    if t.marker==0
+# Show EdgeAttributes
+function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes) 
+    if t.marker[]==0
         m = :Ω°
-    elseif t.marker==1
+    elseif t.marker[]==1
         m = :∂𝔇
-    elseif t.marker==2
+    elseif t.marker[]==2
         m = :∂𝔑
     else 
-        m = t.marker
+        m = t.marker[]
     end
     show(io,mime,(t.degree[],m,t.refine[]))
 end
-function Base.show(io::IO,t::EdgeProperties)
-    if t.marker==0
+function Base.show(io::IO,t::EdgeAttributes)
+    if t.marker[]==0
         m = :Ω°
-    elseif t.marker==1
+    elseif t.marker[]==1
         m = :∂𝔇
-    elseif t.marker==2
+    elseif t.marker[]==2
         m = :∂𝔑
     else 
-        m = t.marker
+        m = t.marker[]
     end 
     if t.refine[]
         r = :refine
@@ -222,9 +222,5 @@ function Base.show(io::IO,mime::MIME"text/plain",mesh::HPMesh{I,P}) where {I,P}
     # show(io,mime,mesh.edgelist)
 end
 
-function Base.show(io::IO,mime::MIME"text/plain",p::HPPoint)
-    println(typeof(p))
-    show(io,mime,p.data)
-end
 
 

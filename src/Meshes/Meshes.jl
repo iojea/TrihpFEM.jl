@@ -11,26 +11,30 @@ using StaticArrays
 using DocStringExtensions
 
 
-export Edge,Triangle
-
-# export degrees,psortperm,edges,pnodes,pedges,triangles,edges,degree
-# export meshhp,circmesh,circmesh_graded_center,rectmesh
-# export show, plothpmesh, animate_refinement
+export Edge,Triangle,HPMesh
+export hpmesh
+export inttype,floattype,degtype
+export degrees,psortperm,edges,triangles,psortednodes,psortededges,degree
+export tridof,edgedof
+export circmesh,circmesh_graded_center,rectmesh,l_mesh,l_graded
+export plothpmesh
+export BoundaryHPMesh,dirichletboundary,neumannboundary
+export set_dirichlet!, set_neumann!
 # export domainmesh
-# export degrees_of_freedom!
-# export inttype, floattype, degtype
-# export tridofs
 
+BOUNDARY_DICT = Dict(:dirichlet=>1,:neumann=>2)
 
 include("settuple.jl")
 include("edge.jl")
 include("triangle.jl")
-# include("mesh.jl")
-# include("boundary_mesh.jl")
+include("mesh.jl")
+include("boundary_mesh.jl")
 # include("refine.jl")
-# include("show.jl")
-# include("plots.jl")
-# include("examples.jl")
+include("show.jl")
+include("plots.jl")
+include("some_meshes.jl")
+
+
 
 const HASH_SEED = UInt === UInt64 ? 0x793bac59abf9a1da : 0xdea7f1da
 
