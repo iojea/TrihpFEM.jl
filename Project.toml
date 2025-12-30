@@ -4,7 +4,6 @@ version = "0.1.0"
 authors = ["Ignacio Ojea <iojea@dm.uba.ar>"]
 
 [deps]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CommonSolve = "38540f10-b2f7-11e9-35d8-d573e4eb0ff2"
 Dictionaries = "85a47980-9c8c-11e8-2b9f-f7ca1fa99fb4"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -25,7 +24,6 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Triangulate = "f7e6ffb2-c36d-4f8f-a77e-16e897189344"
 
 [compat]
-Aqua = "0.8.14"
 CommonSolve = "0.2.6"
 Dictionaries = "0.4.6"
 DocStringExtensions = "0.9.5"
