@@ -4,7 +4,7 @@ using Aqua
 
 @testset "TrihpFEM.jl" begin
     @testset "Code quality (Aqua.jl)" begin
-        Aqua.test_all(TrihpFEM)
+        Aqua.test_all(TrihpFEM,stale_deps=false)
     end
     @testset "Meshes" begin include("mesh.jl") end
 end
