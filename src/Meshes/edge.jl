@@ -6,7 +6,7 @@ struct Edge{I} <: SetTuple{2,I}
     data::NTuple{2,I}
 end
 Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
-# Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
+Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
 Edge{I}(x...) where I = Edge(I.(x))
 Edge(x,y) = Edge(promote(x,y))
 function Edge{I}(x::AbstractArray) where I

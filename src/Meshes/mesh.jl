@@ -467,21 +467,21 @@ end
 
 
 """
-    marked_dof(mesh::HPMesh,tags)
+    tagged_dof(mesh::HPMesh,tags)
 returns a list of all degrees of freedom tagged with a tag in `tag`.
 """
-function marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
+function tagged_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;dofs) = mesh
     msg = "The degrees of freedom of the mesh have not been computed."
     isempty(dofs) && throw(ArgumentError(msg))
-    _marked_dof(mesh,tags)
+    _tagged_dof(mesh,tags)
 end
 
 """
-    _marked_dof(mesh::HPMesh,tags)
+    _tagged_dof(mesh::HPMesh,tags)
 internal function. Returns a list of all degrees of freedom tagged with a tag in `tag`.  
 """
-function _marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
+function _tagged_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;edgelist,dofs) = mesh
     (;by_edge) = dofs
     v = Vector{I}()
