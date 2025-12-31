@@ -267,7 +267,7 @@ function p_conformity!(mesh::HPMesh{F,I,P}) where {F,I,P}
 end
 function p_conformity!(mesh::HPMesh{F,I,P},t::Triangle{I},d) where {F,I,P}
     (;edgelist) = mesh
-    p,eds = pedges(t)
+    p,eds = psortededges(t)
     out = false
     if check_p_conformity(p)
         out = true
