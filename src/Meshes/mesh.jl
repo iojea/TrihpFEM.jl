@@ -112,7 +112,7 @@ julia> m = hpmesh(vert,0.1;segments=segs,tag)
 HPMesh{Float64, Int32, UInt8}
   + 180 nodes.
   + 317 triangles.
-  + 496 edges.s=tags
+  + 496 edges.
 ```
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
