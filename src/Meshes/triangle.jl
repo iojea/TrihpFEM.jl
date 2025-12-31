@@ -79,8 +79,13 @@ struct TriangleAttributes{P<:Integer,F<:AbstractFloat}
     η::Base.RefValue{F}
     ηₚ::Base.RefValue{F}
     TriangleAttributes{P,F}(val,η,ηₚ) where{P,F} = new{P,F}(Ref(P(val)),Ref(F(η)),Ref(F(ηₚ)))
+    TriangleAttributes{P,F}() where {P,F} = new{P,F}(Ref(zero(P)),Ref(zero(F)),Ref(zero(F)))
 end
-TriangleAttributes{P,F}() where {P,F} = TriangleAttributes(zero(P),zero(F),zero(F))
+function TriangleAttributes(r,η,ηₚ)
+    z = promote(η,ηₚ)
+    TriangleAttributes{typeof(r),eltype(z)}(r,z...)
+end
+TriangleAttributes() = TriangleAttributes(zero(UInt8),0.0,0.0)
 
 @inline ismarked(t::TriangleAttributes)  = t.refine[] > 0
 @inline isgreen(t::TriangleAttributes)   = t.refine[] == 1

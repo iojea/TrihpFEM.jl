@@ -24,7 +24,7 @@ function Base.hash(s::SetTuple, h::UInt)
     hash(hash(hv, h),hash(typeof(s)))
 end
 
-Base.isequal(t1::T,t2::T) where T<:SetTuple = length(t1)==length(t2) && issubset(t1,t2)
+Base.isequal(t1::SetTuple,t2::SetTuple) = length(t1)==length(t2) && issubset(t1,t2)
 
 
 

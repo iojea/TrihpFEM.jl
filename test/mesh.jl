@@ -6,21 +6,21 @@
     e₁ = Edge(3,4)
     e₂ = Edge((4,3))
     @test isequal(e₁,e₂)
-    ea₁ = Meshes.EdgeAttributes{UInt8}(0,1,false)
+    ea₁ = Meshes.EdgeAttributes{UInt8}(1,0,false)
 
     de = Dictionary([e₁],[ea₁])
     @test e₁ in keys(de)
-    @test de[e₂] == ae₁
+    @test de[e₂] == ea₁
     @test degree(de[e₁]) == 1
-    @test Meshes.!ismarked(de[e₁])
-    @test Meshes.marker(de[e₁]) == 1
+    @test !Meshes.ismarked(de[e₁])
+    @test Meshes.tag(de[e₁]) == 0
     Meshes.mark!(de[e₁])
     @test Meshes.ismarked(de[e₂])
     Meshes.setdegree!(de[e₁],3)
-    @test typeof(de[e₁].marker[]) == UInt8
+    @test typeof(tag(de[e₁])) == UInt8
     @test degree(de[e₁]) == 3
-    @test Meshes.!isinterior(de[e₂])
-    @test meshes.data(e₁) == (3,4)
+    @test Meshes.isinterior(de[e₂])
+    @test Meshes.data(e₁) == (3,4)
 
     #Triangle creation and comparison
     t₁ = Triangle(1,2,3)
@@ -30,9 +30,9 @@
     t₃ = Triangle{UInt32}(1,3,2)
     @test isequal(t₁,t₃)
 
-    ta₁ = Meshes.TriangleAtttributes{UInt8,Float64}()
-    ta₂ = Meshes.TriangleAtttributes()
-    @test ta₁==ta₂
+    ta₁ = Meshes.TriangleAttributes{UInt8,Float64}()
+    ta₂ = Meshes.TriangleAttributes()
+    @test all(getproperty(ta₁,prop)[]==getproperty(ta₂,prop)[] for prop in propertynames(ta₁))
 
     dt = Dictionary([t₁],[ta₁])
     @test t₂ in keys(dt)

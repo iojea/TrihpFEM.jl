@@ -94,13 +94,13 @@ julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]'
 julia> m = hpmesh(vertices,0.1)
 ```
 
-For more complex meshes, a matrix of `segments` and a vector of `markers` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `markers` is a vector of integers that impose a mark on each segment. The primary goal of markers is to indicate if a piece of boundary will hold Dirichlet (odd marker) or Neumann (even marker) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
+For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
 
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
-julia> mark = [1,1,2,2,2,1]
-julia> m = hpmesh(vert,0.1;segments=segs,markers=mark)
+julia> tags = [1,1,2,2,2,1]
+julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
 ```
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
@@ -108,8 +108,8 @@ For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neu
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
-julia> mark = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet]
-julia> m = hpmesh(vert,0.1;segments=segs,markers=mark)
+julia> tags = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet]
+julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
 ```
 
 
@@ -118,14 +118,14 @@ Furthermore, meshes with holes can also be constructed. In this case, the `segme
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]'
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]'
-julia> mark = [1,1,2,2,2,1,1,1,2,2]
+julia> tags = [1,1,2,2,2,1,1,1,2,2]
 julia> hole = [0.3 0.3]'
-julia> m = hpmesh(vert,0.1;segments=segs,markers=mark,holes=hole)
+julia> m = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
 ```
 """
 function hpmesh(vertices,h;
                 segments=nothing,
-                markers=nothing,
+                tags=nothing,
                 holes=nothing)
     F = eltype(vertices)
     P = UInt8
@@ -134,13 +134,13 @@ function hpmesh(vertices,h;
     if isnothing(segments)
         segments = _boundary_segments(size(vertices,2))
     end
-    if isnothing(markers)
+    if isnothing(tags)
         markers = ones(P,size(vertices,2))
     elseif eltype(markers)==Symbol
-        markers = [BOUNDARY_DICT[m] for m in markers]
+        markers = [BOUNDARY_DICT[m] for m in tags]
     end
     tri.segmentlist = segments
-    tri.segmentmarkerlist = markers
+    tri.segmentmarkerlist = tags
     if !isnothing(holes)
         tri.holelist = holes
     end
@@ -164,7 +164,7 @@ function set_boundary!(i::Integer,
     for ea in pairs(edgelist)
         e = first(ea)
         if condition(points[e[1]]) && condition(points[e[2]])
-            setmarker!(last(ea),P(i))
+            settag!(last(ea),P(i))
         end
     end
 end
@@ -328,11 +328,11 @@ returns a list containing the indices of the vertices of `mesh` tha lie in its b
 """
 function boundarynodes(mesh::HPMesh{F,I,P}) where {F,I,P}
     (;edgelist) = mesh
-    v = zeros(I,sum(>(0),marker.(edgelist)))
+    v = zeros(I,sum(>(0),tag.(edgelist)))
     i = 1
-    for e in edges(edgelist)
-        if marker(edgelist[e])>0
-            for j in e
+    for e in pairs(filter(isboundary,edgelist))
+        if (last(e))>0
+            for j in first(e)
                 if j ∉ v
                     v[i] = j
                     i   += 1
@@ -423,32 +423,32 @@ end
 
 
 """
-    marked_dof(mesh::HPMesh{F,I,P},marker) where {F,I,P}
+    tagged_dof(mesh::HPMesh{F,I,P},tag) where {F,I,P}
 
-Returs a list of indices corresponding to the degrees of freedom marked with `marker`. If a vector of markers is passed, it returs degrees of freedom marked with any of them. 
+Returs a list of indices corresponding to the degrees of freedom labeled with `tag`. If a vector of labels is passed, it returs degrees of freedom marked with any of them. 
 """
-function marked_dof(mesh::HPMesh{F,I,P},marker::N) where {F,I,P,N<:Integer}
-    marked_dof(mesh,[marker])
+function tagged_dof(mesh::HPMesh{F,I,P},tag::N) where {F,I,P,N<:Integer}
+    marked_dof(mesh,[tag])
 end
 
-function marked_dof(mesh::HPMesh{F,I,P},marker) where {F,I,P}
+function marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;dofs) = mesh
     msg = "The degrees of freedom of the mesh have not been computed."
     isempty(dofs) && throw(ArgumentError(msg))
-    _marked_dof(mesh,marker)
+    _marked_dof(mesh,tags)
 end
 
 """
     _marked_dof(mesh::HPMesh,markerslist::AbstractVector)
 internal function. Returns a list of all degrees of freedom marked with a marker in `markerlist`.  
 """
-function _marked_dof(mesh::HPMesh{F,I,P},markerslist::AbstractVector) where {F,I,P}
+function _marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;edgelist,dofs) = mesh
     (;by_edge) = dofs
     v = Vector{I}()
-    for e in edges(edgelist)
-        if marker(edgelist[e]) in markerslist
-            push!(v,by_edge[e]...)
+    for e in pairs(edgelist)
+        if tag(last(e)) in tags
+            push!(v,by_edge[first(e)]...)
         end
     end
     return unique(v)
@@ -466,13 +466,7 @@ function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
     (;dofs) = mesh; (;by_edge) = dofs;
     msg = "The degrees of freedom of the mesh have not been computed."
     isempty(dofs) && throw(ArgumentError(msg))
-    boundary_dof(mesh,by_edge)
-end
-function boundary_dof(mesh::HPMesh{F,I,P},by_edge) where {F,I,P}
-    (;dofs) = mesh; (;by_edge) = dofs;
-    msg = "The degrees of freedom of the mesh have not been computed."
-    isempty(dofs) && throw(ArgumentError(msg))
-    marked_dof(mesh,by_edge,[1,2])
+    tagged_dof(mesh,(1,2))
 end
 
 

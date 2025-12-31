@@ -18,26 +18,26 @@ end
 
 # Show EdgeAttributes
 function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes) 
-    if t.marker[]==0
+    if t.tag[]==0
         m = :Ω°
-    elseif t.marker[]==1
+    elseif t.tag[]==1
         m = :∂𝔇
-    elseif t.marker[]==2
+    elseif t.tag[]==2
         m = :∂𝔑
     else 
-        m = t.marker[]
+        m = t.tag[]
     end
     show(io,mime,(t.degree[],m,t.refine[]))
 end
 function Base.show(io::IO,t::EdgeAttributes)
-    if t.marker[]==0
+    if t.tag[]==0
         m = :Ω°
-    elseif t.marker[]==1
+    elseif t.tag[]==1
         m = :∂𝔇
-    elseif t.marker[]==2
+    elseif t.tag[]==2
         m = :∂𝔑
     else 
-        m = t.marker[]
+        m = t.tag[]
     end 
     if t.refine[]
         r = :refine
