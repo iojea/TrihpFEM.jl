@@ -10,7 +10,7 @@ Concrete subtypes of `SetTuple` should implement the function `data` to retrieve
 
 abstract type SetTuple{L,I<:Integer} <: StaticArray{Tuple{L},I,1} end
 
-function data(v::SetTuple) end
+function data(::SetTuple) end
 
 #Indexing
 Base.getindex(v::SetTuple, i::Int) = data(v)[i]
@@ -25,7 +25,3 @@ function Base.hash(s::SetTuple, h::UInt)
 end
 
 Base.isequal(t1::SetTuple,t2::SetTuple) = length(t1)==length(t2) && issubset(t1,t2)
-
-
-
-

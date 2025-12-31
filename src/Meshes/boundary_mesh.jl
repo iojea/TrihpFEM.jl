@@ -7,7 +7,7 @@ creates a lazy container for accessing the part of the boundary of a domain `mes
 
 # Examples:
 
-```jldoctest
+```@docs
 julia> Ω = circmesh(0.1);
 
 julia> ∂Ω = BoundaryHPMesh(Ω,:dirichlet);
@@ -15,7 +15,7 @@ julia> ∂Ω = BoundaryHPMesh(Ω,:dirichlet);
 
 Returns the Dirichlet boundary of `Ω`. This is equivalent to:
 
-```jldoctest
+```@docs
 julia> Ω = circmesh(0.1);
 
 julia> ∂Ω = BoundaryHPMesh(Ω,1);
@@ -23,7 +23,7 @@ julia> ∂Ω = BoundaryHPMesh(Ω,1);
 
 A more complex situation is:
 
-```jldoctest
+```@docs
 julia> vert = [0. 0.;1. 0.;1. 1.;0. 1.]';
 
 julia> segs = [1 2;2 3;3 4;4 1]';

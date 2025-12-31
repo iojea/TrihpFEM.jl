@@ -96,7 +96,10 @@
         set!(edgelist,ed,Meshes.EdgeAttributes{UInt8}(1,1,false))
     end
     mesh = HPMesh(pts₂,trilist,edgelist)
-    @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)
+    @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)i
+    show(mesh)
+
+    
     
     
     
