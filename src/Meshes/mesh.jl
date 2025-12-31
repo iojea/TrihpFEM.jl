@@ -15,7 +15,7 @@ abstract type HPTriangulation end
 
     DOF{I<:Integer}
 an `struct` for storing the degrees of freedom of a mesh. It can be initialized as an empty structure with
-```jldoctest
+```
     julia> DOF(UInt8);
 ```
 In practice, a `DOF` is created empty an then filled using `degrees_of_freedom!(mesh)`.
