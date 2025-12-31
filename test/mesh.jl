@@ -20,10 +20,10 @@
     @test e₁ in keys(de)
     @test de[e₂] == ea₁
     @test degree(de[e₁]) == 1
-    @test !ismarked(de[e₁])
+    @test !Meshes.ismarked(de[e₁])
     @test tag(de[e₁]) == 0
     mark!(de[e₁])
-    @test ismarked(de[e₂])
+    @test Meshes.ismarked(de[e₂])
     setdegree!(de[e₁],3)
     @test typeof(tag(de[e₁])) == UInt8
     @test degree(de[e₁]) == 3
@@ -45,9 +45,9 @@
 
     dt = Dictionary([t₁],[ta₁])
     @test t₂ in keys(dt)
-    @test !ismarked(dt[t₂])
+    @test !Meshes.ismarked(dt[t₂])
     mark!(dt[t₁],1)
-    @test ismarked(dt[t₂])
+    @test Meshes.ismarked(dt[t₂])
     @test isgreen(dt[t₂])
     mark!(dt[t₂],2)
     @test isblue(dt[t₂])

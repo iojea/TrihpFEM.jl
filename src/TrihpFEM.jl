@@ -37,6 +37,6 @@ include("Meshes/Meshes.jl")
 # Write your package code here.
 #
 
-using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,set_dirichlet!,set_neumann!
-export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,set_dirichlet!,set_neumann!
+using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
+export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
 end
