@@ -106,9 +106,9 @@
     mesh = HPMesh(pts₂,trilist,edgelist)
     @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)
     @test length(Meshes.tagged_dof(mesh,1))==4
-    @test !Meshes.isempty(mesh.dof)
-    Meshes.empty!(mesh.dof)
-    @test Meshes.isempty(mesh.dof)
+    @test !Meshes.isempty(dof(mesh))
+    Meshes.empty!(dof(mesh))
+    @test Meshes.isempty(dof(mesh))
 
     @test edges(mesh) === keys(mesh.edgelist)
 

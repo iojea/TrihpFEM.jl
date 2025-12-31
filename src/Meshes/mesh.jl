@@ -264,16 +264,12 @@ retuns the triangles of `m`, being `m` and `HPMesh` or a `TriList`.
 """
 @inline triangles(list::T) where T<:TriangleList = keys(list)
 @inline triangles(mesh::T) where T<:HPMesh = keys(mesh.trilist)
+
 """
-  tridof(m)
+  dof(m)
 retuns the degrees of freedom of the mesh `m`.
 """
-@inline tridof(mesh) = mesh.dofs.by_tri
-"""
-  edegedof(m)
-returns the degrees of freedom of the edges of the mesh `m`. 
-"""
-@inline edgedof(m) = m.dofs.by_edge
+@inline dof(mesh) = mesh.dofs
 
 """
     isgreen(t::Triangle,m::HPMesh
