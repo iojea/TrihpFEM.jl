@@ -12,11 +12,11 @@ using DocStringExtensions
 
 
 export Edge,EdgeAttributes,Triangle,TriangleAttributes,HPMesh,DOF
-export triangle,hpmesh
+export triangle,hpmesh,data
 export tag,degree,dof,longestedge,tagged_dof
 export ismarked,isgreen,isblue,isred,istagged,isinterior,isboundary
 export inttype,floattype,degtype
-export isempty,empty!
+export degrees_of_freedom!,isempty,empty!
 export settag!,setdegree!,setboundary!,setdirichlet!,setneumann!
 export degrees,psortperm,edges,triangles,psortednodes,psortededges
 export plothpmesh

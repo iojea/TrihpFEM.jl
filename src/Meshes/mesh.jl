@@ -185,7 +185,7 @@ end
 
 """
     setboundary!(s,condition,m::HPMesh)
-sets the boundary edges of mesh `m` which satisfy `condition` to kind `s`, where `s` can be `:dirichlet`, `:neumann` (or alternatively, `1` for Dirichlet or `2` for Neumann). Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
+sets the boundary edges of mesh `m` which satisfy `condition` to kind `s`, where `s` can be `:dirichlet`, `:neumann` (or alternatively, `1` for Dirichlet or `2` for Neumann). Notice that `condition` is evaluated at the vertices of each edge. An edge is tagged when both vertices satisfy `condition`.
 
 See also [`setdirichlet!`](@ref) and [`setneumann!`](@ref).
 """
@@ -208,13 +208,13 @@ function setboundary!(s::Symbol,
 end
 """
     setdirichlet!(condition,m::HPMesh)
-Marks as `:dirichlet` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
+Marks as `:dirichlet` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is tagged when both vertices satisfy `condition`.
 See also [`setneumann!`](@ref).
 """
 setdirichlet!(condition::Function,m::HPMesh) = setboundary!(1,condition,m)
 """
     setneumann!(condition,m::HPMesh)
-Marks as `:neumann` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
+Marks as `:neumann` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is tagged when both vertices satisfy `condition`.
 See also [`setdirichlet!`](@ref).
 """
 setneumann!(condition::Function,m::HPMesh) = setboundary!(2,condition,m)
@@ -458,7 +458,7 @@ end
 Returs a list of indices corresponding to the degrees of freedom labeled with `tag`. If a vector of labels is passed, it returs degrees of freedom marked with any of them. 
 """
 function tagged_dof(mesh::HPMesh{F,I,P},tag::N) where {F,I,P,N<:Integer}
-    marked_dof(mesh,[tag])
+    tagged_dof(mesh,[tag])
 end
 
 
