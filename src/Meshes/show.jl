@@ -1,6 +1,9 @@
 # Show HPTriangle
-# Base.show(io::IO,mime::MIME"text/plain",t::HPTriangle) = show(io,mime,Int.(t))
-# Base.show(io::IO,t::HPTriangle) = show(io,Int.(t))
+function Base.show(io::IO,mime::MIME"text/plain",t::SetTuple)
+     println(typeof(t))
+     show(io,mime,data(t))
+end
+Base.show(io::IO,t::SetTuple) = show(io,data(t))
 
 #Show TriangleAttributes
 function Base.show(io::IO,mime::MIME"text/plain",t::TriangleAttributes) 

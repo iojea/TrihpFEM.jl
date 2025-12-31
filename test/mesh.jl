@@ -6,9 +6,12 @@
     #Edge creation and comparison.
     e₁ = Edge(3,4)
     e₂ = Edge((4,3))
+    @test repr(e₁) == "(3,4)"
+    @test repr(e₂) == "(4,3)"
+    
     @test isequal(e₁,e₂)
     ea₁ = Meshes.EdgeAttributes{UInt8}(1,0,false)
-
+    @test repr(ea₁) == "(0x01, :Ω°, :noref)"
     de = Dictionary([e₁],[ea₁])
     @test e₁ in keys(de)
     @test de[e₂] == ea₁
@@ -98,11 +101,8 @@
     mesh = HPMesh(pts₂,trilist,edgelist)
     @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)
 
-    @test sprint(show, T₃) == "3-element Triangle{Int32} with indices SOneTo(3):
- 2
- 3
- 1"
- 
+    @test repr(T₃) == "(2,3,1)"
+     
  
     
 
