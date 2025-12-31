@@ -51,6 +51,7 @@ function Base.show(io::IO,t::EdgeAttributes)
 end
 
 # Show HPList short.
+
 function Base.show(io::IO, d::Union{TriangleList,EdgeList})
     limit = get(io, :limit, false) ? Int64(10) : typemax(Int64)
     comma = false

@@ -97,8 +97,7 @@ TriangleAttributes() = TriangleAttributes(zero(UInt8),0.0,0.0)
 @inline isgreen(t::TriangleAttributes)   = t.refine[] == 1
 @inline isblue(t::TriangleAttributes)    = t.refine[] ==2
 @inline isred(t::TriangleAttributes)     = t.refine[] == 3
-@inline mark!(t::TriangleAttributes,k)   = t.refine[] = k
-@inline mark!(t::TriangleAttributes)     = mark!(t,3)
+@inline mark!(t::TriangleAttributes,k::Integer=3)   = t.refine[] = k
 @inline setη!(t::TriangleAttributes,η)   = t.η[] = η
 @inline setηₚ!(t::TriangleAttributes,ηₚ) = t.ηₚ[] = ηₚ
 
