@@ -33,7 +33,7 @@
     #Triangle creation and comparison
     t₁ = Triangle(Int32(1),2,3)
     t₂ = Triangle((2,3,1))
-    t₃ = Triangle(StaticVector{3,Int32}((3,1,2)))
+    t₃ = Triangle(SVector(3,1,2))
     t₄ = Triangle{UInt32}(2,1,3)
     t₅ = Triangle(t for t in t₄)
     @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄) && isequal(t₄,t₅)
