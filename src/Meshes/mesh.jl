@@ -32,6 +32,11 @@ function DOF{I}() where I<:Integer
     DOF{I}(Base.RefValue{I}(zero(I)),by_edge,by_tri)
 end
 
+"""
+   empty!(d::DOF)
+
+empty both dictionaries stored in `d` (degrees of freedom by edge and by triangle). 
+"""
 function Base.empty!(d::DOF{I}) where I
     empty!(d.by_edge)
     empty!(d.by_tri)
@@ -243,9 +248,9 @@ returns `F`
 floattype(::HPMesh{F,I,P}) where {F,I,P} = F
 
 
-function Base.copy(mesh::HPMesh)
-    HPMesh(deepcopy(mesh.points),deepcopy(mesh.trilist),deepcopy(mesh.edgelist))
-end
+# function Base.copy(mesh::HPMesh)
+#     HPMesh(deepcopy(mesh.points),deepcopy(mesh.trilist),deepcopy(mesh.edgelist))
+# end
 
 """
   edges(m)
@@ -395,7 +400,7 @@ compute_dimension(t::T) where {T<:AbstractArray} = compute_dimension(t...)
 compute_dimension(t::Tuple) = compute_dimension(t...)
 
 """
-    degrees_of_freedom_by_edge(mesh::HPMesh{F,I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
+    degrees_of_freedom_by_edge!(mesh::HPMesh{F,I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
 
 Creates a dictionary (from `Dictionaries.jl`) where the keys are the edges of `mesh` and the values are vectors with indices corresponding to the nodal degrees of freedom. 
 """
@@ -410,6 +415,8 @@ function degrees_of_freedom_by_edge!(mesh::HPMesh{F,I,P}) where {F,I,P}
         i   += degree(edgelist[edge])-1
     end
 end
+
+
 """
     degrees_of_freedom!(mesh::HPMesh{F,I,P}) where {F,I,P}
 
@@ -458,6 +465,11 @@ function tagged_dof(mesh::HPMesh{F,I,P},tag::N) where {F,I,P,N<:Integer}
     marked_dof(mesh,[tag])
 end
 
+
+"""
+    marked_dof(mesh::HPMesh,tags)
+returns a list of all degrees of freedom tagged with a tag in `tag`.
+"""
 function marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;dofs) = mesh
     msg = "The degrees of freedom of the mesh have not been computed."
@@ -466,8 +478,8 @@ function marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
 end
 
 """
-    _marked_dof(mesh::HPMesh,markerslist::AbstractVector)
-internal function. Returns a list of all degrees of freedom marked with a marker in `markerlist`.  
+    _marked_dof(mesh::HPMesh,tags)
+internal function. Returns a list of all degrees of freedom tagged with a tag in `tag`.  
 """
 function _marked_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     (;edgelist,dofs) = mesh
@@ -498,9 +510,3 @@ end
 
 
 ########
-function Base.sizehint!(d::Dictionary,n::Int)
-    sizehint!(d.indices.slots,(1+n÷8)*8)
-    sizehint!(d.indices.hashes,n)
-    sizehint!(d.indices.values,n)
-    sizehint!(d.values,n)
-end

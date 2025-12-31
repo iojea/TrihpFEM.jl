@@ -20,7 +20,7 @@ corrects the boundary nodes of `mesh` projecting them to the boundary.
 function correct_boundary_circular(mesh::HPMesh)
     (;points,edgelist) = mesh
     for e in keys(edgelist)
-        if marker(edgelist[e])==1
+        if tag(edgelist[e])>0
             i,j = e
             # points[:,i] .= points[:,i]/norm(points[:,i])
             # points[:,j] .= points[:,j]/norm(points[:,j])

@@ -13,7 +13,11 @@ function Edge{I}(x::AbstractArray) where I
     typeof(x)<:AbstractVector || throw(ArgumentError("Edge can only be created from a one dimensional array."))
     Edge{I}(I.(x))
 end
-    
+
+"""
+   data(e::Edge)
+returns the tuple defining `e`. 
+"""
 data(e::Edge) = getproperty(e,:data)
 
 
@@ -51,24 +55,45 @@ returs the degree of `e`.
 returs the tag of `e`. The tag indicates if `e` is a boundary edge with Dirichlet or Neumann condition, an interior boundary, etc. 
 """
 @inline tag(e::EdgeAttributes) = e.tag[]
+
+"""
+    istagged(e::EdgeAttributes,i::Integer)
+check if `e` has tag `i`.
+
+It can be used passing only `i` to create a function that checks for tag `i`:
+    istagged(i) 
+"""
 @inline istagged(e::EdgeAttributes,i::Integer) = tag(e)==i
 @inline istagged(i::Integer) = Base.Fix{2}(istagged,i)
+
+"""
+    settag!(e::EdgeAttributes,i::Integer)
+sets the tag of `e` to `i`.  
+"""
 @inline settag!(e::EdgeAttributes{P},i::Integer) where P = e.tag[] = P.(i)
+
 """
     mark!(e::EdgeAttributes)
 marks `e` for refinement.  
 """
 @inline mark!(e::EdgeAttributes) = e.refine[] = true
+
 """
     setdegree!(e::EdgeAttributes,deg)
 sets the degree of `e`.  
 """
 @inline setdegree!(e::EdgeAttributes,deg) = e.degree[] = deg
+
 """
     isinterior(e::EdgeAttributes)
 returns `true` if the edge is an interior one.  
 """
 @inline isinterior(e::EdgeAttributes) = e.tag[] == 0
+
+"""
+    isboundary(e::EdgeAttributes)
+returns `true` if the edge is a boundary one.  
+"""
 @inline isboundary(e::EdgeAttributes) = e.tag[]>0
 
 

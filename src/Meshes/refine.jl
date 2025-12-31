@@ -24,7 +24,7 @@ end
 
 Marks triangles with vertices `vert` for which `estim(vert,estim_param)` returns `true`, and then run the `_h_conformity!` routine in order to propagate the markings to adjacent triangles as needed. 
 """
-function mark!(estim,mesh::HPMesh{F,I,P};estim_params...) where {F,I,P}
+function mark!(estim::Function,mesh::HPMesh{F,I,P};estim_params...) where {F,I,P}
     (;points,trilist,edgelist) = mesh
     tri  = MMatrix{2,3}(zero(F) for i in 1:2,j in 1:3)
     for t in triangles(trilist)
@@ -41,7 +41,7 @@ end
 """
     $(SIGNATURES)
 
-checks if a point `p` belongs to thte triangle with vertices `a`,`b` and `c`. 
+checks if a point `p` belongs to the triangle with vertices `a`,`b` and `c`. 
 """
 function intriangle(p::T,a::V,b::V,c::V) where {T<:AbstractArray,V<:AbstractArray}
     if abs(orient(a,b,p)+orient(b,c,p)+orient(c,a,p))==3
@@ -101,10 +101,10 @@ function refine_red!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) 
         if k>0
             dots[j+3] = k
         else
-            points[i[]] = HPPoint(sum(points[edge])/2)
+            points[i[]] = SVector(sum(points[edge])/2)
             dots[j+3]   = i[]
             set!(seen,edge,i[])
-            m = marker(edgelist[edge])
+            m = tag(edgelist[edge])
             set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[j],m,false))
             set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[j],m,false))
             i[] += 1
@@ -113,10 +113,10 @@ function refine_red!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) 
     set!(edgelist,Edge(dots[SVector(6,4)]),EdgeAttributes(degs[4],zero(P),false))
     set!(edgelist,Edge(dots[SVector(4,5)]),EdgeAttributes(degs[5],zero(P),false))    
     set!(edgelist,Edge(dots[SVector(5,6)]),EdgeAttributes(degs[6],zero(P),false))
-    set!(trilist,Triangle(dots[SVector(1,4,6)]),TriangleAttributes(P,F))
-    set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes(P,F))
-    set!(trilist,Triangle(dots[SVector(6,5,3)]),TriangleAttributes(P,F))
-    set!(trilist,Triangle(dots[SVector(5,6,4)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(1,4,6)]),TriangleAttributes{P,F}())
+    set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes{P,F}())
+    set!(trilist,Triangle(dots[SVector(6,5,3)]),TriangleAttributes{P,F}())
+    set!(trilist,Triangle(dots[SVector(5,6,4)]),TriangleAttributes{P,F}())
 end
 
 """
@@ -139,10 +139,10 @@ function refine_blue!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P})
             if k>0
                 dots[j+3] = k
             else
-                points[i[]] = HPPoint(sum(points[edge])/2)
+                points[i[]] = SVector(sum(points[edge])/2)
                 dots[j+3]   = i[]
                 set!(seen,edge,i[])
-                m = marker(edgelist[edge])
+                m = tag(edgelist[edge])
                 set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[j],m,false))
                 set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[j],m,false))
                 i[] += 1
@@ -150,9 +150,9 @@ function refine_blue!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P})
         end
         set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
         set!(edgelist,Edge(dots[SVector(5,4)]),EdgeAttributes(degs[5],zero(P),false)) 
-        set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes(P,F))
-        set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes(P,F))
-        set!(trilist,Triangle(dots[SVector(4,5,3)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes{P,F}())
+        set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes{P,F}())
+        set!(trilist,Triangle(dots[SVector(4,5,3)]),TriangleAttributes{P,F}())
     elseif ismarked(edgelist[t_edges[3]])
         degs[5]    = max(maximum(abs,degs[SVector(1,3)]-degs[SVector(3,4)]),one(P))
         for j in 0:1
@@ -161,11 +161,11 @@ function refine_blue!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P})
             if k>0
                 dots[j+4] = k
             else
-                # points[i[]] = HPPoint(sum(points[edge])/2.)
-                points[i[]] = HPPoint(sum(points[edge])/2)
+                # points[i[]] = SVector(sum(points[edge])/2.)
+                points[i[]] = SVector(sum(points[edge])/2)
                 dots[j+4]   = i[]
                 set!(seen,edge,i[])
-                m = marker(edgelist[edge])
+                m = tag(edgelist[edge])
                 set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[1+2j],m,false))
                 set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[1+2j],m,false))
                 i[] += 1
@@ -173,9 +173,9 @@ function refine_blue!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P})
         end
         set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
         set!(edgelist,Edge(dots[SVector(4,5)]),EdgeAttributes(degs[5],zero(P),false))    
-        set!(trilist,Triangle(dots[SVector(1,4,5)]),TriangleAttributes(P,F))
-        set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes(P,F))
-        set!(trilist,Triangle(dots[SVector(4,3,5)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(1,4,5)]),TriangleAttributes{P,F}())
+        set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes{P,F}())
+        set!(trilist,Triangle(dots[SVector(4,3,5)]),TriangleAttributes{P,F}())
     end
     return  nothing
 end
@@ -197,18 +197,18 @@ function refine_green!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}
     if k>0
         dots[4] = k
     else
-        points[i[]] = HPPoint(sum(points[edge])/2)
+        points[i[]] = SVector(sum(points[edge])/2)
         dots[4]     = i[]
         set!(seen,edge,i[])
         oldedge = edgelist[edge] 
-        m = marker(oldedge)
+        m = tag(oldedge)
         set!(edgelist,Edge(dots[SVector(1,4)]),EdgeAttributes(degs[1],zero(P),false))
         set!(edgelist,Edge(dots[SVector(4,2)]),EdgeAttributes(degs[1],zero(P),false))
         i[] += 1
     end
     set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
-    set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes(P,F))
-    set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes{P,F}())
+    set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes{P,F}())
 end
 
 """
@@ -220,10 +220,7 @@ function refine!(mesh::HPMesh{F,I,P}) where {F<:AbstractFloat,I<:Integer,P<:Inte
     (;points,edgelist,trilist) = mesh
     i = I(length(points)+1)
     n_edgelist = count(ismarked,edgelist)
-    #n_tris  = 4count(isred,trilist)+3count(isblue,trilist)+2count(isgreen,trilist)
-    # sizehint!(trilist,length(trilist)+n_tris)
-    # sizehint!(edgelist,length(trilist)+n_edgelist)
-    append!(points,Vector{HPPoint{2,F}}(undef,n_edgelist))
+    append!(points,Vector{SVector{2,F}}(undef,n_edgelist))
     refaux  = RefineAux(i,mesh)
     for t in triangles(trilist)
         if isred(trilist[t])
@@ -341,6 +338,6 @@ end
 
 `estim` function for grading a mesh towards the origin. See the docs for `estim_point`.
 """
-estim_origin(vert;args...) = estim_point(vert;center=ORIGIN,args...)
+estim_origin(vert;args...) = estim_point(vert;center=SVector(0.,0.),args...)
 
 

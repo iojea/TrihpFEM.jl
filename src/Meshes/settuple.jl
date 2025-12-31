@@ -10,6 +10,11 @@ Concrete subtypes of `SetTuple` should implement the function `data` to retrieve
 
 abstract type SetTuple{L,I<:Integer} <: StaticArray{Tuple{L},I,1} end
 
+"""
+    data(s::SetTuple)
+
+This function should be implemented for each concrete subtype of `SetTuple`. It should return the set/tuple stored in `s`.  
+"""
 function data(::SetTuple) end
 
 #Indexing

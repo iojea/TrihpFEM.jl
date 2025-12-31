@@ -17,7 +17,12 @@ function Triangle{I}(x::AbstractArray) where I
     Triangle{I}(I.(x))
 end
 
+"""
+    data(t::Triangle)
+returns the tuple defining `t`.  
+"""
 data(t::Triangle) = t.data
+
 """
     _eval(t::Triangle,k)
 
@@ -60,7 +65,7 @@ function triangle(::Type{I},t,p::AbstractMatrix) where {I}
 end
 triangle(t,p) = triangle(eltype(t),t,p)
 
-# Properties
+# Attributes
 
 """
     TriangleAttributes{P,F}(refine,η,ηₚ) where {P<:Integer,F<:AbstractFloat}
@@ -93,11 +98,46 @@ function TriangleAttributes(r,η,ηₚ)
 end
 TriangleAttributes() = TriangleAttributes(zero(UInt8),0.0,0.0)
 
+"""
+    ismarked(t::TriangleAttributes)
+checks if `t` is marked for refinement.  
+"""
 @inline ismarked(t::TriangleAttributes)  = t.refine[] > 0
+
+"""
+    ismarked(t::TriangleAttributes)
+checks if `t` is marked for refinement as `:green`.  
+"""
 @inline isgreen(t::TriangleAttributes)   = t.refine[] == 1
+
+"""
+    ismarked(t::TriangleAttributes)
+checks if `t` is marked for refinement as `:blue`  
+"""
 @inline isblue(t::TriangleAttributes)    = t.refine[] ==2
+
+"""
+    ismarked(t::TriangleAttributes)
+checks if `t` is marked for refinement as `:ref`  
+"""
 @inline isred(t::TriangleAttributes)     = t.refine[] == 3
+
+"""
+    mark!(t::TriangleAttributes,k::Integer=3)
+marks `t` for refinemente according to `k`. `k=1` is `:green`, `k=2` is `:blue`, `k=3` is `:red`. 
+"""
 @inline mark!(t::TriangleAttributes,k::Integer=3)   = t.refine[] = k
+
+"""
+    setη!(t::TriangleAttributes,η)
+sets the local estimator of the error.  
+"""
 @inline setη!(t::TriangleAttributes,η)   = t.η[] = η
+
+
+"""
+    setη!(t::TriangleAttributes,η)
+sets the _previous_ local estimator of the error.  
+"""
 @inline setηₚ!(t::TriangleAttributes,ηₚ) = t.ηₚ[] = ηₚ
 
