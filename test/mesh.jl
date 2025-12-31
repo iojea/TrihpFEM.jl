@@ -90,10 +90,10 @@
     trilist = Dictionary([T₃,T₄],[Meshes.TriangleAttributes(),Meshes.TriangleAttributes()])
     edgelist = Dictionary{Edge{Int32},Meshes.EdgeAttributes{UInt8}}()
     for ed in edges(T₃)
-        setindex!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+        setindex!(edgelist,ed,Meshes.EdgeAttributes{UInt8}(1,1,false))
     end
     for ed in edges(T₄)
-        setindex!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+        setindex!(edgelist,ed,Meshes.EdgeAttributes{UInt8}(1,1,false))
     end
     mesh = HPMesh(pts₂,trilist,edgelist)
     @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)

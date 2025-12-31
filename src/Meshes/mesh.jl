@@ -16,7 +16,7 @@ abstract type HPTriangulation end
     DOF{I<:Integer}
 an `struct` for storing the degrees of freedom of a mesh. It can be initialized as an empty structure with
 ```jldoctest
-    julia> DOF(UInt8)
+    julia> DOF(UInt8);
 ```
 In practice, a `DOF` is created empty an then filled using `degrees_of_freedom!(mesh)`.
 """
@@ -90,48 +90,64 @@ A helper function for creating `hp`-meshes from boundary data.
 For a simple polygonal mesh, it is enough to provide a matrix of `2×N` with the vertices of the polygon and a mesh size `h`.
 
 ```jldoctest
-julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]'
+julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]';
 
 julia> m = hpmesh(vertices,0.1)
+HPMesh{Float64, Int32, UInt8}
+  + 500 nodes.
+  + 923 triangles.
+  + 1422 edges.
 ```
 
 For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
 
 ```jldoctest
-julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
+julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]';
 
-julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
+julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
 
-julia> tags = [1,1,2,2,2,1]
+julia> tags = [1,1,2,2,2,1];
 
-julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
+julia> m = hpmesh(vert,0.1;segments=segs,tag)
+HPMesh{Float64, Int32, UInt8}
+  + 180 nodes.
+  + 317 triangles.
+  + 496 edges.s=tags
 ```
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
 
 ```jldoctest
-julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
+julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]';
 
-julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
+julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
 
-julia> tags = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet]
+julia> tags = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet];
 
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
+HPMesh{Float64, Int32, UInt8}
+  + 180 nodes.
+  + 317 triangles.
+  + 496 edges.
 ```
 
 
 Furthermore, meshes with holes can also be constructed. In this case, the `segments` should include the segments corresponding to the interior boudaries (always in a positively oriented order), and a parameter `holes` should also be passed. `holes` is a matrix where each column contains a point included in one hole. Only one point per hole is necessary. 
 
 ```jldoctest
-julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]'
+julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]';
 
-julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]'
+julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]';
 
-julia> tags = [1,1,2,2,2,1,1,1,2,2]
+julia> tags = [1,1,2,2,2,1,1,1,2,2];
 
-julia> hole = [0.3 0.3]'
+julia> hole = [0.3 0.3]';
 
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
+HPMesh{Float64, Int32, UInt8}
+  + 171 nodes.
+  + 294 triangles.
+  + 465 edges.
 ```
 """
 function hpmesh(vertices,h;
@@ -162,7 +178,7 @@ function hpmesh(vertices,h;
     HPMesh{F,I,P}(tri)
 end
 
-"""jldoctest
+"""
     set_boundary!(s,condition,m::HPMesh)
 sets the boundary edges of mesh `m` which satisfy `condition` to kind `s`, where `s` can be `:dirichlet`, `:neumann` (or alternatively, `1` for Dirichlet or `2` for Neumann). Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
 
