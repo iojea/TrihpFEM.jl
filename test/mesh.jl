@@ -96,8 +96,15 @@
         set!(edgelist,ed,Meshes.EdgeAttributes{UInt8}(1,1,false))
     end
     mesh = HPMesh(pts₂,trilist,edgelist)
-    @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)i
-    show(mesh)
+    @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)
+
+    @test sprint(show, T₃) == "3-element Triangle{Int32} with indices SOneTo(3):
+ 2
+ 3
+ 1"
+ 
+ 
+    
 
     
     
