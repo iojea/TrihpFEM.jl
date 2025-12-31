@@ -4,12 +4,15 @@
     using StaticArrays
 
     #Edge creation and comparison.
-    e₁ = Edge(3,4)
+    e₁ = Edge(UInt8(3),4)
     e₂ = Edge((4,3))
+    e₃ = Edge(SVector(4,3))
+    e₄ = Edge{Int32}(3,4)
     @test repr(e₁) == "(3, 4)"
     @test repr(e₂) == "(4, 3)"
+    @test isequal(e₁,e₂) && isequal(e₁,e₃)
+    @test typeof(e₄) == Edge{Int32}
     
-    @test isequal(e₁,e₂)
     ea₁ = Meshes.EdgeAttributes{UInt8}(1,0,false)
     @test repr(ea₁) == "(0x01, :Ω°, :noref)"
     de = Dictionary([e₁],[ea₁])
@@ -27,9 +30,11 @@
     @test Meshes.data(e₁) == (3,4)
 
     #Triangle creation and comparison
-    t₁ = Triangle(1,2,3)
+    t₁ = Triangle(Int32(1),2,3)
     t₂ = Triangle((2,3,1))
-    @test isequal(e₁,e₂)
+    t₃ = Triangle(StaticVector{3,Int32}(3,1,2))
+    t₄ = Triangle{UInt32}(2,1,3)
+    @test isequal(e₁,e₂) && isequal(e₁,e₃) && isequal(t₁,t₄)
 
     t₃ = Triangle{UInt32}(1,3,2)
     @test isequal(t₁,t₃)
@@ -104,6 +109,8 @@
     @test repr(T₃) == "(2, 3, 1)"
     @test repr(Meshes.TriangleAttributes()) == ":noref"
     @test repr(mesh) == "HPMesh{Float64, Int32, UInt8}(SVector{2, Float64}[[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], {(2, 3, 1) = :noref, (2, 3, 4) = :noref}, {(2, 3) = (0x01, :∂𝔇, :noref), (3, 1) = (0x01, :∂𝔇, :noref), (1, 2) = (0x01, :∂𝔇, :noref), (3, 4) = (0x01, :∂𝔇, :noref), (4, 2) = (0x01, :∂𝔇, :noref)}, TrihpFEM.Meshes.DOF{Int32}(Base.RefValue{Int32}(4), {(2, 3) = Int32[2, 3], (3, 1) = Int32[3, 1], (1, 2) = Int32[1, 2], (3, 4) = Int32[3, 4], (4, 2) = Int32[4, 2]}, {(2, 3, 1) = Int32[2, 3, 1], (2, 3, 4) = Int32[2, 3, 4]}))"
+
+    
 
     
 

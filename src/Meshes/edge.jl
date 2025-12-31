@@ -6,7 +6,7 @@ struct Edge{I} <: SetTuple{2,I}
     data::NTuple{2,I}
 end
 Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
-Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
+# Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
 Edge{I}(x...) where I = Edge(I.(x))
 Edge(x,y) = Edge(promote(x,y))
 function Edge{I}(x::AbstractArray) where I
@@ -37,7 +37,7 @@ struct EdgeAttributes{P<:Integer}
     EdgeAttributes{P}(d,m,r) where P = new{P}(Ref(P(d)),Ref(P(m)),Ref(r))
 end
 EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes{P}(d,m,r)
-EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.tag,e.refine)
+# EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.tag,e.refine)
 
 
 """
