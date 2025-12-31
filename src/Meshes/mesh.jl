@@ -135,9 +135,9 @@ function hpmesh(vertices,h;
         segments = _boundary_segments(size(vertices,2))
     end
     if isnothing(tags)
-        markers = ones(P,size(vertices,2))
-    elseif eltype(markers)==Symbol
-        markers = [BOUNDARY_DICT[m] for m in tags]
+        tags = ones(P,size(vertices,2))
+    elseif eltype(tags)==Symbol
+        tags = [BOUNDARY_DICT[m] for m in tags]
     end
     tri.segmentlist = segments
     tri.segmentmarkerlist = tags

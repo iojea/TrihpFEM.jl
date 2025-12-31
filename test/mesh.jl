@@ -18,7 +18,7 @@
     Meshes.mark!(de[e₁])
     @test Meshes.ismarked(de[e₂])
     Meshes.setdegree!(de[e₁],3)
-    @test typeof(tag(de[e₁])) == UInt8
+    @test typeof(Meshes.tag(de[e₁])) == UInt8
     @test degree(de[e₁]) == 3
     @test Meshes.isinterior(de[e₂])
     @test Meshes.data(e₁) == (3,4)

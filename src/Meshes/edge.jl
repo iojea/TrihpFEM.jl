@@ -32,7 +32,7 @@ struct EdgeAttributes{P<:Integer}
     #adjacent::SVector{2,I}
     EdgeAttributes{P}(d,m,r) where P = new{P}(Ref(P(d)),Ref(P(m)),Ref(r))
 end
-EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes(Ref(d),Ref(m),Ref(r))
+EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes{P}(d,m,r)
 EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.tag,e.refine)
 
 
