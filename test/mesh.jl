@@ -36,14 +36,14 @@
 
     dt = Dictionary([t₁],[ta₁])
     @test t₂ in keys(dt)
-    @test Meshes.!ismarked(dt[e₂])
-    Meshes.mark!(dt[e₁],1)
-    @test Meshes.ismarked(dt[e₂])
-    @test Meshes.isgreen(dt[e₂])
-    Meshes.mark!(dt[e₂],2)
-    @test Meshes.isblue(dt[e₂])
-    Meshes.mark!(dt[e₂],3)
-    @test Meshes.isred(dt[e₂])
+    @test !Meshes.ismarked(dt[t₂])
+    Meshes.mark!(dt[t₁],1)
+    @test Meshes.ismarked(dt[t₂])
+    @test Meshes.isgreen(dt[t₂])
+    Meshes.mark!(dt[t₂],2)
+    @test Meshes.isblue(dt[t₂])
+    Meshes.mark!(dt[t₂],3)
+    @test Meshes.isred(dt[t₂])
 
     # Mesh creation and basic properties. 
     vert = [0. 0.;1. 0.;1. 1.;0. 1.]'
