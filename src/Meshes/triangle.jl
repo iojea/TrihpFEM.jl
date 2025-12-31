@@ -51,7 +51,7 @@ constructs an `Triangle` from a list of indices `t` and a list of points `p`. `p
 This is the preferred constructor for a `Triangle`.
 """
 function triangle(::Type{I},t,p::Vector) where {I}
-    maxi = argmax(sum(abs2,p[t[SVector(1,2,3)]] - p[t[SVector(2,3,1)]],dims=1))[2]
+    maxi = argmax(norm.(p[t[SVector(1,2,3)]].- p[t[SVector(2,3,1)]]))
     Triangle(t[one(I)*mod1.(maxi:maxi+2,3)])
 end
 function triangle(::Type{I},t,p::AbstractMatrix) where {I}

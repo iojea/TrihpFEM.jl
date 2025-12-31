@@ -81,7 +81,28 @@
     @test isequal(eds₂[1],Edge{Int32}(2,4))
     @test isequal(eds₂[2],Edge{Int32}(2,3))
     @test isequal(eds₂[3],Edge{Int32}(3,4))
-        
+
+    pts₂ = SVector{2,Float64}.([(0,0),(1,0),(0,1),(1,1)])
+    T₃ = Meshes.triangle(Int32[1,2,3],pts₂)
+    T₄ = Meshes.triangle(Int32[2,3,4],pts₂)
+    @test isequal(T₁,T₃)
+    @test isequal(T₂,T₄)
+    trilist = Dictionary([T₃,T₄],[Meshes.TriangleAttributes(),Meshes.TriangleAttributes()])
+    edgelist = Dictionary{Edge{Int32},Meshes.EdgeAttributes{UInt8}}()
+    for ed in edges(T₃)
+        setindex!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+    end
+    for ed in edges(T₄)
+        setindex!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+    end
+    mesh = HPMesh(pts₂,trilist,edgelist)
+    @test Meshes.degrees_of_freedom!(mesh)==length(pts₂)
+    
+    
+    
+    
+    
+            
 
     
     

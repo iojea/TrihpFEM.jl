@@ -12,7 +12,7 @@ using DocStringExtensions
 
 
 export Edge,Triangle,HPMesh
-export hpmesh
+export triangle,hpmesh
 export inttype,floattype,degtype
 export degree,degrees,psortperm,edges,triangles,psortednodes,psortededges
 export tridof,edgedof

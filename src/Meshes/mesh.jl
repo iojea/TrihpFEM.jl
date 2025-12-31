@@ -327,7 +327,7 @@ Given a triangle `t` belonging to a `mesh`, it returns the degrees `p₁<=p₂<=
 function psortednodes(t::Triangle{I},mesh::HPMesh{F,I,P}) where {F,I,P}
     (;edgelist) = mesh
     eds = edges(t)
-    p   = tuple(degree.(getindices(edgelist,eds)))
+    p   = degree.(getindices(edgelist,eds))
     pind = psortperm(p)
     p[pind],first.(eds[pind])
 end
