@@ -9,24 +9,31 @@ creates a lazy container for accessing the part of the boundary of a domain `mes
 
 ```jldoctest
 julia> Ω = circmesh(0.1);
-julia> ∂Ω = BoundaryHPMesh(mesh,:dirichlet)
+
+julia> ∂Ω = BoundaryHPMesh(Ω,:dirichlet)
 ```
 
 Returns the Dirichlet boundary of `Ω`. This is equivalent to:
 
 ```jldoctest
 julia> Ω = circmesh(0.1);
-julia> ∂Ω = BoundaryHPMesh(mesh,1)
+
+julia> ∂Ω = BoundaryHPMesh(Ω,1)
 ```
 
 A more complex situation is:
 
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 1.;0. 1.]'
+
 julia> segs = [1 2;2 3;3 4;4 1]'
+
 julia> tags = [1,2,1,2]
+
 julia> Ω = hpmesh(vert,0.1;segments=segs,tags=tags)
+
 julia> ΓD = BoundaryHPMesh(Ω,:dirichlet)
+
 julia> ΓN = BoundaryHPMesh(Ω,:neumann)
 ```
 Alternatively, `1` can be used for `:dirichlet` and `2` for `:neumann`.

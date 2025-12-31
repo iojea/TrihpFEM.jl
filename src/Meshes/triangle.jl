@@ -43,10 +43,17 @@ Returns an `Edge` with the longest edge of `t`.
 
 
 """
-  triangle(t::T,p::AbstractMatrix)
 
-constructs an `Triangle` where the vertices are given by the columns of `p[:,t]`. Hence, the triangle is defined by the indices stored in `t`, but sorted in such a way that the first edge is the longest. 
+  triangle(t,p::Vector)
+  triangle(t,p::AbstractMatrix)
+
+constructs an `Triangle` from a list of indices `t` and a list of points `p`. `p` can be a vector of vectors or a matrix with point coordinates on each column. The output has the verices sorted so that the first edge is the longest.
+This is the preferred constructor for a `Triangle`.
 """
+function triangle(::Type{I},t,p::Vector) where {I}
+    maxi = argmax(sum(abs2,p[t[SVector(1,2,3)]] - p[t[SVector(2,3,1)]],dims=1))[2]
+    Triangle(t[one(I)*mod1.(maxi:maxi+2,3)])
+end
 function triangle(::Type{I},t,p::AbstractMatrix) where {I}
     maxi = argmax(sum(abs2,p[:,t[SVector(1,2,3)]] - p[:,t[SVector(2,3,1)]],dims=1))[2]
     Triangle(t[one(I)*mod1.(maxi:maxi+2,3)])

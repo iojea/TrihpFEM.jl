@@ -91,6 +91,7 @@ For a simple polygonal mesh, it is enough to provide a matrix of `2×N` with the
 
 ```jldoctest
 julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]'
+
 julia> m = hpmesh(vertices,0.1)
 ```
 
@@ -98,8 +99,11 @@ For more complex meshes, a matrix of `segments` and a vector of `tags` can be pa
 
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
+
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
+
 julia> tags = [1,1,2,2,2,1]
+
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
 ```
 
@@ -107,8 +111,11 @@ For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neu
 
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]'
+
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]'
+
 julia> tags = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet]
+
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
 ```
 
@@ -117,9 +124,13 @@ Furthermore, meshes with holes can also be constructed. In this case, the `segme
 
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]'
+
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]'
+
 julia> tags = [1,1,2,2,2,1,1,1,2,2]
+
 julia> hole = [0.3 0.3]'
+
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
 ```
 """
