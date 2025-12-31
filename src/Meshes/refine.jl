@@ -241,7 +241,7 @@ end
 
 checks if the values in `pt` satisfy the p_conformity condition: `p₁+p₂>=p₃`.
 """
-function check_p_conformity(pt::Vector{T}) where T<:Integer
+function check_p_conformity(pt) 
     sum(pt)  ≥ 2maximum(pt) 
 end
 
@@ -267,7 +267,7 @@ function p_conformity!(mesh::HPMesh{F,I,P}) where {F,I,P}
 end
 function p_conformity!(mesh::HPMesh{F,I,P},t::Triangle{I},d) where {F,I,P}
     (;edgelist) = mesh
-    p,eds = psortededges(t)
+    p,eds = psortededges(t,mesh)
     out = false
     if check_p_conformity(p)
         out = true
