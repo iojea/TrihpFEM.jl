@@ -245,6 +245,15 @@ function check_p_conformity(pt::Vector{T}) where T<:Integer
     sum(pt)  ≥ 2maximum(pt) 
 end
 
+function check_p_conformity(m::HPMesh)
+    for t in triangles(m)
+        degs = degrees(t,m)
+        if !check_p_conformity(degs)
+            return false
+        end
+    end
+    return true
+    end
 """
     $(SIGNATURES)
 

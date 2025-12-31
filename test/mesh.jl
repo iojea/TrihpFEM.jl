@@ -114,18 +114,10 @@
 
     edsmesh = mesh.edgelist
     Meshes.setdegree!(edsmesh[longestedge(T₃)],4)
+    @test !Meshes.check_p_conformity(mesh)
     Meshes.p_conformity!(mesh)
-    @test begin
-        out = true
-        for t in triangles(mesh)
-            degs = degrees(t,mesh)
-            if !check_p_conformity(degs)
-                out = false
-            end
-        end
-        out
-        end
-    
+    @test Meshes.check_p_conformity(mesh)
+        
     @test repr(T₃) == "(2, 3, 1)"
     @test repr(Meshes.TriangleAttributes()) == ":noref"
     @test repr(mesh) == "HPMesh{Float64, Int32, UInt8}(SVector{2, Float64}[[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], {(2, 3, 1) = :noref, (2, 3, 4) = :noref}, {(2, 3) = (0x01, :∂𝔇, :noref), (3, 1) = (0x01, :∂𝔇, :noref), (1, 2) = (0x01, :∂𝔇, :noref), (3, 4) = (0x01, :∂𝔇, :noref), (4, 2) = (0x01, :∂𝔇, :noref)}, TrihpFEM.Meshes.DOF{Int32}(Base.RefValue{Int32}(4), {(2, 3) = Int32[2, 3], (3, 1) = Int32[3, 1], (1, 2) = Int32[1, 2], (3, 4) = Int32[3, 4], (4, 2) = Int32[4, 2]}, {(2, 3, 1) = Int32[2, 3, 1], (2, 3, 4) = Int32[2, 3, 4]}))"
