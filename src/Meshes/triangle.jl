@@ -31,7 +31,7 @@ Returns the index stored in the triangle at index `k` mod 3.
 
 Return a tuple of edges with type `Edge`, containing the edges of `t`.
 """
-@inline edges(t::Triangle)   = tuple(Edge(_eval(t,i),_eval(t,i+1)) for i in 1:3)
+@inline edges(t::Triangle)   = Tuple(Edge(_eval(t,i),_eval(t,i+1)) for i in 1:3)
 
 
 """ 
@@ -51,8 +51,7 @@ function triangle(::Type{I},t,p::AbstractMatrix) where {I}
     maxi = argmax(sum(abs2,p[:,t[SVector(1,2,3)]] - p[:,t[SVector(2,3,1)]],dims=1))[2]
     Triangle(t[one(I)*mod1.(maxi:maxi+2,3)])
 end
-
-
+triangle(t,p) = triangle(eltype(t),t,p)
 
 # Properties
 

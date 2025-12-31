@@ -1,6 +1,7 @@
     using ..TrihpFEM.Meshes
     using Test
     using Dictionaries
+    using StaticArrays
 
     #Edge creation and comparison.
     e₁ = Edge(3,4)
@@ -54,17 +55,33 @@
     @test Meshes.floattype(m0) == Float64
     @test Meshes.inttype(m0) == Int32
     @test Meshes.degtype(m0) == UInt8
-    ∂m0 = BoundaryHPEdge(m0,1)
-    @test ∂m0 == BoundaryHPEdge(m0,:dirichlet)
+    ∂m0 = BoundaryHPMesh(m0,1)
+    @test ∂m0 == BoundaryHPMesh(m0,:dirichlet)
     @test length(edges(∂m0)) == 4
     vert1 = Float32.(vert)
-    m1 = hpmesh(vert,sqrt(2)/2)
+    m1 = hpmesh(vert1,sqrt(2)/2)
     @test length(m1.points) == 5
     @test length(m1.edgelist) == 8
     @test length(m1.trilist) == 4
     @test Meshes.floattype(m1) == Float32
     @test Meshes.inttype(m1) == Int32
     @test Meshes.degtype(m1) == UInt8
+    Meshes.set_neumann!(x->x[2]==1,m1)
+    ∂Dm1 = dirichletboundary(m1)
+    ∂Nm1 = neumannboundary(m1)
+    @test length(edges(∂Dm1)) == 3
+    @test length(edges(∂Nm1)) == 1
+
+    # Building mesh from points
+    pts = [0. 0.;1. 0.;1. 1.;0. 1.]'
+    T₁ = triangle(Int32[1,2,3],pts)
+    T₂ = triangle(Int32[2,3,4],pts)
+    @test isequal(Meshes.longestedge(T₁), Edge{Int32}(1,3))
+    eds₂ = tuple(edges(T₂)...)
+    @test isequal(eds₂[1],Edge{Int32}(2,4))
+    @test isequal(eds₂[2],Edge{Int32}(2,3))
+    @test isequal(eds₂[3],Edge{Int32}(3,4))
+        
 
     
     
