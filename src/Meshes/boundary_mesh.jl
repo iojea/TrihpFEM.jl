@@ -62,7 +62,7 @@ neumannboundary(m::HPMesh) = BoundaryHPMesh(m,2)
     edges(bm::BoundaryMesh)
 returns the edges of `bm` as an `EdgeList` (a `Dictionary{Edge,EdgeAttributes}`). 
 """
-edges(bm::BoundaryHPMesh) = filter(ismarked(bm.kind),bm.mesh.edgelist)
+edges(bm::BoundaryHPMesh) = filter(istagged(bm.kind),bm.mesh.edgelist)
 
 
 """

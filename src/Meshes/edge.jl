@@ -53,7 +53,7 @@ returs the tag of `e`. The tag indicates if `e` is a boundary edge with Dirichle
 @inline tag(e::EdgeAttributes) = e.tag[]
 @inline istagged(e::EdgeAttributes,i::Integer) = tag(e)==i
 @inline istagged(i::Integer) = Base.Fix{2}(istagged,i)
-@inline settag!(e::EdgeAttributes{P},i::Integer)where P = e.tag[] = P.(i)
+@inline settag!(e::EdgeAttributes{P},i::Integer) where P = e.tag[] = P.(i)
 """
     mark!(e::EdgeAttributes)
 marks `e` for refinement.  

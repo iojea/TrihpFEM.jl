@@ -74,8 +74,8 @@
 
     # Building mesh from points
     pts = [0. 0.;1. 0.;1. 1.;0. 1.]'
-    T₁ = triangle(Int32[1,2,3],pts)
-    T₂ = triangle(Int32[2,3,4],pts)
+    T₁ = Meshes.triangle(Int32[1,2,3],pts)
+    T₂ = Meshes.triangle(Int32[2,3,4],pts)
     @test isequal(Meshes.longestedge(T₁), Edge{Int32}(1,3))
     eds₂ = tuple(edges(T₂)...)
     @test isequal(eds₂[1],Edge{Int32}(2,4))
