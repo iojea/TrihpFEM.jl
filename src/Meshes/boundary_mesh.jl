@@ -24,8 +24,8 @@ A more complex situation is:
 ```jldoctest
 julia> vert = [0. 0.;1. 0.;1. 1.;0. 1.]'
 julia> segs = [1 2;2 3;3 4;4 1]'
-julia> mark = [1,2,1,2]
-julia> Ω = hpmesh(vert,0.1;segments=segs,markers=mark)
+julia> tags = [1,2,1,2]
+julia> Ω = hpmesh(vert,0.1;segments=segs,tags=tags)
 julia> ΓD = BoundaryHPMesh(Ω,:dirichlet)
 julia> ΓN = BoundaryHPMesh(Ω,:neumann)
 ```
