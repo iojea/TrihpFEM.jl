@@ -16,3 +16,6 @@ makedocs(;
     ],
     warnonly = [:cross_references, :missing_docs],
 )
+deploydocs(
+    repo = "github.com/iojea/TrihpFEM.jl.git",
+)
