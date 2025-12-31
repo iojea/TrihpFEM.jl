@@ -108,7 +108,7 @@ julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
 
 julia> tags = [1,1,2,2,2,1];
 
-julia> m = hpmesh(vert,0.1;segments=segs,tag)
+julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
 HPMesh{Float64, Int32, UInt8}
   + 180 nodes.
   + 317 triangles.
