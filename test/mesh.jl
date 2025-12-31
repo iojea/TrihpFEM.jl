@@ -109,6 +109,22 @@
     @test !Meshes.isempty(mesh.dof)
     Meshes.empty!(mesh.dof)
     @test Meshes.isempty(mesh.dof)
+
+    @test edges(mesh) === keys(mesh.edgelist)
+
+    edsmesh = mesh.edgelist
+    Meshes.setdegree!(edsmesh[longestedge(T₃)],4)
+    Meshes.p_conformity!(mesh)
+    @test begin
+        out = true
+        for t in triangles(mesh)
+            degs = degrees(t,mesh)
+            if !check_p_conformity(degs)
+                out = false
+            end
+        end
+        out
+        end
     
     @test repr(T₃) == "(2, 3, 1)"
     @test repr(Meshes.TriangleAttributes()) == ":noref"
