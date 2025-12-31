@@ -11,18 +11,18 @@ using StaticArrays
 using DocStringExtensions
 
 
-export Edge,Triangle,HPMesh
+export Edge,EdgeAttributes,Triangle,TriangleAttributes,HPMesh,DOF
 export triangle,hpmesh
+export tag,degree,dof,longestedge,tagged_dof
+export ismarked,isgreen,isblue,isred,istagged,isinterior,isboundary
 export inttype,floattype,degtype
-export degree,degrees,psortperm,edges,triangles,psortednodes,psortededges
-export dof
-export circmesh,circmesh_graded_center,rectmesh,l_mesh,l_graded
+export isempty,empty!
+export settag!,setdegree!,setboundary!,setdirichlet!,setneumann!
+export degrees,psortperm,edges,triangles,psortednodes,psortededges
 export plothpmesh
 export BoundaryHPMesh,dirichletboundary,neumannboundary
-export set_dirichlet!, set_neumann!
-export refine!
-export mark!
-
+export mark!,refine!,p_conformity!,check_p_conformity
+export circmesh,circmesh_graded_center,rectmesh,l_mesh,l_graded
 
 
 BOUNDARY_DICT = Dict(:dirichlet=>1,:neumann=>2)

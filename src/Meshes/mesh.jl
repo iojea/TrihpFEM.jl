@@ -184,12 +184,12 @@ function hpmesh(vertices,h;
 end
 
 """
-    set_boundary!(s,condition,m::HPMesh)
+    setboundary!(s,condition,m::HPMesh)
 sets the boundary edges of mesh `m` which satisfy `condition` to kind `s`, where `s` can be `:dirichlet`, `:neumann` (or alternatively, `1` for Dirichlet or `2` for Neumann). Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
 
-See also [`set_dirichlet!`](@ref) and [`set_neumann!`](@ref).
+See also [`setdirichlet!`](@ref) and [`setneumann!`](@ref).
 """
-function set_boundary!(i::Integer,
+function setboundary!(i::Integer,
                        condition::Function,
                        m::HPMesh{F,I,P}) where {F,I,P}
     (;points,edgelist) = m
@@ -200,24 +200,24 @@ function set_boundary!(i::Integer,
         end
     end
 end
-function set_boundary!(s::Symbol,
+function setboundary!(s::Symbol,
                        condition::Function,
                        m::HPTriangulation)
     i = BOUNDARY_DICT[s]
-    set_boundary!(i,condition,m)    
+    setboundary!(i,condition,m)    
 end
 """
-    set_dirichlet!(condition,m::HPMesh)
+    setdirichlet!(condition,m::HPMesh)
 Marks as `:dirichlet` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
-See also [`set_neumann!`](@ref).
+See also [`setneumann!`](@ref).
 """
-set_dirichlet!(condition::Function,m::HPMesh) = set_boundary!(1,condition,m)
+setdirichlet!(condition::Function,m::HPMesh) = setboundary!(1,condition,m)
 """
-    set_neumann!(condition,m::HPMesh)
+    setneumann!(condition,m::HPMesh)
 Marks as `:neumann` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is marked when both vertices satisfy `condition`.
-See also [`set_dirichlet!`](@ref).
+See also [`setdirichlet!`](@ref).
 """
-set_neumann!(condition::Function,m::HPMesh) = set_boundary!(2,condition,m)
+setneumann!(condition::Function,m::HPMesh) = setboundary!(2,condition,m)
 
 
 ############################################
