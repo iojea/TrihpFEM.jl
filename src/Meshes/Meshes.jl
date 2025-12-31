@@ -20,7 +20,8 @@ export circmesh,circmesh_graded_center,rectmesh,l_mesh,l_graded
 export plothpmesh
 export BoundaryHPMesh,dirichletboundary,neumannboundary
 export set_dirichlet!, set_neumann!
-# export domainmesh
+export refine!
+export mark!
 
 BOUNDARY_DICT = Dict(:dirichlet=>1,:neumann=>2)
 
@@ -29,7 +30,7 @@ include("edge.jl")
 include("triangle.jl")
 include("mesh.jl")
 include("boundary_mesh.jl")
-# include("refine.jl")
+include("refine.jl")
 include("show.jl")
 include("plots.jl")
 include("some_meshes.jl")

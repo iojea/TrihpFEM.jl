@@ -7,11 +7,11 @@ struct RefineAux{I<:Integer,P<:Integer}
     i::Base.RefValue{I}
     degs::MVector{6,P}
     dots::MVector{6,I}
-    seen::Dictionary{HPEdge{I},I}
+    seen::Dictionary{Edge{I},I}
 end
 
 function RefineAux{I,P}() where {I<:Integer,P<:Integer}
-    RefineAux(MVector{6,P}(zeros(6)),MVector{6,I}(zeros(6)),Dictionary{HPEdge{I},I}())
+    RefineAux(MVector{6,P}(zeros(6)),MVector{6,I}(zeros(6)),Dictionary{Edge{I},I}())
 end
 
 function RefineAux(i,mesh::HPMesh{F,I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
@@ -88,7 +88,7 @@ end
 
 performs the refinement of Red marked triangles.   
 """
-function refine_red!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
+function refine_red!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
     (;points,edgelist,trilist) = mesh
     (;i,degs,dots,seen) = refaux
     dots[1:3] .= t
@@ -105,18 +105,18 @@ function refine_red!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}
             dots[j+3]   = i[]
             set!(seen,edge,i[])
             m = marker(edgelist[edge])
-            set!(edgelist,HPEdge(edge[1],i[]),EdgeProperties(degs[j],m,false))
-            set!(edgelist,HPEdge(i[],edge[2]),EdgeProperties(degs[j],m,false))
+            set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[j],m,false))
+            set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[j],m,false))
             i[] += 1
         end
     end 
-    set!(edgelist,HPEdge(dots[SVector(6,4)]),EdgeProperties(degs[4],zero(P),false))
-    set!(edgelist,HPEdge(dots[SVector(4,5)]),EdgeProperties(degs[5],zero(P),false))    
-    set!(edgelist,HPEdge(dots[SVector(5,6)]),EdgeProperties(degs[6],zero(P),false))
-    set!(trilist,HPTriangle(dots[SVector(1,4,6)]),TriangleProperties(P,F))
-    set!(trilist,HPTriangle(dots[SVector(4,2,5)]),TriangleProperties(P,F))
-    set!(trilist,HPTriangle(dots[SVector(6,5,3)]),TriangleProperties(P,F))
-    set!(trilist,HPTriangle(dots[SVector(5,6,4)]),TriangleProperties(P,F))
+    set!(edgelist,Edge(dots[SVector(6,4)]),EdgeAttributes(degs[4],zero(P),false))
+    set!(edgelist,Edge(dots[SVector(4,5)]),EdgeAttributes(degs[5],zero(P),false))    
+    set!(edgelist,Edge(dots[SVector(5,6)]),EdgeAttributes(degs[6],zero(P),false))
+    set!(trilist,Triangle(dots[SVector(1,4,6)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(6,5,3)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(5,6,4)]),TriangleAttributes(P,F))
 end
 
 """
@@ -124,7 +124,7 @@ end
 
 performs the refinement of Blue marked triangles.   
 """
-function refine_blue!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
+function refine_blue!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
     (;points,edgelist,trilist) = mesh
     (;i,degs,dots,seen) = refaux
     dots[1:3] .= t
@@ -143,16 +143,16 @@ function refine_blue!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P
                 dots[j+3]   = i[]
                 set!(seen,edge,i[])
                 m = marker(edgelist[edge])
-                set!(edgelist,HPEdge(edge[1],i[]),EdgeProperties(degs[j],m,false))
-                set!(edgelist,HPEdge(i[],edge[2]),EdgeProperties(degs[j],m,false))
+                set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[j],m,false))
+                set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[j],m,false))
                 i[] += 1
             end
         end
-        set!(edgelist,HPEdge(dots[SVector(3,4)]),EdgeProperties(degs[4],zero(P),false))
-        set!(edgelist,HPEdge(dots[SVector(5,4)]),EdgeProperties(degs[5],zero(P),false)) 
-        set!(trilist,HPTriangle(dots[SVector(1,4,3)]),TriangleProperties(P,F))
-        set!(trilist,HPTriangle(dots[SVector(4,2,5)]),TriangleProperties(P,F))
-        set!(trilist,HPTriangle(dots[SVector(4,5,3)]),TriangleProperties(P,F))
+        set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
+        set!(edgelist,Edge(dots[SVector(5,4)]),EdgeAttributes(degs[5],zero(P),false)) 
+        set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(4,2,5)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(4,5,3)]),TriangleAttributes(P,F))
     elseif ismarked(edgelist[t_edges[3]])
         degs[5]    = max(maximum(abs,degs[SVector(1,3)]-degs[SVector(3,4)]),one(P))
         for j in 0:1
@@ -166,16 +166,16 @@ function refine_blue!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P
                 dots[j+4]   = i[]
                 set!(seen,edge,i[])
                 m = marker(edgelist[edge])
-                set!(edgelist,HPEdge(edge[1],i[]),EdgeProperties(degs[1+2j],m,false))
-                set!(edgelist,HPEdge(i[],edge[2]),EdgeProperties(degs[1+2j],m,false))
+                set!(edgelist,Edge(edge[1],i[]),EdgeAttributes(degs[1+2j],m,false))
+                set!(edgelist,Edge(i[],edge[2]),EdgeAttributes(degs[1+2j],m,false))
                 i[] += 1
             end
         end
-        set!(edgelist,HPEdge(dots[SVector(3,4)]),EdgeProperties(degs[4],zero(P),false))
-        set!(edgelist,HPEdge(dots[SVector(4,5)]),EdgeProperties(degs[5],zero(P),false))    
-        set!(trilist,HPTriangle(dots[SVector(1,4,5)]),TriangleProperties(P,F))
-        set!(trilist,HPTriangle(dots[SVector(4,2,3)]),TriangleProperties(P,F))
-        set!(trilist,HPTriangle(dots[SVector(4,3,5)]),TriangleProperties(P,F))
+        set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
+        set!(edgelist,Edge(dots[SVector(4,5)]),EdgeAttributes(degs[5],zero(P),false))    
+        set!(trilist,Triangle(dots[SVector(1,4,5)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes(P,F))
+        set!(trilist,Triangle(dots[SVector(4,3,5)]),TriangleAttributes(P,F))
     end
     return  nothing
 end
@@ -186,7 +186,7 @@ end
 
 performs the refinement of Green marked triangles.   
 """
-function refine_green!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
+function refine_green!(t::Triangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
     (;points,edgelist,trilist) = mesh
     (;i,degs,dots,seen) = refaux
     dots[1:3] .= t
@@ -202,13 +202,13 @@ function refine_green!(t::HPTriangle{I},mesh::HPMesh{F,I,P},refaux::RefineAux{I,
         set!(seen,edge,i[])
         oldedge = edgelist[edge] 
         m = marker(oldedge)
-        set!(edgelist,HPEdge(dots[SVector(1,4)]),EdgeProperties(degs[1],zero(P),false))
-        set!(edgelist,HPEdge(dots[SVector(4,2)]),EdgeProperties(degs[1],zero(P),false))
+        set!(edgelist,Edge(dots[SVector(1,4)]),EdgeAttributes(degs[1],zero(P),false))
+        set!(edgelist,Edge(dots[SVector(4,2)]),EdgeAttributes(degs[1],zero(P),false))
         i[] += 1
     end
-    set!(edgelist,HPEdge(dots[SVector(3,4)]),EdgeProperties(degs[4],zero(P),false))
-    set!(trilist,HPTriangle(dots[SVector(1,4,3)]),TriangleProperties(P,F))
-    set!(trilist,HPTriangle(dots[SVector(4,2,3)]),TriangleProperties(P,F))
+    set!(edgelist,Edge(dots[SVector(3,4)]),EdgeAttributes(degs[4],zero(P),false))
+    set!(trilist,Triangle(dots[SVector(1,4,3)]),TriangleAttributes(P,F))
+    set!(trilist,Triangle(dots[SVector(4,2,3)]),TriangleAttributes(P,F))
 end
 
 """
@@ -259,7 +259,7 @@ function p_conformity!(mesh::HPMesh{F,I,P}) where {F,I,P}
         p_conformity!(mesh,t,10)
     end
 end
-function p_conformity!(mesh::HPMesh{F,I,P},t::HPTriangle{I},d) where {F,I,P}
+function p_conformity!(mesh::HPMesh{F,I,P},t::Triangle{I},d) where {F,I,P}
     (;edgelist) = mesh
     p,eds = pedges(t)
     out = false
@@ -292,7 +292,7 @@ end
 If it exists, returns the neighbor of triangle `t` along the edge `e`. If `e` is a boundary edge, it returns `nothing`:w
 .
 """
-function neighbor(mesh::HPMesh{F,I,P},t::HPTriangle{I},e::HPEdge{I}) where {F,I,P}
+function neighbor(mesh::HPMesh{F,I,P},t::Triangle{I},e::Edge{I}) where {F,I,P}
     for tb in triangles(mesh)
         if  (e in edges(tb)) && t!=tb
             return tb

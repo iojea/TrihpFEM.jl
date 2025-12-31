@@ -497,28 +497,6 @@ function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
 end
 
 
-
-
-"""
-    $(SIGNATURES)
-
-builds a `HPMesh` with elements of size `h` of the rectangle `[a,b]⨱[c,d]`. If `b` and `c` are ommitted, they are assumed to be zero. 
-"""
-function rectmesh(a,b,c,d,h)
-    vertices = Matrix{Float64}([a c;b c;b d;a d]')
-    hpmesh(vertices,h)
-end
-rectmesh(a,c,h) = rectmesh(0.,a,0.,c,h)
-
-"""
-    $(SIGNATURES)
-
-builds a `HPMesh` with elements of size `h` of the square `[0,a]⨱[0,a]`."""
-squaremesh(a,h) = rectmesh(0.,a,0.,a,h)
-
-
-
-
 ########
 function Base.sizehint!(d::Dictionary,n::Int)
     sizehint!(d.indices.slots,(1+n÷8)*8)
