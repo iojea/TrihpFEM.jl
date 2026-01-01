@@ -42,7 +42,7 @@
     t₁ = Triangle{Int32}(Int8(1),2,3)
     t₂ = Triangle{Int32}((2,3,1))
     t₃ = Triangle{Int32}(SVector(3,1,2))
-    t₄ = Triangle{Int32}{UInt32}(2,1,3)
+    t₄ = Triangle{Int32}(2,1,3)
     t₅ = Triangle{Int32}(t for t in t₄)
     t₆ = Triangle{Int32}([1,2,3])
     @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄)
