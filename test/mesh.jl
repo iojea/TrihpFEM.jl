@@ -48,7 +48,7 @@
     @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄)
     @test isequal(t₄,t₅) && isequal(t₄,t₆)
     @test eltype(data(t₄)) == UInt32
-    @test isequal(t₁,Triangle(Int8(1),2,3))
+    @test isequal(t₁,Triangle(1,2,3))
     @test isequal(t₂,Triangle((2,3,1)))
     @test isequal(t₃,Triangle(SVector(3,1,2)))
     @test isequal(t₄,Triangle(2,1,3))
