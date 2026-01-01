@@ -139,7 +139,6 @@
 
     # REFINE h
     # This test should be replaced by something else that tests h-refinement. For the moment, it is a quick way to test a large number of functions. 
-    gmesh = circmesh_graded_center(0.1,0.45)
-    @test typeof(gmesh) == HPMesh{Float64,Int32,UInt8}
-    rmesh = squaremesh(1,0.1)
-    @test @typeof(rmesh) == HPMesh{Float64,Int32,UInt8}
+    @test typeof(circmesh_graded_center(0.1,0.45)) == HPMesh{Float64,Int32,UInt8}
+    @test @typeof(squaremesh(1,0.1)) == HPMesh{Float64,Int32,UInt8}
+    @test @typeof(circhmesh(1,0.1)) == HPMesh{Float64,Int32,UInt8}
