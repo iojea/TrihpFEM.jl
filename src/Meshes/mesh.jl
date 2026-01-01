@@ -248,9 +248,9 @@ returns `F`
 floattype(::HPMesh{F,I,P}) where {F,I,P} = F
 
 
-# function Base.copy(mesh::HPMesh)
-#     HPMesh(deepcopy(mesh.points),deepcopy(mesh.trilist),deepcopy(mesh.edgelist))
-# end
+function Base.copy(mesh::HPMesh)
+    HPMesh(deepcopy(mesh.points),deepcopy(mesh.trilist),deepcopy(mesh.edgelist))
+end
 
 """
   edges(m)

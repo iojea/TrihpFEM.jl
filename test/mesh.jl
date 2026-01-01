@@ -120,4 +120,9 @@
         
     @test repr(T₃) == "(2, 3, 1)"
     @test repr(TriangleAttributes()) == ":noref"
+
+    @test repr(circmesh_graded_center(0.1,0.45)) == "HPMesh{Float64, Int32, UInt8}
+  + 692 nodes.
+  + 1320 triangles.
+  + 2011 edges."
    
