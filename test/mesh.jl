@@ -9,9 +9,11 @@
     e₃ = Edge(SVector(4,3))
     e₄ = Edge{Int32}(3,4)
     e₅ = Edge(e for e in e₄)
+    e₆ = Edge([4,3])
     @test repr(e₁) == "(3, 4)"
     @test repr(e₂) == "(4, 3)"
     @test isequal(e₁,e₂) && isequal(e₁,e₃) && isequal(e₄,e₅)
+    @test isequal(e₁,e₆) && isequal(e₄,e₆)
     @test typeof(e₄) == Edge{Int32}
     
     ea₁ = EdgeAttributes{UInt8}(1,0,false)
@@ -36,7 +38,9 @@
     t₃ = Triangle(SVector(3,1,2))
     t₄ = Triangle{UInt32}(2,1,3)
     t₅ = Triangle(t for t in t₄)
-    @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄) && isequal(t₄,t₅)
+    t₆ = Triangle([1,2,3])
+    @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄)
+    @test isequal(t₄,t₅) && isequal(t₄,t₆)
     @test eltype(data(t₄)) == UInt32
 
     ta₁ = TriangleAttributes{UInt8,Float64}()
@@ -74,11 +78,23 @@
     @test floattype(m1) == Float32
     @test inttype(m1) == Int32
     @test degtype(m1) == UInt8
-    setneumann!(x->x[2]==1,m1)
+    setneumann!(x->x[1]*x[2]==0,m1)
+    ∂Dm1 = dirichletboundary(m1)
+    ∂Nm1 = neumannboundary(m1)
+    @test length(edges(∂Dm1)) == 2
+    @test length(edges(∂Nm1)) == 2
+    setboundary!(:dirichlet,x->x[2]==0,m1)
     ∂Dm1 = dirichletboundary(m1)
     ∂Nm1 = neumannboundary(m1)
     @test length(edges(∂Dm1)) == 3
     @test length(edges(∂Nm1)) == 1
+    setdirichlet!(x->x[1]==0,m1)
+    ∂Dm1 = dirichletboundary(m1)
+    ∂Nm1 = neumannboundary(m1)
+    @test length(edges(∂Dm1)) == 4
+    @test length(edges(∂Nm1)) == 0
+    
+    
 
     # Building mesh from points
     pts = [0. 0.;1. 0.;1. 1.;0. 1.]'
@@ -125,4 +141,5 @@
     # This test should be replaced by something else that tests h-refinement. For the moment, it is a quick way to test a large number of functions. 
     gmesh = circmesh_graded_center(0.1,0.45)
     @test typeof(gmesh) == HPMesh{Float64,Int32,UInt8}
-   
+    rmesh = squaremesh(1,0.1)
+    @test @typeof(rmesh) == HPMesh{Float64,Int32,UInt8}
