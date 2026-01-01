@@ -261,10 +261,18 @@ recursively checks the p_conformity of the triangles in `mesh`, incrementing the
 """
 function p_conformity!(mesh::HPMesh{F,I,P}) where {F,I,P}
     (;trilist) = mesh
-    for t in triangles(trilist)
-        p_conformity!(mesh,t,10)
+    still = true
+    while still
+        still = false
+        for t in triangles(trilist)
+            if !p_conformity!(mesh,t,10)
+                still = true
+            end
+        end
     end
 end
+#fallback case for boundary edges, where neighbor == nothing
+p_conformity!(::HPMesh,::Nothing,d) = true
 function p_conformity!(mesh::HPMesh{F,I,P},t::Triangle{I},d) where {F,I,P}
     (;edgelist) = mesh
     p,eds = psortededges(t,mesh)
@@ -273,13 +281,13 @@ function p_conformity!(mesh::HPMesh{F,I,P},t::Triangle{I},d) where {F,I,P}
         out = true
     else
         if d>0
-            setdegree!(edgelist[eds[1]],p[1] + 1)
+            setdegree!(edgelist[eds[1]],p[3]-p[2])
             t₁ = neighbor(mesh,t,eds[1])
             if p_conformity!(mesh,t₁,d-1)
                 out = true
             else
                 setdegree!(edgelist[eds[1]],p[1])
-                setdegree!(edgelist[eds[2]],p[2]+1)
+                setdegree!(edgelist[eds[2]],p[3]-p[1])
                 t₂ = neighbor(mesh,t,eds[2])
                 if p_conformity!(mesh,t₂,d-1)
                     out = true
@@ -295,16 +303,19 @@ end
 """
     $(SIGNATURES)
     
-If it exists, returns the neighbor of triangle `t` along the edge `e`. If `e` is a boundary edge, it returns `nothing`:w
+If it exists, returns the neighbor of triangle `t` along the edge `e`. If `e` is a boundary edge, it returns `nothing`
 .
 """
 function neighbor(mesh::HPMesh{F,I,P},t::Triangle{I},e::Edge{I}) where {F,I,P}
-    for tb in triangles(mesh)
-        if  (e in edges(tb)) && t!=tb
-            return tb
+    if tag(mesh.edgelist[e])>0
+        return nothing
+    else
+        for tb in triangles(mesh)
+            if  (e in edges(tb)) && t!=tb
+                return tb
+            end
         end
     end
-    return nothing
 end
 
 ###########################################################################################
