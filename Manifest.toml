@@ -72,16 +72,6 @@ version = "0.4.2"
     [deps.Animations.syntax]
     julia_version = "1.0.0"
 
-[[deps.Aqua]]
-deps = ["Compat", "Pkg", "Test"]
-git-tree-sha1 = "d57fd255a8932b6509baf43284c416fc44d0b903"
-registries = "General"
-uuid = "4c88cf16-eb10-579e-8560-4a9242c79595"
-version = "0.8.14"
-
-    [deps.Aqua.syntax]
-    julia_version = "1.0.0"
-
 [[deps.ArgTools]]
 uuid = "0dad84c5-d112-42e6-8d28-ef12dabb789f"
 version = "1.1.2"
@@ -2421,7 +2411,7 @@ version = "3.0.0"
     julia_version = "1.6.0"
 
 [[deps.TrihpFEM]]
-deps = ["Aqua", "CommonSolve", "Dictionaries", "DocStringExtensions", "EllipsisNotation", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "TensorCast", "TensorOperations", "Test", "Triangulate"]
+deps = ["CommonSolve", "Dictionaries", "DocStringExtensions", "EllipsisNotation", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "TensorCast", "TensorOperations", "Test", "Triangulate"]
 path = "."
 uuid = "6f95704f-31d0-4cfb-aa9d-6d40374f9d53"
 version = "0.1.0"

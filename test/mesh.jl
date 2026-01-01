@@ -4,17 +4,23 @@
     using StaticArrays
 
     #Edge creation and comparison.
-    e₁ = Edge(UInt8(3),4)
-    e₂ = Edge((4,3))
-    e₃ = Edge(SVector(4,3))
+    e₁ = Edge{Int32}(UInt8(3),4)
+    e₂ = Edge{Int32}((4,3))
+    e₃ = Edge{Int32}(SVector(4,3))
     e₄ = Edge{Int32}(3,4)
-    e₅ = Edge(e for e in e₄)
-    e₆ = Edge([4,3])
+    e₅ = Edge{Int32}(e for e in e₄)
+    e₆ = Edge{Int32}([4,3])
     @test repr(e₁) == "(3, 4)"
     @test repr(e₂) == "(4, 3)"
     @test isequal(e₁,e₂) && isequal(e₁,e₃) && isequal(e₄,e₅)
     @test isequal(e₁,e₆) && isequal(e₄,e₆)
     @test typeof(e₄) == Edge{Int32}
+    @test isequal(e₁,Edge(3,4))
+    @test isequal(e₂,Edge((3,4)))
+    @test isequal(e₃,Edge(SVector(4,3)))
+    @test isequal(e₄,Edge(3,4))
+    @test isequal(e₅,Edge(e for e in e₅))
+    @test isequal(e₆,Edge([4,3]))
     
     ea₁ = EdgeAttributes{UInt8}(1,0,false)
     @test repr(ea₁) == "(0x01, :Ω°, :noref)"
@@ -33,15 +39,21 @@
     @test data(e₁) == (3,4)
 
     #Triangle creation and comparison
-    t₁ = Triangle(Int32(1),2,3)
-    t₂ = Triangle((2,3,1))
-    t₃ = Triangle(SVector(3,1,2))
-    t₄ = Triangle{UInt32}(2,1,3)
-    t₅ = Triangle(t for t in t₄)
-    t₆ = Triangle([1,2,3])
+    t₁ = Triangle{Int32}(Int8(1),2,3)
+    t₂ = Triangle{Int32}((2,3,1))
+    t₃ = Triangle{Int32}(SVector(3,1,2))
+    t₄ = Triangle{Int32}{UInt32}(2,1,3)
+    t₅ = Triangle{Int32}(t for t in t₄)
+    t₆ = Triangle{Int32}([1,2,3])
     @test isequal(t₁,t₂) && isequal(t₁,t₃) && isequal(t₁,t₄)
     @test isequal(t₄,t₅) && isequal(t₄,t₆)
     @test eltype(data(t₄)) == UInt32
+    @test isequal(t₁,Triangle(Int8(1),2,3))
+    @test isequal(t₂,Triangle((2,3,1)))
+    @test isequal(t₃,Triangle(SVector(3,1,2)))
+    @test isequal(t₄,Triangle(2,1,3))
+    @test isequal(t₅,Triangle(t for t in t₅))
+    @test isequal(t₆,Triangle([1,2,3]))
 
     ta₁ = TriangleAttributes{UInt8,Float64}()
     ta₂ = TriangleAttributes()
