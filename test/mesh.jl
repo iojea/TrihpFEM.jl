@@ -121,8 +121,11 @@
     @test repr(T₃) == "(2, 3, 1)"
     @test repr(TriangleAttributes()) == ":noref"
 
-    @test repr(circmesh_graded_center(0.1,0.45)) == "HPMesh{Float64, Int32, UInt8}
-  + 692 nodes.
-  + 1320 triangles.
-  + 2011 edges."
+    # REFINE h
+    # This test should be replaced by something else that tests h-refinement. For the moment, it is a quick way to test a large number of functions. 
+    gmesh = circmesh_graded_center(0.1,0.45)
+    @test typeof(gmesh) == HPMesh{Float64,Int32,UInt8}
+    @test length(gmesh.points) == 692
+    @test length(gmesh.trilist) == 1320
+    @test length(gmesh.edgelist) == 2011
    
