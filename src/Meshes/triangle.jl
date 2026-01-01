@@ -8,7 +8,7 @@ struct Triangle{I} <: SetTuple{3,I}
     data::NTuple{3,I}
 end
 
-Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x...)))
+Triangle{I}(x::StaticArray) where I = Triangle(I.(tuple(x...)))
 Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x...)))
 Triangle{I}(x,y,z) where I= Triangle(I(x),I(y),I(z))
 function Triangle{I}(x::T) where {I,T<:AbstractArray}

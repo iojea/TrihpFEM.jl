@@ -5,7 +5,7 @@ a struct for storing an edge of a triangulation. It contains an `NTuple{2,I}` th
 struct Edge{I} <: SetTuple{2,I}
     data::NTuple{2,I}
 end
-Edge{I}(x::StaticArray) where I = Edge(tuple(x...))
+Edge{I}(x::StaticArray) where I = Edge(I.(tuple(x...)))
 Edge{I}(x::Base.Generator) where I = Edge(tuple(x...))
 Edge{I}(x,y) where I = Edge((I(x),I(y)))
 function Edge{I}(x::T) where {I,T<:AbstractArray}
