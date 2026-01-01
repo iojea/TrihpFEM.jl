@@ -11,7 +11,7 @@ Edge{I}(x,y) where I = Edge((I(x),I(y)))
 function Edge{I}(x::T) where {I,T<:AbstractArray}
     T<:AbstractVector || throw(ArgumentError("`Edge` can only be created from a one dimensional array."))
     length(x) == 2 || throw(DimensionMismatch("`Edge`s store two indices."))
-    Edge(I.(tuple(x...))
+    Edge(I.(tuple(x...)))
 end
 
 """
