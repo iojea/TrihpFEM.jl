@@ -5,9 +5,9 @@ a struct for storing an edge of a triangulation. It contains an `NTuple{2,I}` th
 struct Edge{I} <: SetTuple{2,I}
     data::NTuple{2,I}
 end
-Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
-Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
-Edge{I}(x...) where I = Edge(I.(x))
+Edge(x::StaticArray) = Edge(tuple(x...))
+Edge(x::Base.Generator) = Edge(tuple(x...))
+Edge(x...) = Edge(x)
 Edge(x,y) = Edge(promote(x,y))
 function Edge(x::T) where T<:AbstractArray
     T<:AbstractVector || throw(ArgumentError("`Edge` can only be created from a one dimensional array."))

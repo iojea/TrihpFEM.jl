@@ -8,9 +8,9 @@ struct Triangle{I} <: SetTuple{3,I}
     data::NTuple{3,I}
 end
 
-Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x)))
-Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x)))
-Triangle{I}(x...) where I = Triangle(I.(x))
+Triangle(x::StaticArray) = Triangle(tuple(x...))
+Triangle(x::Base.Generator) = Triangle(tuple(x...))
+Triangle(x...) = Triangle(x)
 Triangle(x,y,z) = Triangle(promote(x,y,z))
 function Triangle(x::T) where T<:AbstractArray
     T<:AbstractVector || throw(ArgumentError("`Triangle` can only be created from a one dimensional array."))
