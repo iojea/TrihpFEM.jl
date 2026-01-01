@@ -8,14 +8,13 @@ struct Triangle{I} <: SetTuple{3,I}
     data::NTuple{3,I}
 end
 
-Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x)))
-Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x)))
-Triangle{I}(x...) where I = Triangle(I.(x))
+Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x...)))
+Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x...)))
 Triangle{I}(x,y,z) where I= Triangle(I(x),I(y),I(z))
 function Triangle{I}(x::T) where {I,T<:AbstractArray}
     T<:AbstractVector || throw(ArgumentError("`Triangle` can only be created from a one dimensional array."))
     length(x) == 3 || throw(DimensionMismatch("`Triangle`s store three indices."))
-    Triangle(tuple(x...))
+    Triangle(I.(tuple(x...)))
 end
 
 """
