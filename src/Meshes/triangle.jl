@@ -8,7 +8,7 @@ struct Triangle{I} <: SetTuple{3,I}
     data::NTuple{3,I}
 end
 
-Triangle(x::StaticArray) = Triangle(tuple(x...))
+# Triangle(x::StaticArray) = Triangle(tuple(x...))
 Triangle(x::Base.Generator) = Triangle(tuple(x...))
 Triangle(x...) = Triangle(x)
 Triangle(x,y,z) = Triangle(promote(x,y,z))
