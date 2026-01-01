@@ -9,9 +9,10 @@ Edge{I}(x::StaticArray) where I = Edge(tuple(I.(x)))
 Edge{I}(x::Base.Generator) where I = Edge(I.(tuple(x)))
 Edge{I}(x...) where I = Edge(I.(x))
 Edge(x,y) = Edge(promote(x,y))
-function Edge{I}(x::AbstractArray) where I
-    typeof(x)<:AbstractVector || throw(ArgumentError("Edge can only be created from a one dimensional array."))
-    Edge{I}(I.(x))
+function Edge(x::T) where T<:AbstractArray
+    T<:AbstractVector || throw(ArgumentError("`Edge` can only be created from a one dimensional array."))
+    length(x) == 2 || throw(DimensionMismatch("`Edge`s store two indices."))
+    Edge(tuple(x...))
 end
 
 """

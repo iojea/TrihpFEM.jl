@@ -12,9 +12,10 @@ Triangle{I}(x::StaticArray) where I = Triangle(tuple(I.(x)))
 Triangle{I}(x::Base.Generator) where I = Triangle(I.(tuple(x)))
 Triangle{I}(x...) where I = Triangle(I.(x))
 Triangle(x,y,z) = Triangle(promote(x,y,z))
-function Triangle{I}(x::AbstractArray) where I
-    typeof(x)<:AbstractVector || throw(ArgumentError("Triangle can only be created from a one dimensional array."))
-    Triangle{I}(I.(x))
+function Triangle(x::T) where T<:AbstractArray
+    T<:AbstractVector || throw(ArgumentError("`Triangle` can only be created from a one dimensional array."))
+    length(x) == 3 || throw(DimensionMismatch("`Triangle`s store three indices."))
+    Triangle(tuple(x...))
 end
 
 """
