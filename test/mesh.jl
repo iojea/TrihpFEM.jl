@@ -155,6 +155,6 @@
     @test contains(repr(cm),"HPMesh{Float64, Int32, UInt8}")
     long_print = sprint((io, x) -> show(IOContext(io, :limit => true), MIME("text/plain"), x), cm)
     @test contains(long_print,"HPMesh{Float64, Int32, UInt8}")
-    @test contains(long_print,"Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}")
-    @test contains(long_print,"Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}")
+    @test contains(long_print,"Dictionary{Triangle{Int32}, TriangleAttributes{UInt8, Float64}")
+    @test contains(long_print,"Dictionary{Edge{Int32}, EdgeAttributes{UInt8}}")
 

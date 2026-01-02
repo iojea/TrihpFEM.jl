@@ -60,24 +60,25 @@ end
 
 function degplot end
 
-@recipe DegPlot (mesh,) begin
+@recipe DegPlot (m,) begin
     linewidth = 0.5
     annotate  = false
     title = ""
+    colormap=:coolwarm
 end
 
 
 function Makie.plot!(p::DegPlot)
-    (;mesh) = p
-    (;points,trilist,edgelist) = mesh
-    value = zeros(length)
+    (;m) = p
+    (;points,trilist,edgelist) = m
+    value = zeros(length(points))
     for e in pairs(edgelist)
         deg = degree(last(e))
         value[first(e)] .= deg
     end
     value .= value/2
     tris = hcat(keys(trilist)...)'
-    mesh(points,tris,color=value,colormap=:coolwarm)
+    mesh(points,tris,color=value)
 end
 
 

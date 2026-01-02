@@ -23,6 +23,7 @@ export plothpmesh
 export BoundaryHPMesh,dirichletboundary,neumannboundary
 export mark!,refine!,p_conformity!,check_p_conformity
 export circmesh,circmesh_graded_center,rectmesh,squaremesh
+export plothpmesh,degplot
 
 
 BOUNDARY_DICT = Dict(:dirichlet=>1,:neumann=>2)

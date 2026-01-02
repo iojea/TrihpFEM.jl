@@ -127,7 +127,7 @@ HPMesh{Float64, Int32, UInt8}
  Int32[4, 6] │ (0x01, :Ω°, :noref)
  Int32[6, 2] │ (0x01, :∂𝔇, :noref)
  Int32[4, 5] │ (0x01, :∂𝔇, :noref)
- ```
+```
 
 For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
 
@@ -176,7 +176,7 @@ HPMesh{Float64, Int32, UInt8}
  Int32[4, 8] │ (0x01, :∂𝔑, :noref)
  Int32[8, 5] │ (0x01, :∂𝔑, :noref)
  Int32[5, 6] │ (0x01, :∂𝔑, :noref)
- ```
+```
 Notice that some edges are marked as `∂𝔑`, i.e.: Neumann boundary.
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
