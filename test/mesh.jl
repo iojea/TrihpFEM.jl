@@ -178,8 +178,8 @@ using Base: check_count
         mark!.(getindices(cm.edgelist,edges(first(t))))
         end
     end
-    Meshes._h_conformity!(cm;annotate=true)
-    plt = plothpmesh(cm)
+    Meshes._h_conformity!(cm)
+    plt = plothpmesh(cm;annotate=true)
     @test plt isa Makie.FigureAxisPlot
 
     for e in cm.edgelist
