@@ -1,3 +1,4 @@
+using Base: check_count
     using ..TrihpFEM.Meshes
     using Test
     using Dictionaries
@@ -177,13 +178,15 @@
         mark!.(getindices(cm.edgelist,edges(first(t))))
         end
     end
-    Meshes._h_conformity!(cm)
+    Meshes._h_conformity!(cm;annotate=true)
     plt = plothpmesh(cm)
     @test plt isa Makie.FigureAxisPlot
 
     for e in cm.edgelist
-       setdegree!(e,rand(1:15))
+       setdegree!(e,rand(1:5))
     end
+    p_conformity!(cm)
+    @test check_p_conformity(cm)
     plt2 = degplot(cm)
     @test plt isa Makie.FigureAxisPlot
 
