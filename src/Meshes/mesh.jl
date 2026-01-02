@@ -97,12 +97,37 @@ For a simple polygonal mesh, it is enough to provide a matrix of `2×N` with the
 ```jldoctest
 julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]';
 
-julia> m = hpmesh(vertices,0.1)
+julia> m = hpmesh(vertices,1.5)
 HPMesh{Float64, Int32, UInt8}
-  + 500 nodes.
-  + 923 triangles.
-  + 1422 edges.
-```
+  + 6 nodes.
+  + 4 triangles.
+  + 9 edges.
+6-element Vector{StaticArraysCore.SVector{2, Float64}}:
+ [-1.0, 0.0]
+ [1.0, 0.0]
+ [1.5, 1.0]
+ [0.0, 1.5]
+ [-1.0, 1.0]
+ [0.0, 0.0]
+
+4-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+ Int32[6, 5, 1] │ :noref
+ Int32[4, 2, 3] │ :noref
+ Int32[2, 4, 6] │ :noref
+ Int32[6, 4, 5] │ :noref
+
+
+9-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
+ Int32[1, 6] │ (0x01, :∂𝔇, :noref)
+ Int32[6, 5] │ (0x01, :Ω°, :noref)
+ Int32[5, 1] │ (0x01, :∂𝔇, :noref)
+ Int32[4, 2] │ (0x01, :Ω°, :noref)
+ Int32[2, 3] │ (0x01, :∂𝔇, :noref)
+ Int32[3, 4] │ (0x01, :∂𝔇, :noref)
+ Int32[4, 6] │ (0x01, :Ω°, :noref)
+ Int32[6, 2] │ (0x01, :∂𝔇, :noref)
+ Int32[4, 5] │ (0x01, :∂𝔇, :noref)
+ ```
 
 For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
 
@@ -113,12 +138,46 @@ julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
 
 julia> tags = [1,1,2,2,2,1];
 
-julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
+julia> m = hpmesh(vert,1.5;segments=segs,tags=tags)
 HPMesh{Float64, Int32, UInt8}
-  + 180 nodes.
-  + 317 triangles.
-  + 496 edges.
-```
+  + 8 nodes.
+  + 6 triangles.
+  + 13 edges.
+8-element Vector{StaticArraysCore.SVector{2, Float64}}:
+ [0.0, 0.0]
+ [1.0, 0.0]
+ [1.0, 0.5]
+ [1.0, 1.0]
+ [0.0, 1.0]
+ [0.0, 0.5]
+ [0.5, 0.0]
+ [0.5, 1.0]
+
+6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+ Int32[7, 6, 1] │ :noref
+ Int32[3, 7, 2] │ :noref
+ Int32[6, 3, 8] │ :noref
+ Int32[8, 3, 4] │ :noref
+ Int32[3, 6, 7] │ :noref
+ Int32[6, 8, 5] │ :noref
+
+
+13-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
+ Int32[6, 1] │ (0x01, :∂𝔇, :noref)
+ Int32[1, 7] │ (0x01, :∂𝔇, :noref)
+ Int32[7, 6] │ (0x01, :Ω°, :noref)
+ Int32[7, 2] │ (0x01, :∂𝔇, :noref)
+ Int32[2, 3] │ (0x01, :∂𝔇, :noref)
+ Int32[3, 7] │ (0x01, :Ω°, :noref)
+ Int32[6, 3] │ (0x01, :Ω°, :noref)
+ Int32[3, 8] │ (0x01, :Ω°, :noref)
+ Int32[8, 6] │ (0x01, :Ω°, :noref)
+ Int32[3, 4] │ (0x01, :∂𝔑, :noref)
+ Int32[4, 8] │ (0x01, :∂𝔑, :noref)
+ Int32[8, 5] │ (0x01, :∂𝔑, :noref)
+ Int32[5, 6] │ (0x01, :∂𝔑, :noref)
+ ```
+Notice that some edges are marked as `∂𝔑`, i.e.: Neumann boundary.
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
 
@@ -129,11 +188,44 @@ julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
 
 julia> tags = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,:dirichlet];
 
-julia> m = hpmesh(vert,0.1;segments=segs,tags=tags)
+julia> m = hpmesh(vert,1.5;segments=segs,tags=tags)
 HPMesh{Float64, Int32, UInt8}
-  + 180 nodes.
-  + 317 triangles.
-  + 496 edges.
+  + 8 nodes.
+  + 6 triangles.
+  + 13 edges.
+8-element Vector{StaticArraysCore.SVector{2, Float64}}:
+ [0.0, 0.0]
+ [1.0, 0.0]
+ [1.0, 0.5]
+ [1.0, 1.0]
+ [0.0, 1.0]
+ [0.0, 0.5]
+ [0.5, 0.0]
+ [0.5, 1.0]
+
+6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+ Int32[7, 6, 1] │ :noref
+ Int32[3, 7, 2] │ :noref
+ Int32[6, 3, 8] │ :noref
+ Int32[8, 3, 4] │ :noref
+ Int32[3, 6, 7] │ :noref
+ Int32[6, 8, 5] │ :noref
+
+
+13-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
+ Int32[6, 1] │ (0x01, :∂𝔇, :noref)
+ Int32[1, 7] │ (0x01, :∂𝔇, :noref)
+ Int32[7, 6] │ (0x01, :Ω°, :noref)
+ Int32[7, 2] │ (0x01, :∂𝔇, :noref)
+ Int32[2, 3] │ (0x01, :∂𝔇, :noref)
+ Int32[3, 7] │ (0x01, :Ω°, :noref)
+ Int32[6, 3] │ (0x01, :Ω°, :noref)
+ Int32[3, 8] │ (0x01, :Ω°, :noref)
+ Int32[8, 6] │ (0x01, :Ω°, :noref)
+ Int32[3, 4] │ (0x01, :∂𝔑, :noref)
+ Int32[4, 8] │ (0x01, :∂𝔑, :noref)
+ Int32[8, 5] │ (0x01, :∂𝔑, :noref)
+ Int32[5, 6] │ (0x01, :∂𝔑, :noref)
 ```
 
 
@@ -150,9 +242,84 @@ julia> hole = [0.3 0.3]';
 
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
 HPMesh{Float64, Int32, UInt8}
-  + 171 nodes.
-  + 294 triangles.
-  + 465 edges.
+  + 18 nodes.
+  + 21 triangles.
+  + 39 edges.
+18-element Vector{StaticArraysCore.SVector{2, Float64}}:
+ [0.0, 0.0]
+ [1.0, 0.0]
+ [1.0, 0.5]
+ [1.0, 1.0]
+ [0.0, 1.0]
+ [0.0, 0.5]
+ [0.25, 0.25]
+ [0.5, 0.25]
+ [0.5, 0.5]
+ [0.25, 0.5]
+ [0.5, 0.0]
+ [0.0, 0.75]
+ [0.5, 1.0]
+ [0.75, 0.0]
+ [0.75, 0.375]
+ [0.25, 1.0]
+ [0.375, 0.75]
+ [0.75, 0.6875]
+
+21-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+    Int32[6, 1, 7] │ :noref
+   Int32[1, 11, 7] │ :noref
+  Int32[10, 12, 6] │ :noref
+   Int32[6, 7, 10] │ :noref
+  Int32[9, 17, 10] │ :noref
+ Int32[18, 13, 17] │ :noref
+ Int32[12, 17, 16] │ :noref
+  Int32[14, 8, 11] │ :noref
+  Int32[2, 15, 14] │ :noref
+   Int32[2, 3, 15] │ :noref
+  Int32[15, 18, 9] │ :noref
+  Int32[18, 15, 3] │ :noref
+   Int32[8, 15, 9] │ :noref
+  Int32[12, 16, 5] │ :noref
+ Int32[17, 12, 10] │ :noref
+   Int32[7, 11, 8] │ :noref
+ Int32[16, 17, 13] │ :noref
+  Int32[14, 15, 8] │ :noref
+  Int32[18, 17, 9] │ :noref
+   Int32[3, 4, 18] │ :noref
+  Int32[4, 13, 18] │ :noref
+
+
+39-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
+   Int32[1, 7] │ (0x01, :Ω°, :noref)
+   Int32[7, 6] │ (0x01, :Ω°, :noref)
+   Int32[6, 1] │ (0x01, :∂𝔇, :noref)
+  Int32[1, 11] │ (0x01, :∂𝔇, :noref)
+  Int32[11, 7] │ (0x01, :Ω°, :noref)
+  Int32[6, 10] │ (0x01, :Ω°, :noref)
+ Int32[10, 12] │ (0x01, :Ω°, :noref)
+  Int32[12, 6] │ (0x01, :∂𝔑, :noref)
+  Int32[7, 10] │ (0x01, :∂𝔑, :noref)
+  Int32[10, 9] │ (0x01, :∂𝔑, :noref)
+  Int32[9, 17] │ (0x01, :Ω°, :noref)
+ Int32[17, 10] │ (0x01, :Ω°, :noref)
+ Int32[13, 17] │ (0x01, :Ω°, :noref)
+ Int32[17, 18] │ (0x01, :Ω°, :noref)
+ Int32[18, 13] │ (0x01, :Ω°, :noref)
+             ⋮ │ ⋮
+  Int32[3, 15] │ (0x01, :Ω°, :noref)
+ Int32[15, 18] │ (0x01, :Ω°, :noref)
+  Int32[18, 9] │ (0x01, :Ω°, :noref)
+  Int32[9, 15] │ (0x01, :Ω°, :noref)
+  Int32[3, 18] │ (0x01, :Ω°, :noref)
+   Int32[9, 8] │ (0x01, :∂𝔇, :noref)
+  Int32[8, 15] │ (0x01, :Ω°, :noref)
+  Int32[5, 12] │ (0x01, :∂𝔑, :noref)
+  Int32[16, 5] │ (0x01, :∂𝔑, :noref)
+   Int32[8, 7] │ (0x01, :∂𝔇, :noref)
+ Int32[13, 16] │ (0x01, :∂𝔑, :noref)
+   Int32[3, 4] │ (0x01, :∂𝔑, :noref)
+  Int32[4, 18] │ (0x01, :Ω°, :noref)
+  Int32[4, 13] │ (0x01, :∂𝔑, :noref)
 ```
 """
 function hpmesh(vertices,h;

@@ -58,6 +58,29 @@ function Makie.plot!(p::PlotHPMesh)
     return p
 end
 
+function degplot end
+
+@recipe DegPlot (mesh,) begin
+    linewidth = 0.5
+    annotate  = false
+    title = ""
+end
+
+
+function Makie.plot!(p::DegPlot)
+    (;mesh) = p
+    (;points,trilist,edgelist) = mesh
+    value = zeros(length)
+    for e in pairs(edgelist)
+        deg = degree(last(e))
+        value[first(e)] .= deg
+    end
+    value .= value/2
+    tris = hcat(keys(trilist)...)'
+    mesh(points,tris,color=value,colormap=:coolwarm)
+end
+
+
 
 # @recipe(PlotSolHP, mesh,u) do scene
 #     Attributes(
