@@ -10,8 +10,6 @@
     e₄ = Edge{Int32}(3,4)
     e₅ = Edge{Int32}(e for e in e₄)
     e₆ = Edge{Int32}([4,3])
-    @test repr(e₁) == "(3, 4)"
-    @test repr(e₂) == "(4, 3)"
     @test isequal(e₁,e₂) && isequal(e₁,e₃) && isequal(e₄,e₅)
     @test isequal(e₁,e₆) && isequal(e₄,e₆)
     @test typeof(e₄) == Edge{Int32}
@@ -146,11 +144,17 @@
     p_conformity!(mesh)
     @test check_p_conformity(mesh)
         
-    @test repr(T₃) == "(2, 3, 1)"
     @test repr(TriangleAttributes()) == ":noref"
 
     # REFINE h
     # This test should be replaced by something else that tests h-refinement. For the moment, it is a quick way to test a large number of functions. 
     @test typeof(circmesh_graded_center(0.1,0.45)) == HPMesh{Float64,Int32,UInt8}
     @test typeof(squaremesh(1,0.1)) == HPMesh{Float64,Int32,UInt8}
-    @test typeof(circmesh(1,0.1)) == HPMesh{Float64,Int32,UInt8}
+    cm = circmesh(1,0.1)
+    @test typeof(cm) == HPMesh{Float64,Int32,UInt8}
+    @test contains(repr(cm),"HPMesh{Float64, Int32, UInt8}")
+    long_print = sprint((io, x) -> show(IOContext(stdout, :limit => true), MIME("text/plain"), x), obj)
+    @test contains(long_print,"HPMesh{Float64, Int32, UInt8}")
+    @test contains(long_print,"Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}")
+    @test contains(long_print,"Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}")
+

@@ -1,37 +1,22 @@
-# Show HPTriangle
-function Base.show(io::IO,mime::MIME"text/plain",t::SetTuple)
-     println(typeof(t))
-     show(io,mime,data(t))
-end
-Base.show(io::IO,t::SetTuple) = show(io,data(t))
 
-#Show TriangleAttributes
-function Base.show(io::IO,mime::MIME"text/plain",t::TriangleAttributes) 
-    symbs = Dictionary(0:3,[:noref,:green,:blue,:red])
-    show(io,symbs[t.refine[]])
-end
 function Base.show(io::IO,t::TriangleAttributes) 
     symbs = Dictionary(0:3,[:noref,:green,:blue,:red])
     show(io,symbs[t.refine[]])
 end
 
-# Show HPEdge
-# Base.show(io::IO,mime::MIME"text/plain",t::HPEdge) = show(io,mime,Int.(t))
-# Base.show(io::IO,t::HPEdge) = show(io,Int.(t.nodes[:]))
-
 # Show EdgeAttributes
-function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes) 
-    if t.tag[]==0
-        m = :Ω°
-    elseif t.tag[]==1
-        m = :∂𝔇
-    elseif t.tag[]==2
-        m = :∂𝔑
-    else 
-        m = t.tag[]
-    end
-    show(io,mime,(t.degree[],m,t.refine[]))
-end
+# function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes) 
+#     if t.tag[]==0
+#         m = :Ω°
+#     elseif t.tag[]==1
+#         m = :∂𝔇
+#     elseif t.tag[]==2
+#         m = :∂𝔑
+#     else 
+#         m = t.tag[]
+#     end
+#     show(io,mime,(t.degree[],m,t.refine[]))
+# end
 function Base.show(io::IO,t::EdgeAttributes)
     if t.tag[]==0
         m = :Ω°
@@ -52,28 +37,33 @@ end
 
 # Show HPList short.
 
-function Base.show(io::IO, d::Union{TriangleList,EdgeList})
-    limit = get(io, :limit, false) ? Int64(10) : typemax(Int64)
-    comma = false
-    print(io, "{")
-    for i in keys(d)
-        if comma
-            print(io, ", ")
-        end
-        if limit == 0
-            print(io, "…")
-            break
-        end
-        show(io, i)
-        print(io, " = ")
-        show(io, d[i])
-        comma = true
-        limit -= 1
-    end
-    print(io, "}")
+# function Base.show(io::IO, d::Union{TriangleList,EdgeList})
+#     limit = get(io, :limit, false) ? Int64(10) : typemax(Int64)
+#     comma = false
+#     print(io, "{")
+#     for i in keys(d)
+#         if comma
+#             print(io, ", ")
+#         end
+#         if limit == 0
+#             print(io, "…")
+#             break
+#         end
+#         show(io, i)
+#         print(io, " = ")
+#         show(io, d[i])
+#         comma = true
+#         limit -= 1
+#     end
+#     print(io, "}")
+# end
+
+function Base.show(io::IO,d::TriangleList{I,P,F}) where {I,P,F}
+    print(io,"TriangleList{$I,$P,$F} with $(length(d)) elements")
 end
-
-
+function Base.show(io::IO,d::EdgeList{I,P}) where {I,P}
+    print(io,"EdgeList{$I,$P} with $(length(d)) elements")
+end
 # The "display"-like rendering
 function Base.show(io::IO, ::MIME"text/plain", d::Union{TriangleList,EdgeList})
     if isempty(d)
@@ -207,7 +197,7 @@ function shrink_to!(strs, width)
 end
 
 # Show HPMesh
-function Base.show(io::IO,mime::MIME"text/plain",mesh::HPMesh{I,P}) where {I,P}
+function Base.show(io::IO,mime::MIME"text/plain",mesh::HPMesh) 
     println(io,typeof(mesh))
     header = Markdown.parse("""
         + $(length(mesh.points)) nodes.
@@ -215,16 +205,34 @@ function Base.show(io::IO,mime::MIME"text/plain",mesh::HPMesh{I,P}) where {I,P}
         + $(length(mesh.edgelist)) edges.
     """)
     show(io,mime,header)
-    # println(io)
-    # show(io,mime,mesh.points)
-    # println(io)
-    # println(io)
-    # show(io,mime,mesh.trilist)
-    # println(io)
-    # println(io)
-    # println(io)
-    # show(io,mime,mesh.edgelist)
+    println(io)
+    show(io,mime,mesh.points)
+    println(io)
+    println(io)
+    show(io,mime,mesh.trilist)
+    println(io)
+    println(io)
+    println(io)
+    show(io,mime,mesh.edgelist)
 end
 
+function Base.show(io::IO,mesh::HPMesh)
+    println(io,typeof(mesh))
+    header = Markdown.parse("""
+        + $(length(mesh.points)) nodes.
+        + $(length(mesh.trilist)) triangles.
+        + $(length(mesh.edgelist)) edges.
+    """)
+    # show(io,header)
+    # println(io)
+    # show(io,mesh.points)
+    # println(io)
+    # println(io)
+    # show(io,mesh.trilist)
+    # println(io)
+    # println(io)
+    # println(io)
+    # show(io,mesh.edgelist)
+end
 
 
