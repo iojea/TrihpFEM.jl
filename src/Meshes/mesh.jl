@@ -438,21 +438,21 @@ retuns the degrees of freedom of the mesh `m`.
 """
 @inline dof(mesh) = mesh.dofs
 
-"""
-    isgreen(t::Triangle,m::HPMesh
-retuns `true` if triangle `t` in `m` is marked green.
-"""
-@inline isgreen(t::Triangle,m::HPMesh) = m.trilist[t].refine[] == 1
-"""
-    isblue(t::Triangle,m::HPMesh
-retuns `true` if triangle `t` in `m` is marked blue.
-"""
-@inline isblue(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 2
-"""
-    isred(t::Triangle,m::HPMesh
-retuns `true` if triangle `t` in `m` is marked red.
-"""
-@inline isred(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 3
+# """
+#     isgreen(t::Triangle,m::HPMesh
+# retuns `true` if triangle `t` in `m` is marked green.
+# """
+# @inline isgreen(t::Triangle,m::HPMesh) = m.trilist[t].refine[] == 1
+# """
+#     isblue(t::Triangle,m::HPMesh
+# retuns `true` if triangle `t` in `m` is marked blue.
+# """
+# @inline isblue(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 2
+# """
+#     isred(t::Triangle,m::HPMesh
+# retuns `true` if triangle `t` in `m` is marked red.
+# """
+# @inline isred(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 3
 
 """
     $(SIGNATURES)
@@ -516,27 +516,27 @@ function psortednodes(t::Triangle{I},mesh::HPMesh{F,I,P}) where {F,I,P}
     p[pind],first.(eds[pind])
 end
 
-"""
-    $(SIGNATURES)
+# """
+#     $(SIGNATURES)
 
-returns a list containing the indices of the vertices of `mesh` tha lie in its boundary. 
-"""
-function boundarynodes(mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;edgelist) = mesh
-    v = zeros(I,sum(>(0),tag.(edgelist)))
-    i = 1
-    for e in pairs(filter(isboundary,edgelist))
-        if (last(e))>0
-            for j in first(e)
-                if j ∉ v
-                    v[i] = j
-                    i   += 1
-                end
-            end
-        end
-    end
-    v
-end
+# returns a list containing the indices of the vertices of `mesh` tha lie in its boundary. 
+# """
+# function boundarynodes(mesh::HPMesh{F,I,P}) where {F,I,P}
+#     (;edgelist) = mesh
+#     v = zeros(I,sum(>(0),tag.(edgelist)))
+#     i = 1
+#     for e in pairs(filter(isboundary,edgelist))
+#         if (last(e))>0
+#             for j in first(e)
+#                 if j ∉ v
+#                     v[i] = j
+#                     i   += 1
+#                 end
+#             end
+#         end
+#     end
+#     v
+# end
 
 
             
@@ -557,9 +557,9 @@ _boundary_segments(n) = reduce(hcat,[i,mod1(i+1,n)] for i in 1:n)
 Computes the dimension of the space ℓp₁p₂p₃. 
 """
 compute_dimension(p₁::Integer, p₂::Integer, p₃::Integer) = sum(min(p₂, p₃ - j) + 1 for j = 0:p₁);
-compute_dimension(p₁::Integer, p₂::Integer) = compute_dimension(p₁, p₂, p₂)
-compute_dimension(p₁::Integer) = compute_dimension(p₁, p₁)
-compute_dimension(t::T) where {T<:AbstractArray} = compute_dimension(t...)
+# compute_dimension(p₁::Integer, p₂::Integer) = compute_dimension(p₁, p₂, p₂)
+# compute_dimension(p₁::Integer) = compute_dimension(p₁, p₁)
+# compute_dimension(t::T) where {T<:AbstractArray} = compute_dimension(t...)
 compute_dimension(t::Tuple) = compute_dimension(t...)
 
 """
@@ -656,20 +656,20 @@ function _tagged_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
     return unique(v)
 end
 
-"""
-    boundary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
+# """
+#     boundary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
 
-Returns a list of the degrees of freedom lying at the boundary of the mesh.
-Internally, it calls `degrees_of_freedom_by_edge` in order to obtain the nodal degrees of freedom. If a dof by edge dictionary has already been computed, it is recommended to run: 
+# Returns a list of the degrees of freedom lying at the boundary of the mesh.
+# Internally, it calls `degrees_of_freedom_by_edge` in order to obtain the nodal degrees of freedom. If a dof by edge dictionary has already been computed, it is recommended to run: 
 
-    boundary_dof(mesh,by_edge) 
-"""
-function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;dofs) = mesh; (;by_edge) = dofs;
-    msg = "The degrees of freedom of the mesh have not been computed."
-    isempty(dofs) && throw(ArgumentError(msg))
-    tagged_dof(mesh,(1,2))
-end
+#     boundary_dof(mesh,by_edge) 
+# """
+# function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
+#     (;dofs) = mesh; (;by_edge) = dofs;
+#     msg = "The degrees of freedom of the mesh have not been computed."
+#     isempty(dofs) && throw(ArgumentError(msg))
+#     tagged_dof(mesh,(1,2))
+# end
 
 
 ########

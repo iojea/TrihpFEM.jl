@@ -35,6 +35,7 @@
     @test typeof(tag(de[e₁])) == UInt8
     @test degree(de[e₁]) == 3
     @test isinterior(de[e₂])
+    @test !isboundary(de[e₂])
     @test data(e₁) == (3,4)
 
     #Triangle creation and comparison
@@ -193,3 +194,10 @@
     @test contains(long_print,"Dictionary{Triangle{Int32}, TriangleAttributes{UInt8, Float64}")
     @test contains(long_print,"Dictionary{Edge{Int32}, EdgeAttributes{UInt8}}")
 
+    pts₃ = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]';
+    segs₃ = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]';
+    tags₃ = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,
+             :dirichlet,:dirichlet,:dirichlet,:neumann,:nuemann];
+    hole = [0.3 0.3]';
+    mhole = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
+    @test typeof(mhole) == HPMesh{Float64,Int32,UInt8}
