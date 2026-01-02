@@ -119,10 +119,10 @@
     mmtris = Dictionary([T₁,T₂],[TriangleAttributes{UInt8,Float32}(0,0,0) for _ in 1:2])
     mmedges = Dictionary{Edge{Int16},EdgeAttributes{UInt8}}()
     for ed in edges(T₁)
-        set!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+        set!(mmedges,ed,EdgeAttributes{UInt8}(1,1,false))
     end
     for ed in edges(T₂)
-        set!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+        set!(mmedges,ed,EdgeAttributes{UInt8}(1,1,false))
     end
     mm = HPMesh(pts,mmtris,mmedges)
     @test typeof(mm) == HPMesh{Float32,Int16,UInt8}
