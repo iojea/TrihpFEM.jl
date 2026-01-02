@@ -16,7 +16,7 @@ end
 
 
 function Makie.plot!(p::PlotHPMesh)
-    (;mesh) = p
+    # (;mesh) = p
     lift(p[1]) do mesh
     (;points,trilist,edgelist) = mesh
     noreftris = filter(!ismarked,trilist)
@@ -64,13 +64,13 @@ function degplot end
     linewidth = 0.5
     annotate  = false
     title = ""
-    colormap=:coolwarm
 end
 
 
 function Makie.plot!(p::DegPlot)
-    (;m) = p
-    (;points,trilist,edgelist) = m
+    # (;m) = p
+    lift(p[1])  do msh
+    (;points,trilist,edgelist) = msh
     value = zeros(length(points))
     for e in pairs(edgelist)
         deg = degree(last(e))
@@ -78,7 +78,9 @@ function Makie.plot!(p::DegPlot)
     end
     value .= value/2
     tris = hcat(keys(trilist)...)'
-    mesh(points,tris,color=value)
+    mesh!(p,points,tris,color=value,colormap=:coolwarm)
+    end
+    return p
 end
 
 

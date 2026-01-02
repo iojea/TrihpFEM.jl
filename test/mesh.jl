@@ -2,6 +2,7 @@
     using Test
     using Dictionaries
     using StaticArrays
+    using Makie
 
     #Edge creation and comparison.
     e₁ = Edge{Int32}(UInt8(3),4)
@@ -107,14 +108,24 @@
     
 
     # Building mesh from points
-    pts = [0. 0.;1. 0.;1. 1.;0. 1.]'
-    T₁ = triangle(Int32[1,2,3],pts)
-    T₂ = triangle(Int32[2,3,4],pts)
-    @test isequal(longestedge(T₁), Edge{Int32}(1,3))
+    pts = Float32[0. 0.;1. 0.;1. 1.;0. 1.]'
+    T₁ = triangle(Int16[1,2,3],pts)
+    T₂ = triangle(Int16[2,3,4],pts)
+    @test isequal(longestedge(T₁), Edge{Int16}(1,3))
     eds₂ = tuple(edges(T₂)...)
-    @test isequal(eds₂[1],Edge{Int32}(2,4))
-    @test isequal(eds₂[2],Edge{Int32}(2,3))
-    @test isequal(eds₂[3],Edge{Int32}(3,4))
+    @test isequal(eds₂[1],Edge{Int16}(2,4))
+    @test isequal(eds₂[2],Edge{Int16}(2,3))
+    @test isequal(eds₂[3],Edge{Int16}(3,4))
+    mmtris = Dictionary([T₁,T₂],[TriangleAttributes{UInt8,Float32}(0,0,0) for _ in 1:2])
+    mmedges = Dictionary{Edge{Int16},EdgeAttributes{UInt8}}()
+    for ed in edges(T₁)
+        set!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+    end
+    for ed in edges(T₂)
+        set!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
+    end
+    mm = HPMesh(pts,mmtris,mmedges)
+    @test typeof(mm) == HPMesh{Float32,Int16,UInt8}
 
     pts₂ = SVector{2,Float64}.([(0,0),(1,0),(0,1),(1,1)])
     T₃ = triangle(Int32[1,2,3],pts₂)
@@ -157,4 +168,22 @@
     @test contains(long_print,"HPMesh{Float64, Int32, UInt8}")
     @test contains(long_print,"Dictionary{Triangle{Int32}, TriangleAttributes{UInt8, Float64}")
     @test contains(long_print,"Dictionary{Edge{Int32}, EdgeAttributes{UInt8}}")
+
+    #testing plots
+    # marking for refinement. 
+    for t in pairs(cm.trilist)
+        if rand()<0.1
+        mark!(last(t))
+        mark!.(getindices(cm.edgelist,edges(first(t))))
+        end
+    end
+    Meshes._h_conformity!(cm)
+    plt = plothpmesh(cm)
+    @test plt isa Makie.FigureAxisPlot
+
+    for e in m.edgelist
+       setdegree!(e,rand(1:15))
+    end
+    plt2 = degplot(cm)
+    @test plt isa Makie.FigureAxisPlot
 

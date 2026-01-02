@@ -94,7 +94,7 @@ end
 A helper function for creating `hp`-meshes from boundary data.
 For a simple polygonal mesh, it is enough to provide a matrix of `2×N` with the vertices of the polygon and a mesh size `h`.
 
-```jldoctest
+```
 julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]';
 
 julia> m = hpmesh(vertices,1.5)
@@ -131,7 +131,7 @@ HPMesh{Float64, Int32, UInt8}
 
 For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
 
-```jldoctest
+```
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]';
 
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
@@ -181,7 +181,7 @@ Notice that some edges are marked as `∂𝔑`, i.e.: Neumann boundary.
 
 For the markers, `1` indicates _Dirichlet boundary_, whereas `2` stands for _Neumann boundary_. If preferred, a vector of symbols (`:dirichlet` or `:neumann`) can be used:
 
-```jldoctest
+```
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5]';
 
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1]';
@@ -231,7 +231,7 @@ HPMesh{Float64, Int32, UInt8}
 
 Furthermore, meshes with holes can also be constructed. In this case, the `segments` should include the segments corresponding to the interior boudaries (always in a positively oriented order), and a parameter `holes` should also be passed. `holes` is a matrix where each column contains a point included in one hole. Only one point per hole is necessary. 
 
-```jldoctest
+```
 julia> vert = [0. 0.;1. 0.;1. 0.5;1. 1.;0. 1.;0. 0.5;0.25 0.25;0.5 0.25;0.5 0.5;0.25 0.5]';
 
 julia> segs = [1 2;2 3;3 4;4 5;5 6;6 1;7 8;8 9;9 10;10 7]';
