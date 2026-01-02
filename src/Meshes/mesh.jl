@@ -74,7 +74,7 @@ function HPMesh(v::Vector{SVector{2,F}},
      HPMesh(v,t,e,DOF{I}())
 end
 
-function HPMesh(mat::Matrix,tris::TriangleList,edgs::EdgeList)
+function HPMesh(mat::AbstractMatrix,tris::TriangleList,edgs::EdgeList)
     points = SVector{2,eltype(mat)}.(eachcol(mat))
     HPMesh(points,tris,edgs)
 end
