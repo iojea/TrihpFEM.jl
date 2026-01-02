@@ -199,5 +199,5 @@
     tags₃ = [:dirichlet,:dirichlet,:neumann,:neumann,:neumann,
              :dirichlet,:dirichlet,:dirichlet,:neumann,:nuemann];
     hole = [0.3 0.3]';
-    mhole = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
+    mhole = hpmesh(pts₃,0.1;segments=segs₃,tags=tags₃,holes=hole)
     @test typeof(mhole) == HPMesh{Float64,Int32,UInt8}
