@@ -181,7 +181,7 @@
     plt = plothpmesh(cm)
     @test plt isa Makie.FigureAxisPlot
 
-    for e in m.edgelist
+    for e in cm.edgelist
        setdegree!(e,rand(1:15))
     end
     plt2 = degplot(cm)
