@@ -182,8 +182,9 @@ using Base: check_count
     plt = plothpmesh(cm;annotate=true)
     @test plt isa Makie.FigureAxisPlot
 
+    cm = circmesh(1,0.1)
     for e in cm.edgelist
-       setdegree!(e,rand(1:5))
+       setdegree!(e,rand(1:3))
     end
     p_conformity!(cm)
     @test check_p_conformity(cm)
