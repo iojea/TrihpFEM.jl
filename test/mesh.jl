@@ -162,12 +162,6 @@
     @test typeof(circmesh_graded_center(0.1,0.45)) == HPMesh{Float64,Int32,UInt8}
     @test typeof(squaremesh(1,0.1)) == HPMesh{Float64,Int32,UInt8}
     cm = circmesh(1,0.1)
-    @test typeof(cm) == HPMesh{Float64,Int32,UInt8}
-    @test contains(repr(cm),"HPMesh{Float64, Int32, UInt8}")
-    long_print = sprint((io, x) -> show(IOContext(io, :limit => true), MIME("text/plain"), x), cm)
-    @test contains(long_print,"HPMesh{Float64, Int32, UInt8}")
-    @test contains(long_print,"Dictionary{Triangle{Int32}, TriangleAttributes{UInt8, Float64}")
-    @test contains(long_print,"Dictionary{Edge{Int32}, EdgeAttributes{UInt8}}")
 
     #testing plots
     # marking for refinement. 
@@ -186,4 +180,11 @@
     end
     plt2 = degplot(cm)
     @test plt isa Makie.FigureAxisPlot
+
+    @test typeof(cm) == HPMesh{Float64,Int32,UInt8}
+    @test contains(repr(cm),"HPMesh{Float64, Int32, UInt8}")
+    long_print = sprint((io, x) -> show(IOContext(io, :limit => true), MIME("text/plain"), x), cm)
+    @test contains(long_print,"HPMesh{Float64, Int32, UInt8}")
+    @test contains(long_print,"Dictionary{Triangle{Int32}, TriangleAttributes{UInt8, Float64}")
+    @test contains(long_print,"Dictionary{Edge{Int32}, EdgeAttributes{UInt8}}")
 
