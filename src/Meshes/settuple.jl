@@ -15,7 +15,7 @@ abstract type SetTuple{L,I<:Integer} <: StaticArray{Tuple{L},I,1} end
 
 This function should be implemented for each concrete subtype of `SetTuple`. It should return the set/tuple stored in `s`.  
 """
-function data(::SetTuple) end
+# function data(::SetTuple) end
 
 #Indexing
 Base.getindex(v::SetTuple, i::Int) = data(v)[i]

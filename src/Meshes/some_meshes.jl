@@ -113,7 +113,6 @@ function rectmesh(a,b,c,d,h)
     vertices = Matrix{Float64}([a c;b c;b d;a d]')
     hpmesh(vertices,h)
 end
-rectmesh(a,c,h) = rectmesh(0.,a,0.,c,h)
 
 """
     $(SIGNATURES)
