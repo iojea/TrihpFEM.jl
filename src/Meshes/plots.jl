@@ -130,15 +130,15 @@ end
 #     f
 # end
 
-"""
-    animate_refinement(meshes,path)
-Creates an animation, stored in `path` from a list of meshes.   
-"""
-function animate_refinement(meshes,path)
-    k = Observable(1)
-    msh = @lift(meshes[$k])
-    fig = plotmeshhp(msh,linewidth=0.25)
-    record(fig,path,1:length(meshes);framerate=2) do t
-        k[] = t
-    end
-end
+# """
+#     animate_refinement(meshes,path)
+# Creates an animation, stored in `path` from a list of meshes.   
+# """
+# function animate_refinement(meshes,path)
+#     k = Observable(1)
+#     msh = @lift(meshes[$k])
+#     fig = plotmeshhp(msh,linewidth=0.25)
+#     record(fig,path,1:length(meshes);framerate=2) do t
+#         k[] = t
+#     end
+# end
