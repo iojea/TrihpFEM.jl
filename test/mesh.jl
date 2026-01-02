@@ -83,6 +83,8 @@
     ∂m0 = BoundaryHPMesh(m0,1)
     @test ∂m0 == BoundaryHPMesh(m0,:dirichlet)
     @test length(edges(∂m0)) == 4
+    @test domainmesh(∂m0) === m0
+    @test domainmesh(domainmesh(∂m0)) === m0
     vert1 = Float32.(vert)
     m1 = hpmesh(vert1,sqrt(2)/2)
     @test length(m1.points) == 5
