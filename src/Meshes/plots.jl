@@ -78,7 +78,7 @@ function Makie.plot!(p::DegPlot)
     end
     value .= value/2
     tris = hcat(keys(trilist)...)'
-    mesh!(p,points,tris,color=value,colormap=:coolwarm)
+    mesh!(p,points,tris,color=value,colormap=:heat)
     end
     return p
 end

@@ -72,6 +72,8 @@
     # Mesh creation and basic properties. 
     vert = [0. 0.;1. 0.;1. 1.;0. 1.]'
     m0 = hpmesh(vert,sqrt(2)/2)
+    @test repr(m0.edgelist) == "EdgeList{Int32,UInt8} with 8 elements"
+    @test repr(m0.trilist) == "TriangleList{Int32,UInt8,Float64} with 4 elements"
     @test length(m0.points) == 5
     @test length(m0.edgelist) == 8
     @test length(m0.trilist) == 4
@@ -134,6 +136,7 @@
     @test isequal(T₂,T₄)
     trilist = Dictionary([T₃,T₄],[TriangleAttributes(),TriangleAttributes()])
     edgelist = Dictionary{Edge{Int32},EdgeAttributes{UInt8}}()
+    @test repr(edgelist) == "EdgeList{Int32,UInt8} with 0 elements"
     for ed in edges(T₃)
         set!(edgelist,ed,EdgeAttributes{UInt8}(1,1,false))
     end
