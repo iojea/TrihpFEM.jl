@@ -331,7 +331,7 @@ function Base.:*(n::Number,g::GeneralField)
         return GeneralField(*,(n,g))
     end
 end
-Base.:*(g::GeneralField,n::Number)
+Base.:*(g::GeneralField,n::Number) = n*g
 
 # A trait for evaluation of Field
 abstract type EvalType end
