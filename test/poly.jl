@@ -20,9 +20,9 @@ q = BiPoly((1.,2.),(-2,0.,1.))
 pq = p*q
 @test pq(x) ≈ p(x)*q(x)
 qxp = q.px*p
-@test qxp(y) == qx(a)*p(a,b)
+@test qxp(y) == q.px(a)*p(a,b)
 pyq = q*p.y
-@test pyq(x) == py(b)*q(a,b)
+@test pyq(x) == p.py(b)*q(a,b)
 ζ = BiPoly((0.,0.,1.,1.),(1.,2.),:x,:α)
 @test_throws ArgumentError("Indeterminates does not match.") ζ*p
 @test_throws ArgumentError("Indeterminates does not match.") p*ζ.py
