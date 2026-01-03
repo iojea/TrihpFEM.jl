@@ -1,4 +1,4 @@
-module PolyFields
+module Poly
 
 using StaticArrays
 using Polynomials
