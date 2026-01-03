@@ -41,6 +41,6 @@ include("Poly/Poly.jl")
 using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
 export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
 
-using ..Poly: BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineTransformation,GeneralField
-export BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineTransformation,GeneralField
+using ..Poly: BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField
+export BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField
 end

@@ -1,4 +1,4 @@
-abstract type PolyField{F,X,Y} <:Function end
+abstract type PolyField{F,X,Y} end
 
 indeterminate(::AbstractPolynomial{T,X}) where {T,X} = X
 """
