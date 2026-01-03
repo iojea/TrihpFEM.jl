@@ -47,9 +47,10 @@ struct BiPoly{F,X,Y} <: PolyScalarField{F,X,Y}
     px::ImmutablePolynomial{F,X,N} where N
     py::ImmutablePolynomial{F,Y,M} where M
     function BiPoly(px::ImmutablePolynomial{F},
-                              py::ImmutablePolynomial{F}) where F
+                    py::ImmutablePolynomial{F}) where F
         X = indeterminate(px)
         Y = indeterminate(py)
+        X==Y && throw(ArgumentError("Indeterminates must be different"))
         if px == zero(px) || py == zero(py)
             return new{F,X,Y}(zero(px),zero(py))
         else
@@ -69,7 +70,7 @@ function BiPoly(t1::Tuple,t2::Tuple,X=:x,Y=:y)
     else
         p1 = ImmutablePolynomial(NTuple{N,F}(convert.(F,t1)),X)
         p2 = ImmutablePolynomial(NTuple{M,F}(convert.(F,t2)),Y)
-        return BiPoly{F,X,Y}(p1,p2)
+        return BiPoly(p1,p2)
     end
 end
 
