@@ -1,4 +1,3 @@
-using Base: check_count
 using ..TrihpFEM.Poly
 using Test
 using StaticArrays
@@ -21,7 +20,7 @@ pq = p*q
 @test pq(x) ≈ p(x)*q(x)
 qxp = q.px*p
 @test qxp(y) == q.px(a)*p(a,b)
-pyq = q*p.y
+pyq = q*p.py
 @test pyq(x) == p.py(b)*q(a,b)
 ζ = BiPoly((0.,0.,1.,1.),(1.,2.),:x,:α)
 @test_throws ArgumentError("Indeterminates does not match.") ζ*p

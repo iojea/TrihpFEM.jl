@@ -99,52 +99,52 @@ function _iteratey(Ly,sty,stx)
     return BiPoly(stx[2],py),(stx,stynew)
 end
 
-### The goal of DoubleStandardBasis is to have a double iterator in order to have only one function for building matrices or vectors. 
-struct DoubleStandardBasis{P<:Integer,F<:Number,X,Y}
-    degs::NTuple{3,P}
-    Bᵢ::StandardBasis{P,F,X,Y}
-    Bⱼ::StandardBasis{P,F,X,Y}
-    function DoubleStandardBasis{P,F,X,Y}(p) where {P,F,X,Y}
-        p = P.(p)
-        Bᵢ = StandardBasis{P,F,X,Y}(p)
-        Bⱼ = StandardBasis{P,F,X,Y}(p)
-        new{P,F,X,Y}(p,Bᵢ,Bⱼ)
-    end
-end
-DoubleStandardBasis(p::NTuple{3,P}) where P = DoubleStandardBasis{P,Float64,:x,:y}(p)
-DoubleStandardBasis(p₁::P,p₂::P,p₃::P) where P = DoubleStandardBasis((p₁,p₂,p₃))
+# ### The goal of DoubleStandardBasis is to have a double iterator in order to have only one function for building matrices or vectors. 
+# struct DoubleStandardBasis{P<:Integer,F<:Number,X,Y}
+#     degs::NTuple{3,P}
+#     Bᵢ::StandardBasis{P,F,X,Y}
+#     Bⱼ::StandardBasis{P,F,X,Y}
+#     function DoubleStandardBasis{P,F,X,Y}(p) where {P,F,X,Y}
+#         p = P.(p)
+#         Bᵢ = StandardBasis{P,F,X,Y}(p)
+#         Bⱼ = StandardBasis{P,F,X,Y}(p)
+#         new{P,F,X,Y}(p,Bᵢ,Bⱼ)
+#     end
+# end
+# DoubleStandardBasis(p::NTuple{3,P}) where P = DoubleStandardBasis{P,Float64,:x,:y}(p)
+# DoubleStandardBasis(p₁::P,p₂::P,p₃::P) where P = DoubleStandardBasis((p₁,p₂,p₃))
 
-Base.IteratorSize(::Type{<:DoubleStandardBasis}) = Base.HasShape()
-Base.size(dsb::DoubleStandardBasis) = (length(dsb.Bᵢ),length(dsb.Bⱼ))
+# Base.IteratorSize(::Type{<:DoubleStandardBasis}) = Base.HasShape()
+# Base.size(dsb::DoubleStandardBasis) = (length(dsb.Bᵢ),length(dsb.Bⱼ))
 
-function Base.iterate(dsb::DoubleStandardBasis{P,F,X,Y}) where {P,F,X,Y}
-    (;Bᵢ,Bⱼ) = dsb
-    bᵢ,sbᵢ = iterate(Bᵢ)
-    bⱼ,sbⱼ = iterate(Bⱼ)
-    (bᵢ,bⱼ),(sbᵢ,sbⱼ)
-end
+# function Base.iterate(dsb::DoubleStandardBasis{P,F,X,Y}) where {P,F,X,Y}
+#     (;Bᵢ,Bⱼ) = dsb
+#     bᵢ,sbᵢ = iterate(Bᵢ)
+#     bⱼ,sbⱼ = iterate(Bⱼ)
+#     (bᵢ,bⱼ),(sbᵢ,sbⱼ)
+# end
 
-recover_actual_poly(statesb) = BiPoly(statesb[1][2],statesb[2][2])
+# recover_actual_poly(statesb) = BiPoly(statesb[1][2],statesb[2][2])
     
 
-function Base.iterate(dsb::DoubleStandardBasis{P,F,X,Y},state) where {P,F,X,Y}
-    (;Bᵢ,Bⱼ) = dsb
-    sbᵢ,sbⱼ = state
-    outᵢ = iterate(Bᵢ,sbᵢ)
-    if isnothing(outᵢ)
-        bᵢ,sbᵢ = iterate(Bᵢ)
-        outⱼ = iterate(Bⱼ,sbⱼ)
-        if isnothing(outⱼ)
-            return nothing
-        else
-            bⱼ,sbⱼ = outⱼ
-            return (bᵢ,bⱼ),(sbᵢ,sbⱼ)
-        end
-    else
-        bᵢ,sbᵢ = outᵢ
-        bⱼ = recover_actual_poly(sbⱼ)
-        return (bᵢ,bⱼ),(sbᵢ,sbⱼ)
-    end
-end
+# function Base.iterate(dsb::DoubleStandardBasis{P,F,X,Y},state) where {P,F,X,Y}
+#     (;Bᵢ,Bⱼ) = dsb
+#     sbᵢ,sbⱼ = state
+#     outᵢ = iterate(Bᵢ,sbᵢ)
+#     if isnothing(outᵢ)
+#         bᵢ,sbᵢ = iterate(Bᵢ)
+#         outⱼ = iterate(Bⱼ,sbⱼ)
+#         if isnothing(outⱼ)
+#             return nothing
+#         else
+#             bⱼ,sbⱼ = outⱼ
+#             return (bᵢ,bⱼ),(sbᵢ,sbⱼ)
+#         end
+#     else
+#         bᵢ,sbᵢ = outᵢ
+#         bⱼ = recover_actual_poly(sbⱼ)
+#         return (bᵢ,bⱼ),(sbᵢ,sbⱼ)
+#     end
+# end
 
 
