@@ -7,5 +7,6 @@ using Aqua
         Aqua.test_all(TrihpFEM,stale_deps=false)
     end
     @testset "Meshes" begin include("mesh.jl") end
+    @testset "Polys" begin include("poly.jl") end
 end
 

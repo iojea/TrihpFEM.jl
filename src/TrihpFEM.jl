@@ -34,9 +34,13 @@ using Test
 using Triangulate
 
 include("Meshes/Meshes.jl")
+include("Poly/Poly.jl")
 # Write your package code here.
 #
 
 using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
 export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
+
+using ..Poly: BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineTransformation,GeneralField
+export BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineTransformation,GeneralField
 end
