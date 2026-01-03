@@ -13,10 +13,10 @@ b = rand()
 x = SVector(a,b)
 y = [a,b]
 @test p(x) == p(y) == p(a,b)
-@test p(x) ≈ 24.
-@test (b*p)(x) == b*p(x)
-q = BiPoly(((1.,2.),(-2,0.,1.)))
-@test q(x) ≈ -3.
+@test p(2,-1) ≈ 24
+@test (b*p)(x) ≈ b*p(x)
+q = BiPoly((1.,2.),(-2,0.,1.))
+@test q(2,-1) ≈ -3.
 pq = p*q
 @test pq(x) ≈ p(x)*q(x)
 qxp = q.px*p

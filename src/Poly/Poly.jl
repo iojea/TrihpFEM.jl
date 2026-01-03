@@ -21,6 +21,7 @@ export BiPoly
 export PolyScalarField, PolyVectorField, PolyTensorField
 export GeneralField
 export PolySum
+export indeterminate,indeterminates
 # export LegendreIterator,StandardBasis,DoubleStandardBasis
 # export gradient, divergence, laplacian,_outer
 export dot
