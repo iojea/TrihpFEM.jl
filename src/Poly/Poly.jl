@@ -9,7 +9,7 @@ using ..Meshes
 include("fields.jl")
 # include("opfields.jl")
 # include("differentiation.jl")
-# include("legendre.jl")
+include("legendre.jl")
 
 include("show.jl")
 

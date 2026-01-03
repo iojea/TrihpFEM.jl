@@ -40,9 +40,9 @@ w = A*v
 @test typeof(w)::VectorTensor
 @test size(w) == (2,)
 row = [3 -2]
+s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
 @test typeof(row*s)::BiPoly
 @test_throws DimensionMismatch() row'*s
-s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
 sv = v*s
 @test vs(a,b) == v(x)*s(x)
 
