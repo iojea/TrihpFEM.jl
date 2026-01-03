@@ -318,7 +318,7 @@ end
 
 
 Base.:*(f::Function,p::PolyField) = GeneralField(*,(f,p))
-Base.:*(p::PolyField,f::f::Function) = f*p
+Base.:*(p::PolyField,f::Function) = f*p
 LinearAlgebra.dot(f::Function,p::PolyField) = GeneralField(dot,(f,p))
 LinearAlgebra.dot(p::PolyField,f::Function) = dot(f,p)
 

@@ -73,5 +73,11 @@ function Base.show(io::IO,p::P) where {F,P<:BiPoly{F}}
 end
 
 function Base.show(io::IO,mimetype::MIME"text/plain",p::P) where P<:PolyTensorField
+    println(typeof(p))
     show(io,mimetype,p.tensor)
 end
+function Base.show(io::IO,p::P) where P<:PolyTensorField
+    show(io,mimetype,p.tensor)
+end
+
+
