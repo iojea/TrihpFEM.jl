@@ -44,21 +44,21 @@ row = [3 -2]
 s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
 @test_throws DimensionMismatch() row'*w
 sv = v*s
-@test vs(a,b) == v(x)*s(x)
+@test sv(a,b) == v(x)*s(x)
 
 r = p+q
-@test typeof(r)::PolySum
+@test typeof(r)<:PolySum
 @test r(x) ≈ p(x)+q(x)
 @test zero(p)==zero(p)
 rs = r*s
-@test rs(a,b) == r(x)*s(x)
-@test (r+s)(x) == r(x)+s(x)
-@test (r+rs)(x) == r(x)+rs(x)
+@test rs(a,b) ≈ r(x)*s(x)
+@test (r+s)(x) ≈ r(x)+s(x)
+@test (r+rs)(x) ≈ r(x)+rs(x)
 
 aff = AffineToRef{Float64}()
-v₁ = SVector(2rand()-1 for _ in 1:2)
-v₂ = SVector(2rand()-1 for _ in 1:2)
-v₃ = SVector(2rand()-1 for _ in 1:2)
+v₁ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
+v₂ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
+v₃ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
 affine!(aff,[v₁,v₂,v₃])
 @test aff(-1,1) == v₁
 @test aff(-1,-1) == v₂

@@ -18,7 +18,7 @@ res023077 = [1.0         0.23        -0.42065     -0.314583;
 k = 0
 for (i,b) in enumerate(B)
     @test res0[i] ≈ b([0.,0.])
-    @test res023077[i] ≈ b(SVector([0.23,0.77]))
-    k = k+1
+    @test res023077[i] ≈ b(SVector(0.23,0.77))
+    global k = k+1
 end
 @test length(B) == k
