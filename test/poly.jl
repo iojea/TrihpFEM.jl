@@ -19,9 +19,9 @@ q = BiPoly((1.,2.),(-2,0.,1.))
 pq = p*q
 @test pq(x) ≈ p(x)*q(x)
 qxp = q.px*p
-@test qxp(y) == q.px(a)*p(a,b)
+@test qxp(y) ≈ q.px(a)*p(a,b)
 pyq = q*p.py
-@test pyq(x) == p.py(b)*q(a,b)
+@test pyq(x) ≈ p.py(b)*q(a,b)
 ζ = BiPoly((0.,0.,1.,1.),(1.,2.),:x,:α)
 @test_throws ArgumentError("Indeterminates does not match.") ζ*p
 @test_throws ArgumentError("Indeterminates does not match.") p*ζ.py
@@ -71,7 +71,9 @@ aff₂ = AffineToRef([√2/4 -√2/4;√2/4 √2/4],[0,√2/2])
 
 f(x) = 2exp(x[1]+x[2])
 
-wf2 = w*f*2
-z = SVector(0.5,0.)
-@test wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
+wf2 = (w*f)*2
+z = SVector(-0.5,0.)
+@test wf2(z,aff₂) ≈ 4*w(z)*exp(√2/4)
+z = SVector(0.,0.5)
+wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
 

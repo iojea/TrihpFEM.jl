@@ -164,7 +164,7 @@ PolyVectorField(x::AbstractArray{T,1}) where T = PolyTensorField(x)
 const PolyMatrixField{F,X,Y,T} = PolyTensorField{F,X,Y,T,2}
 PolyMatrixField(x::AbstractArray{T,2}) where T = PolyTensorField(x)
 function (v::PolyTensorField{F,X,Y,T,N})(x,y) where {F,X,Y,T,N}
-    z = Array{F,N}(undef,[2 for _ in 1:N]...)
+    z = Array{F,N}(undef,size(v.tensor)...)
     for i in eachindex(v.tensor)
         z[i] = v.tensor[i](x,y)
     end
@@ -201,7 +201,11 @@ end
 
 function Base.:*(p::PolyScalarField,v::T) where T<:PolyTensorField
     issubset(indeterminates(p),indeterminates(v)) || throw(ArgumentError("Fields have different indeterminates"))
-    T(p .* v.tensor)
+    w = similar(v.tensor)
+    for i in eachindex(v.tensor)
+        w[i] = p*v.tensor[i]
+    end
+    T(w)
 end
 Base.:*(v::T,p::PolyScalarField) where T<:PolyTensorField = p*v
 
@@ -339,7 +343,7 @@ LinearAlgebra.dot(p::PolyField,f::Function) = dot(f,p)
 function Base.:*(n::Number,g::GeneralField)
     ind = findfirst(isa.(g.args,PolyField))
     if !isnothing(ind)
-        newargs = (g.args[1:ind]...,n*g.args[ind],g.args[ind+1:end]...)
+        newargs = (g.args[1:ind-1]...,n*g.args[ind],g.args[ind+1:end]...)
         return GeneralField(g.op,newargs)
     else
         return GeneralField(*,(n,g))
@@ -361,5 +365,5 @@ evaluate(::Eval,f,t::AffineToRef,x) = f(x)
 evaluate(::Compose,f,t::AffineToRef,x) = f(t(x))
 evaluate(::Pass,f,t,x) = f
 
-(o::GeneralField)(x,t) = o.op((evaluate(evaltype(arg),arg,t,x) for arg in o.args)...)
+(o::GeneralField)(x,t::AffineToRef) = o.op((evaluate(evaltype(arg),arg,t,x) for arg in o.args)...)
 
