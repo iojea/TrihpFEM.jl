@@ -77,7 +77,7 @@ function Base.show(io::IO,mimetype::MIME"text/plain",p::P) where P<:PolyTensorFi
     show(io,mimetype,p.tensor)
 end
 function Base.show(io::IO,p::P) where P<:PolyTensorField
-    show(io,mimetype,p.tensor)
+    show(io,p.tensor)
 end
 
 

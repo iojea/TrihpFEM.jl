@@ -77,6 +77,7 @@ end
 (s::BiPoly)(x,y) = s.px(x)*s.py(y)
 (s::BiPoly)(x::T) where T<:AbstractVector = s.px(x[1])*s.py(x[2])
 
+degs(p::BiPoly) = (length(p.px)-1,length(p.py)-1)
 
 Base.promote(t::BiPoly{F,X,Y},s::BiPoly{F,X,Y}) where {F,X,Y}= (t,s)
 Base.:*(a::Number,p::BiPoly) = BiPoly(a*p.px,p.py)
@@ -272,7 +273,8 @@ struct AffineToRef{F}
     function AffineToRef{F}(A,b) where F<:Number
         @assert size(A)==(2,2)
         @assert size(b)==(2,)
-        new{F}(F.(A),F.(inv(A)),F.(b),Base.RefValue(abs(det(A))))
+        iA = det(A) != 0 ? inv(A) : zero(A)
+        new{F}(F.(A),iA,F.(b),Base.RefValue(abs(det(A))))
     end
 end
 function AffineToRef(A,b)
@@ -304,7 +306,7 @@ end
 jac(aff::AffineToRef) = aff.jacobian[]
 # area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
 # area(v::Vector) = area(v...)
-area(t::AffineToRef) = jac(t)/2
+area(t::AffineToRef) = 2jac(t)
 
 
 ##########################################################################################
@@ -336,7 +338,7 @@ LinearAlgebra.dot(p::PolyField,f::Function) = dot(f,p)
 
 function Base.:*(n::Number,g::GeneralField)
     ind = findfirst(isa.(g.args,PolyField))
-    if !isnothing
+    if !isnothing(ind)
         newargs = (g.args[1:ind]...,n*g.args[ind],g.args[ind+1:end]...)
         return GeneralField(g.op,newargs)
     else

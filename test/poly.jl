@@ -56,16 +56,17 @@ rs = r*s
 @test (r+rs)(x) ≈ r(x)+rs(x)
 
 aff = AffineToRef{Float64}()
-v₁ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
-v₂ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
-v₃ = SVector(Tuple(2rand()-1 for _ in 1:2)...)
+v₁ = SVector(rand()+2,rand()+1)
+v₂ = SVector(rand(),rand()+2)
+v₃ = SVector(rand()+1,rand())
 affine!(aff,[v₁,v₂,v₃])
-@test aff(-1,1) == v₁
-@test aff(-1,-1) == v₂
-@test aff(1,-1) == v₃
+@test aff(SVector(-1,1)) ≈ v₁
+@test aff(SVector(-1,-1)) ≈ v₂
+@test aff(SVector(1,-1)) ≈ v₃
+@test area(aff) ≈ 0.5abs(v₁[1]*(v₂[2]-v₃[2])+v₂[1]*(v₃[2]-v₁[2])+v₃[1]*(v₁[2]-v₂[2]))
 
 aff₂ = AffineToRef([√2/4 -√2/4;√2/4 √2/4],[0,√2/2])
-area(aff₂) ≈ √2/4
+@test area(aff₂) ≈ 1/2
 
 
 f(x) = 2exp(x[1]+x[2])
