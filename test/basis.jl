@@ -2,7 +2,7 @@ using ..TrihpFEM.Poly
 using Test
 using StaticArrays
 
-@test_throws StandardBasis((1,2,4)) ArgumentError("Degrees does not satisfy p conformity.")
+@test_throws ArgumentError("Degrees does not satisfy p conformity.") StandardBasis((1,2,4))
 
 B = StandardBasis((2,2,3))
 C = StandardBasis((2,2,3))

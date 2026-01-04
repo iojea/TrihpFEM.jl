@@ -80,6 +80,10 @@ end
 
 Base.promote(t::BiPoly{F,X,Y},s::BiPoly{F,X,Y}) where {F,X,Y}= (t,s)
 Base.:*(a::Number,p::BiPoly) = BiPoly(a*p.px,p.py)
+Base.:*(p::BiPoly,a::Number) = a*p
+
+Base.iterate(t::BiPoly) = t
+Base.iterate(t::BiPoly,st) = nothing
 
 function Base.:*(p::AbstractPolynomial,q::BiPoly)
     if indeterminate(p)===indeterminate(q.px)

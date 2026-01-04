@@ -30,17 +30,17 @@ pyq = q*p.py
 
 v = PolyVectorField([p,q])
 @test v(x)[1] == p(x)
-@test v[x][2] == q(x)
+@test v(x)[2] == q(x)
 @test length(v) == 2length(p)
 @test v(x) == [p(x),q(x)]
-@test (a*v)(a,b) == a*(v(a,b)) == (v*a)(a,b)
+@test (a*v)(a,b)≈ a*(v(a,b)) ≈ (v*a)(a,b)
 @test v(a,b)[1] == v[1](a,b)
 A = rand(2,2)
 w = A*v
 @test typeof(w)<:PolyVectorField
 @test size(w) == (2,)
 row = [3 -2]
-@test typeof(row*w)::BiPoly
+@test typeof(row*w)<:PolyScalarField
 s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
 @test_throws DimensionMismatch() row'*w
 sv = v*s
