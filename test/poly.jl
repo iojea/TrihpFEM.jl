@@ -12,10 +12,10 @@ b = rand()
 x = SVector(a,b)
 y = [a,b]
 @test p(x) == p(y) == p(a,b)
-@test p(2,-1) ≈ 24
+@test p(2,-1) ≈ 75
 @test (b*p)(x) ≈ b*p(x)
 q = BiPoly((1.,2.),(-2,0.,1.))
-@test q(2,-1) ≈ -3.
+@test q(2,-1) ≈ -5.
 pq = p*q
 @test pq(x) ≈ p(x)*q(x)
 qxp = q.px*p
@@ -32,17 +32,17 @@ v = PolyVectorField([p,q])
 @test v(x)[1] == p(x)
 @test v[x][2] == q(x)
 @test length(v) == 2length(p)
-@test [vv[x] for vv in v] == [p(x),q(x)]
+@test v(x) == [p(x),q(x)]
 @test (a*v)(a,b) == a*(v(a,b)) == (v*a)(a,b)
 @test v(a,b)[1] == v[1](a,b)
 A = rand(2,2)
 w = A*v
-@test typeof(w)::VectorTensor
+@test typeof(w)<:PolyVectorField
 @test size(w) == (2,)
 row = [3 -2]
+@test typeof(row*w)::BiPoly
 s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
-@test typeof(row*s)::BiPoly
-@test_throws DimensionMismatch() row'*s
+@test_throws DimensionMismatch() row'*w
 sv = v*s
 @test vs(a,b) == v(x)*s(x)
 

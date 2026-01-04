@@ -92,7 +92,8 @@ function Base.:*(p::AbstractPolynomial,q::BiPoly)
 end
 Base.:*(q::BiPoly,p::AbstractPolynomial) = p*q
 
-function Base.:*(p::BiPoly{F,X,Y},q::BiPoly{F,X,Y}) where {F,X,Y}
+function Base.:*(p::BiPoly{F},q::BiPoly{F}) where {F}
+    indeterminates(p)==indeterminates(q) || throw(ArgumentError("Indeterminates does not match."))
     BiPoly(p.px*q.px,p.py*q.py)
 end
 
@@ -179,14 +180,18 @@ Base.getindex(p::PolyTensorField,i) = getindex(p.tensor,i)
 Base.:*(a::Number,p::PolyTensorField) = PolyTensorField(a*p.tensor)
 Base.:*(p::PolyTensorField,a::Number) = a*p
 
-# This function needs improvement. c is created with an AbstractType but it should be create with ConcreteType when possible. 
-function Base.:*(A::AbstractMatrix,p::PolyTensorField{F,X,Y,T,N}) where {F,X,Y,T,N}
+# This function needs improvements to avoid the type instability. 
+function Base.:*(A::AbstractArray,p::PolyTensorField{F,X,Y,T,N}) where {F,X,Y,T,N}
     sA = size(A); sp = size(p)
     sA[end] == sp[1] || throw(DimensionMismatch())
-    D = length(sA)+length(sp)-2
-    c = Array{PolyScalarField{F,X,Y},D}(undef,[2 for _ in 1:D]...)
-    c .= A*p.tensor
-    length(c) == 1 ? c : PolyTensorField(c)
+    M = A*p.tensor
+    if length(M)>1
+        c = Array{PolyScalarField{F,X,Y},length(size(M))}(undef,size(M)...)
+        c .= A*p.tensor
+        return PolyTensorField(c)
+    else
+        return M[1]
+    end
 end
 
 function Base.:*(p::PolyScalarField,v::T) where T<:PolyTensorField
@@ -237,6 +242,8 @@ function Base.zero(::PolySum{F,X,Y}) where {F,X,Y}
 end
 #LinearAlgebra.dot(p::PolyVectorField{F,X,Y},q::PolyVectorField{F,X,Y})  where {F,X,Y} = p.s1*q.s1 + p.s2*q.s2
 
+Base.:*(n::Number,ps::PolySum) = n*ps.left + n*ps.right
+Base.:*(ps::PolySum,n::Number) = n*ps
 Base.:*(ps::PolySum,p::BiPoly) = ps.left*p + ps.right*p
 Base.:*(p::BiPoly,ps::PolySum) = ps*p
 Base.:*(ps::PolySum,p::PolyVectorField) = PolyVectorField(ps*p.s1,ps*p.s2)
