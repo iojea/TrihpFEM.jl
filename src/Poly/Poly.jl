@@ -23,7 +23,7 @@ export GeneralField
 export PolySum
 export indeterminate,indeterminates,degs
 export LegendreIterator,StandardBasis
-export gradient, divergence, laplacian,_outer
+export derivative,gradient, divergence, laplacian,_outer
 export dot
 export AffineToRef
 export affine!

@@ -72,7 +72,7 @@ function Base.iterate(sb::StandardBasis{P,F,X,Y}) where {P,F,X,Y}
     (;Lx,Ly) = sb
     px,stx = iterate(Lx)
     py,sty = iterate(Ly)
-    BiPoly(px,py),(stx,sty)
+    BiPoly(px,py,X,Y),(stx,sty)
 end
 
 function Base.iterate(sb::StandardBasis{P,F,X,Y},state) where {P,F,X,Y}
@@ -91,12 +91,14 @@ end
 function _iteratex(Lx,Ly,stx)
     py,stynew = iterate(Ly) 
     px,stxnew = iterate(Lx,stx)
-    return BiPoly(px,py),(stxnew,stynew)
+    X = indeterminate(px); Y = indeterminate(py)
+    return BiPoly(px,py,X,Y),(stxnew,stynew)
 end
 
 function _iteratey(Ly,sty,stx)
     py,stynew = iterate(Ly,sty)
-    return BiPoly(stx[2],py),(stx,stynew)
+    X = indeterminate(stx[2]); Y = indeterminate(py)
+    return BiPoly(stx[2],py,X,Y),(stx,stynew)
 end
 
 # ### The goal of DoubleStandardBasis is to have a double iterator in order to have only one function for building matrices or vectors. 
