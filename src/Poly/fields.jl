@@ -47,9 +47,7 @@ struct BiPoly{F,X,Y} <: PolyScalarField{F,X,Y}
     px::ImmutablePolynomial{F,X,N} where N
     py::ImmutablePolynomial{F,Y,M} where M
     function BiPoly(px::ImmutablePolynomial{F},
-                    py::ImmutablePolynomial{F}) where F
-        X = indeterminate(px)
-        Y = indeterminate(py)
+                    py::ImmutablePolynomial{F},X,Y) where F
         X==Y && throw(ArgumentError("Indeterminates must be different"))
         if px == zero(px) || py == zero(py)
             return new{F,X,Y}(zero(px),zero(py))
@@ -70,7 +68,7 @@ function BiPoly(t1::Tuple,t2::Tuple,X=:x,Y=:y)
     else
         p1 = ImmutablePolynomial(NTuple{N,F}(convert.(F,t1)),X)
         p2 = ImmutablePolynomial(NTuple{M,F}(convert.(F,t2)),Y)
-        return BiPoly(p1,p2)
+        return BiPoly(p1,p2,X,Y)
     end
 end
 
@@ -84,7 +82,7 @@ Base.:*(a::Number,p::BiPoly) = BiPoly(a*p.px,p.py)
 Base.:*(p::BiPoly,a::Number) = a*p
 
 Base.iterate(t::BiPoly) = t
-Base.iterate(t::BiPoly,st) = nothing
+Base.iterate(::BiPoly,st) = nothing
 
 function Base.:*(p::AbstractPolynomial,q::BiPoly)
     if indeterminate(p)===indeterminate(q.px)
@@ -104,10 +102,10 @@ end
 
 LinearAlgebra.:⋅(p::BiPoly,q::BiPoly) = p*q
 function Base.zero(p::BiPoly{F,X,Y}) where {F,X,Y}
-    BiPoly(zero(p.px),zero(p.py))
+    BiPoly(zero(p.px),zero(p.py),X,Y)
 end
 function Base.zero(::Type{BiPoly{F,X,Y}}) where {F,X,Y}
-    BiPoly(zero(ImmutablePolynomial{F,X}),zero(ImmutablePolynomial{F,Y}))
+    BiPoly(zero(ImmutablePolynomial{F,X}),zero(ImmutablePolynomial{F,Y}),X,Y)
 end
 
 ###############################

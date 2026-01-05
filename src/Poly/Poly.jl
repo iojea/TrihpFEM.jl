@@ -22,8 +22,8 @@ export PolyScalarField, PolyVectorField, PolyTensorField
 export GeneralField
 export PolySum
 export indeterminate,indeterminates,degs
-# export LegendreIterator,StandardBasis,DoubleStandardBasis
-# export gradient, divergence, laplacian,_outer
+export LegendreIterator,StandardBasis
+export gradient, divergence, laplacian,_outer
 export dot
 export AffineToRef
 export affine!

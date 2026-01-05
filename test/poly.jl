@@ -87,3 +87,10 @@ gp = ∇(p)
 @test gp[2](x) ≈ -p.px(x)
 @test typeof(gp)<:PolyVectorField
 
+@test_throws ArgumentError("z is not an indeterminate of the polynomial") derivative(p,:z)
+
+Lp = Δ(p)
+@test typeof(Lp) == typeof(p)
+@test Lp(a,b) ≈ 10p.py(b)
+
+

@@ -15,9 +15,9 @@ Compute the derivative of a PolyField with respect to the variable `z`.
 ```
 """
 function Polynomials.derivative(p::BiPoly{F,X,Y},z::Symbol) where {F,X,Y}
-    z == X && return BiPoly(derivative(p.px),p.py)
-    z == Y && return BiPoly(p.px,derivative(p.py))
-    throw(ArgumentError("$Z is not an indeterminate of the polynomial"))
+    z == X && return BiPoly(derivative(p.px),p.py,X,Y)
+    z == Y && return BiPoly(p.px,derivative(p.py),X,Y)
+    throw(ArgumentError("$z is not an indeterminate of the polynomial"))
 end
 
 function Polynomials.derivative(p::PolySum{F,X,Y},z::Symbol) where {F,X,Y}
@@ -47,11 +47,12 @@ end
 Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, typically a  `PolySum`. 
 """
 function divergence(v::PolyVectorField)
+    X,Y = indeterminates(v)
     d1x = derivative(v[1].px)
     d2y = derivative(v[2].py)
-    part1 = BiPoly(d1x,v[1].py)
-    part2 = BiPoly(v[2].px,d2y)
-    PolySum(part1,part2)
+    part1 = BiPoly(d1x,v[1].py,X,Y)
+    part2 = BiPoly(v[2].px,d2y,X,Y)
+    part1 + part2
 end
 
 LinearAlgebra.dot(::Type{gradient},v::PolyVectorField) = divergence(v)
@@ -66,4 +67,4 @@ Computes the laplacian of a `PolyScalarField` and returns another `PolyScalarFie
 laplacian(v::PolyScalarField) = divergence(gradient(v))
 
 # This method should be removed in the next Polynomials update
-# Polynomials.derivative(p::ImmutablePolynomial{F,X,1}) where {F,X} = zero(p)
+Polynomials.derivative(p::ImmutablePolynomial{F,X,1}) where {F,X} = zero(p)
