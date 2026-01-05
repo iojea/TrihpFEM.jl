@@ -28,7 +28,7 @@ order(::OperatorSpace{typeof(laplacian),S}) where S = Order{(2,)}()
 combine(::Order{B},::Order{C}) where {B,C} = Order{(B...,C...)}()
 combine(::Order{B},::Order{0}) where B = Order{B}()
 combine(::Order{0},::Order{B}) where B = Order{B}()
-
+combine(::Order{0},::Order{0}) = Order{0}()
 
 basis(::StdScalarSpace,p::Tuple) = StandardBasis(p)
 
