@@ -78,7 +78,7 @@ end
 degs(p::BiPoly) = (length(p.px)-1,length(p.py)-1)
 
 Base.promote(t::BiPoly{F,X,Y},s::BiPoly{F,X,Y}) where {F,X,Y}= (t,s)
-Base.:*(a::Number,p::BiPoly) = BiPoly(a*p.px,p.py)
+Base.:*(a::Number,p::BiPoly) = BiPoly(a*p.px,p.py,indeterminates(p)...)
 Base.:*(p::BiPoly,a::Number) = a*p
 
 Base.iterate(t::BiPoly) = t
@@ -86,9 +86,9 @@ Base.iterate(::BiPoly,st) = nothing
 
 function Base.:*(p::AbstractPolynomial,q::BiPoly)
     if indeterminate(p)===indeterminate(q.px)
-        BiPoly(p*q.px,q.py)
+        BiPoly(p*q.px,q.py,indeterminates(q)...)
     elseif indeterminate(p)===indeterminate(q.py)
-        BiPoly(q.px,p*q.py)
+        BiPoly(q.px,p*q.py,indeterminates(q)...)
     else
         throw(ArgumentError("Indeterminates does not match."))
     end
@@ -97,7 +97,7 @@ Base.:*(q::BiPoly,p::AbstractPolynomial) = p*q
 
 function Base.:*(p::BiPoly{F},q::BiPoly{F}) where {F}
     indeterminates(p)==indeterminates(q) || throw(ArgumentError("Indeterminates does not match."))
-    BiPoly(p.px*q.px,p.py*q.py)
+    BiPoly(p.px*q.px,p.py*q.py,indeterminates(p)...)
 end
 
 LinearAlgebra.:⋅(p::BiPoly,q::BiPoly) = p*q

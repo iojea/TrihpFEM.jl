@@ -81,10 +81,10 @@ wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
 @test repr(zero(p)) == "(0.0,)"
 
 px = derivative(p,:x)
-@test px(a,b) ≈ (2+10a)*p.py(b) 
 gp = ∇(p)
+@test px(a,b) ≈ (2+10a)*p.py(b) 
 @test gp[1](x) ≈ px(x)
-@test gp[2](x) ≈ -p.px(x)
+@test gp[2](x) ≈ -p.px(x[1])
 @test typeof(gp)<:PolyVectorField
 
 @test_throws ArgumentError("z is not an indeterminate of the polynomial") derivative(p,:z)
