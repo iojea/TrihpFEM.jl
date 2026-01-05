@@ -93,4 +93,9 @@ Lp = Δ(p)
 @test typeof(Lp) == typeof(p)
 @test Lp(a,b) ≈ 10p.py(b)
 
+Lq = Δ(q)
+Lr = Δ(r)
+@test Lr(x) ≈ Lp(x) + Lq(x)
+@test Δ(Lr) == zero(p)
+@test repr(r) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y) + (1.0 + 2.0*x)(-2.0 + 1.0*y^2)"
 

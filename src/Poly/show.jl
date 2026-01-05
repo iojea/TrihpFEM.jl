@@ -71,12 +71,23 @@ function Base.show(io::IO,p::P) where {F,P<:BiPoly{F}}
     end
 end
 
+function Base.show(io::IO,mimetype::MIME"text/plain",p::P) where P<:PolySum
+    show(io,mimetype,p.left)
+    print(io," + ")
+    show(io,mimetype,p.right)
+end
+function Base.show(io::IO,p::P) where P<:PolySum
+    print(io,p.left)
+    print(io," + ")
+    print(io,p.right)
+end
+
 function Base.show(io::IO,mimetype::MIME"text/plain",p::P) where P<:PolyTensorField
-    println(typeof(p))
     show(io,mimetype,p.tensor)
 end
 function Base.show(io::IO,p::P) where P<:PolyTensorField
     show(io,p.tensor)
 end
+
 
 

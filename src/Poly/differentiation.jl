@@ -48,11 +48,9 @@ Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, 
 """
 function divergence(v::PolyVectorField)
     X,Y = indeterminates(v)
-    d1x = derivative(v[1].px)
-    d2y = derivative(v[2].py)
-    part1 = BiPoly(d1x,v[1].py,X,Y)
-    part2 = BiPoly(v[2].px,d2y,X,Y)
-    part1 + part2
+    d1x = derivative(v[1],:x)
+    d2y = derivative(v[2],:y)
+    d1x+d2y
 end
 
 LinearAlgebra.dot(::Type{gradient},v::PolyVectorField) = divergence(v)
