@@ -11,8 +11,8 @@ include("hpspaces.jl")
 
 
 export AbstractSpace
-export StdScalarSpace, StdVectorSpace, StdTensorSpace
-export ScalarSpace, VectorSpace, TensorSpace
+export StdScalarSpace, StdVectorSpace
+export ScalarSpace, VectorSpace
 export basis
 export OperatorSpace
 export gradient,divergence,laplacian

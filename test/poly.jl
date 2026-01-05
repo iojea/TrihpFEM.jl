@@ -79,6 +79,7 @@ wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
 
 @test repr(p) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y)"
 @test repr(zero(p)) == "(0.0,)"
+@test sprint(show,p) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y)"
 
 px = derivative(p,:x)
 gp = ∇(p)
@@ -90,13 +91,14 @@ gp = ∇(p)
 
 gpp = PolyVectorField([g for g in gp])
 gpp(x) ≈ gp(x)
-gpgp = gp .+ gp
+gpgp = gp + gp
 gp2 = 2gp
 pv = p*v
 rsq = r*r
 @test gpgp(x) ≈ gp2(x)
 @test pv[1](x) ≈ p(x)^2
 @test rsq(x) ≈ p(x)^2+2p(x)*q(x)+q(x)^2
+@test repr(gp) == "BiPoly{Float64, :x, :y}[(2.0 + 10.0*x)(2.0 - 1.0*y), (1.0 + 2.0*x + 5.0*x^2)(-1.0)]"
 
 Lp = Δ(p)
 @test typeof(Lp) == typeof(p)
@@ -112,3 +114,4 @@ voutgp = v ⊗ gp
 @test typeof(voutgp)<:PolyMatrixField
 @test size(voutgp)==(2,2)
 @test voutgp[1,2](x) ≈ p(x)*gp[2](x)
+

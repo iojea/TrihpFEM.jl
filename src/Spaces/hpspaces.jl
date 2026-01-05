@@ -6,7 +6,6 @@ abstract type TensorSpace <: AbstractSpace end
 
 struct StdScalarSpace <: ScalarSpace end
 struct StdVectorSpace <: VectorSpace end
-struct StdTensorSpace <: TensorSpace end
 
 struct OperatorSpace{F<:Function,S<:AbstractSpace} <: AbstractSpace
     operator::F

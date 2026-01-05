@@ -261,6 +261,7 @@ Base.:*(ps::PolySum,p::PolyVectorField) = PolyVectorField([ps*p.s1,ps*p.s2])
 Base.:*(p::PolyVectorField,ps::PolySum) = ps*p
 Base.:*(ps::PolySum,qs::PolySum) = ps.left*qs.left + ps.right*qs.left + ps.right*qs.left + ps.right*qs.right
 
+Base.:+(p::PolyTensorField,q::PolyTensorField) = PolyTensorField(p .+ q)
 
 ###########################################################################################
 #########################           AffineToRef        ###########################

@@ -44,4 +44,7 @@ export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,n
 
 using ..Poly: BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField,StandardBasis
 export BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField,StandardBasis
+
+using ..Spaces: StdScalarSpace,StdVectorSpace,OperatorSpace,order,CoeffType,coefftype,EvalType,Order,Eval,Pass,combine,basis,Variable,Constant
+export StdScalarSpace,StdVectorSpace,OperatorSpace,order,CoeffType,coefftype,EvalType,Order,Eval,Pass,combine,basis,Variable,Constant
 end

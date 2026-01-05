@@ -1,4 +1,5 @@
 
+
 """
 ```
    derivative(p::PolyField,z)
@@ -53,7 +54,9 @@ function divergence(v::PolyVectorField)
     d1x+d2y
 end
 
-LinearAlgebra.dot(::Type{gradient},v::PolyVectorField) = divergence(v)
+function LinearAlgebra.dot(::Type{typeof(gradient)},v::PolyVectorField)
+        divergence(v)
+end
 
 
 """
