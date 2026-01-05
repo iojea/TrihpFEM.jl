@@ -5,9 +5,8 @@ using Dictionaries
 using LinearAlgebra
 using Polynomials
 using ..Meshes
-using ..PolyFields
+using ..Poly
 include("hpspaces.jl")
-# include("operation.jl")
 
 
 
