@@ -8,13 +8,13 @@ using ..Meshes
 
 include("fields.jl")
 # include("opfields.jl")
-# include("differentiation.jl")
+include("differentiation.jl")
 include("legendre.jl")
 
 include("show.jl")
 
-# const ∇ = gradient
-# const Δ = laplacian
+const ∇ = gradient
+const Δ = laplacian
 # #const ⊗ = _outer
 export PolyField
 export BiPoly
@@ -31,7 +31,7 @@ export jac
 export area
 export EvalType,Eval,Compose,Pass
 export evaluate
-# export ∇
-# export Δ
+export ∇
+export Δ
 
 end; #module

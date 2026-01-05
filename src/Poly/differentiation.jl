@@ -8,16 +8,16 @@ Compute the derivative of a PolyField with respect to the variable `z`.
 
 # Examples
 ```
-   julia> p = TensorPolynomial((1.,2.,3),(0.,2))
+   julia> p = BiPoly((1.,2.,3),(0.,2))
    (1.0 + 2.0*x + 3.0*x^2)(2.0*y)
    julia> pₓ = derivative(p,:x)
    (2.0 + 6.0*x)(2.0*y)
 ```
 """
-function Polynomials.derivative(p::TensorPolynomial{F,X,Y},z::Symbol) where {F,X,Y}
-    z == X && return TensorPolynomial(derivative(p.px),p.py)
-    z == Y && return TensorPolynomial(p.px,derivative(p.py))
-    throw(ArgumentError("Z must be an indeterminate present in the field, but Z=$z was provided for a field with indeterminates X=$X and Y=$Y"))
+function Polynomials.derivative(p::BiPoly{F,X,Y},z::Symbol) where {F,X,Y}
+    z == X && return BiPoly(derivative(p.px),p.py)
+    z == Y && return BiPoly(p.px,derivative(p.py))
+    throw(ArgumentError("$Z is not an indeterminate of the polynomial"))
 end
 
 function Polynomials.derivative(p::PolySum{F,X,Y},z::Symbol) where {F,X,Y}
@@ -49,8 +49,8 @@ Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, 
 function divergence(v::PolyVectorField)
     d1x = derivative(v[1].px)
     d2y = derivative(v[2].py)
-    part1 = TensorPolynomial(d1x,v[1].py)
-    part2 = TensorPolynomial(v[2].px,d2y)
+    part1 = BiPoly(d1x,v[1].py)
+    part2 = BiPoly(v[2].px,d2y)
     PolySum(part1,part2)
 end
 
@@ -66,4 +66,4 @@ Computes the laplacian of a `PolyScalarField` and returns another `PolyScalarFie
 laplacian(v::PolyScalarField) = divergence(gradient(v))
 
 # This method should be removed in the next Polynomials update
-Polynomials.derivative(p::ImmutablePolynomial{F,X,1}) where {F,X} = zero(p)
+# Polynomials.derivative(p::ImmutablePolynomial{F,X,1}) where {F,X} = zero(p)

@@ -79,3 +79,11 @@ wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
 
 @test repr(p) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y)"
 @test repr(zero(p)) == "(0.0,)"
+
+px = derivative(p,:x)
+@test px(a,b) ≈ (2+10a)*p.py(b) 
+gp = ∇(p)
+@test gp[1](x) ≈ px(x)
+@test gp[2](x) ≈ -p.px(x)
+@test typeof(gp)<:PolyVectorField
+
