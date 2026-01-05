@@ -169,7 +169,6 @@ function (v::PolyTensorField{F,X,Y,T,N})(x,y) where {F,X,Y,T,N}
     z
 end
 
-
 function (v::PolyTensorField{F,X,Y,T,N})(x) where {F,X,Y,T,N}
     v(x[1],x[2])
 end
@@ -177,8 +176,11 @@ end
 Base.IteratorSize(::PolyTensorField{F,X,Y,T,N}) where {F,X,Y,T,N} = Base.HasShape{N}()
 Base.length(p::PolyTensorField) = length(p.tensor)
 Base.size(p::PolyTensorField) = size(p.tensor)
-Base.iterate(p::PolyTensorField,st=nothing) = iterate(p.tensor,st)
-Base.getindex(p::PolyTensorField,i) = getindex(p.tensor,i)
+function Base.iterate(p::PolyTensorField,st=nothing)
+    isnothing(st) ? iterate(p.tensor) : iterate(p.tensor,st)
+end
+Base.getindex(p::PolyTensorField,i...) = getindex(p.tensor,i...)
+Base.zero(p::PolyTensorField) = PolyTensorField(zero(p.tensor))
 
 Base.:*(a::Number,p::PolyTensorField) = PolyTensorField(a*p.tensor)
 Base.:*(p::PolyTensorField,a::Number) = a*p
@@ -208,6 +210,7 @@ end
 Base.:*(v::T,p::PolyScalarField) where T<:PolyTensorField = p*v
 
 
+
 function _outer(p::PolyVectorField,q::PolyVectorField)
     @cast a[i,j] := p.tensor[i]*q.tensor[j]
     PolyTensorField(a)
@@ -234,6 +237,7 @@ end
 (p::PolySum)(x,y) = p.left(x,y)+p.right(x,y)
 (p::PolySum)(x) = p.left(x) + p.right(x)
 
+
 function Base.:+(p::P,q::Q) where {F,X,Y,P<:PolyField{F,X,Y},Q<:PolyField{F,X,Y}}
     if p==zero(p)
         q
@@ -253,7 +257,7 @@ Base.:*(n::Number,ps::PolySum) = n*ps.left + n*ps.right
 Base.:*(ps::PolySum,n::Number) = n*ps
 Base.:*(ps::PolySum,p::BiPoly) = ps.left*p + ps.right*p
 Base.:*(p::BiPoly,ps::PolySum) = ps*p
-Base.:*(ps::PolySum,p::PolyVectorField) = PolyVectorField(ps*p.s1,ps*p.s2)
+Base.:*(ps::PolySum,p::PolyVectorField) = PolyVectorField([ps*p.s1,ps*p.s2])
 Base.:*(p::PolyVectorField,ps::PolySum) = ps*p
 Base.:*(ps::PolySum,qs::PolySum) = ps.left*qs.left + ps.right*qs.left + ps.right*qs.left + ps.right*qs.right
 

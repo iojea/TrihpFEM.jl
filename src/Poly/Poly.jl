@@ -15,7 +15,7 @@ include("show.jl")
 
 const ∇ = gradient
 const Δ = laplacian
-# #const ⊗ = _outer
+const ⊗ = _outer
 export PolyField
 export BiPoly
 export PolyScalarField, PolyVectorField, PolyTensorField
@@ -33,5 +33,6 @@ export EvalType,Eval,Compose,Pass
 export evaluate
 export ∇
 export Δ
+export _outer,⊗
 
 end; #module

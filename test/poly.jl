@@ -86,8 +86,17 @@ gp = ∇(p)
 @test gp[1](x) ≈ px(x)
 @test gp[2](x) ≈ -p.px(x[1])
 @test typeof(gp)<:PolyVectorField
-
 @test_throws ArgumentError("z is not an indeterminate of the polynomial") derivative(p,:z)
+
+gpp = PolyVectorField([g for g in gp])
+gpp(x) ≈ gp(x)
+gpgp = gp .+ gp
+gp2 = 2gp
+pv = p*v
+rsq = r*r
+@test gpgp(x) ≈ gp2(x)
+@test pv[1](x) ≈ p(x)^2
+@test rsq(x) ≈ p(x)^2+2p(x)*q(x)+q(x)^2
 
 Lp = Δ(p)
 @test typeof(Lp) == typeof(p)
@@ -99,3 +108,7 @@ Lr = Δ(r)
 @test Δ(Lr) == zero(p)
 @test repr(r) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y) + (1.0 + 2.0*x)(-2.0 + 1.0*y^2)"
 
+voutgp = v ⊗ gp
+@test typeof(voutgp)<:PolyMatrixField
+@test size(voutgp)==(2,2)
+@test voutgp[1,2](x) ≈ p(x)*gp[2](x)
