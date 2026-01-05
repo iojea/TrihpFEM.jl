@@ -44,7 +44,7 @@ row = [3 -2]
 s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)),Tuple(rand() for _ in 1:rand(1:8)),:x,:y)
 @test_throws DimensionMismatch() row'*w
 sv = v*s
-@test sv(a,b) == v(x)*s(x)
+@test sv(a,b) ≈ v(x)*s(x)
 
 r = p+q
 @test typeof(r)<:PolySum
@@ -77,3 +77,5 @@ z = SVector(-0.5,0.)
 z = SVector(0.,0.5)
 wf2(z,aff₂) ≈ 4*w(z)*exp(√2/2)
 
+@test repr(p) == "(1.0 + 2.0*x + 5.0*x^2)(2.0 - 1.0*y)"
+@test repr(zero(p)) == "(0.0,)"
