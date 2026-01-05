@@ -35,6 +35,7 @@ using Triangulate
 
 include("Meshes/Meshes.jl")
 include("Poly/Poly.jl")
+include("Spaces/Spaces.jl")
 # Write your package code here.
 #
 
