@@ -1,5 +1,5 @@
-const TriangleList{I,P,F} = Dictionary{Triangle{I},TriangleAttributes{P,F}} where {I,P,F}
-const EdgeList{I,P} = Dictionary{Edge{I},EdgeAttributes{P}} where {I,P}
+const TriangleList{I, P, F} = Dictionary{Triangle{I}, TriangleAttributes{P, F}} where {I, P, F}
+const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{P}} where {I, P}
 
 """
     HPTriangulation
@@ -20,16 +20,16 @@ an `struct` for storing the degrees of freedom of a mesh. It can be initialized 
 ```
 In practice, a `DOF` is created empty an then filled using `degrees_of_freedom!(mesh)`.
 """
-struct DOF{I<:Integer}
+struct DOF{I <: Integer}
     n::Base.RefValue{I}
-    by_edge::Dictionary{Edge{I}, SArray{S,I, 1} where S<:Tuple}
-    by_tri::Dictionary{Triangle{I}, MArray{S,I, 1} where S<:Tuple} 
+    by_edge::Dictionary{Edge{I}, SArray{S, I, 1} where {S <: Tuple}}
+    by_tri::Dictionary{Triangle{I}, MArray{S, I, 1} where {S <: Tuple}}
 end
 
-function DOF{I}() where I<:Integer
-    by_edge = Dictionary{Edge{I},SArray{S,I,1} where S<:Tuple}()
-    by_tri= Dictionary{Triangle{I}, MArray{S,I, 1} where S<:Tuple}()
-    DOF{I}(Base.RefValue{I}(zero(I)),by_edge,by_tri)
+function DOF{I}() where {I <: Integer}
+    by_edge = Dictionary{Edge{I}, SArray{S, I, 1} where {S <: Tuple}}()
+    by_tri = Dictionary{Triangle{I}, MArray{S, I, 1} where {S <: Tuple}}()
+    return DOF{I}(Base.RefValue{I}(zero(I)), by_edge, by_tri)
 end
 
 """
@@ -37,12 +37,12 @@ end
 
 empty both dictionaries stored in `d` (degrees of freedom by edge and by triangle). 
 """
-function Base.empty!(d::DOF{I}) where I
+function Base.empty!(d::DOF{I}) where {I}
     empty!(d.by_edge)
     empty!(d.by_tri)
-    d.n[] = zero(I)
+    return d.n[] = zero(I)
 end
-Base.isempty(d::DOF{I}) where I = d.n[] == zero(I)
+Base.isempty(d::DOF{I}) where {I} = d.n[] == zero(I)
 
 ############################################
 ####      Domain Mesh construction      ####
@@ -61,31 +61,33 @@ builds an `HPMesh` from a `Triangulate.TriangulatioIO` struct.
 
     Meshes of type `HPMesh` can also be constructed using the helper functions such us `circmesh`, `rectmesh`, `squaremesh`. For a more general constructor, check the docs for `hpmesh`.
 """
-struct HPMesh{F<:Real,I<:Integer,P<:Integer} <: HPTriangulation
-    points::Vector{SVector{2,F}} 
-    trilist::TriangleList{I,P,F}
-    edgelist::EdgeList{I,P}
-    dofs::DOF{I} 
+struct HPMesh{F <: Real, I <: Integer, P <: Integer} <: HPTriangulation
+    points::Vector{SVector{2, F}}
+    trilist::TriangleList{I, P, F}
+    edgelist::EdgeList{I, P}
+    dofs::DOF{I}
 end
 
-function HPMesh(v::Vector{SVector{2,F}},
-                t::TriangleList{I,P,F},
-                e::EdgeList{I,P}) where {I,P,F}
-     HPMesh(v,t,e,DOF{I}())
+function HPMesh(
+        v::Vector{SVector{2, F}},
+        t::TriangleList{I, P, F},
+        e::EdgeList{I, P}
+    ) where {I, P, F}
+    return HPMesh(v, t, e, DOF{I}())
 end
 
-function HPMesh(mat::AbstractMatrix,tris::TriangleList,edgs::EdgeList)
-    points = SVector{2,eltype(mat)}.(eachcol(mat))
-    HPMesh(points,tris,edgs)
+function HPMesh(mat::AbstractMatrix, tris::TriangleList, edgs::EdgeList)
+    points = SVector{2, eltype(mat)}.(eachcol(mat))
+    return HPMesh(points, tris, edgs)
 end
 
-function HPMesh{F,I,P}(tri::TriangulateIO) where {F,I,P}
-    (;pointlist,trianglelist,edgelist,edgemarkerlist) = tri
-    points = SVector{2,F}.(eachcol(pointlist))
-    edgelist = maybeconvert(I,edgelist)
-    triangles = dictionary([triangle(I,t,pointlist) => TriangleAttributes{P,F}() for t in eachcol(trianglelist)])
-    edges = dictionary([Edge(e) => EdgeAttributes(one(P),P(edgemarkerlist[i]),false) for (i,e) in enumerate(eachcol(edgelist))] )
-    HPMesh(points,triangles,edges)
+function HPMesh{F, I, P}(tri::TriangulateIO) where {F, I, P}
+    (; pointlist, trianglelist, edgelist, edgemarkerlist) = tri
+    points = SVector{2, F}.(eachcol(pointlist))
+    edgelist = maybeconvert(I, edgelist)
+    triangles = dictionary([triangle(I, t, pointlist) => TriangleAttributes{P, F}() for t in eachcol(trianglelist)])
+    edges = dictionary([Edge(e) => EdgeAttributes(one(P), P(edgemarkerlist[i]), false) for (i, e) in enumerate(eachcol(edgelist))])
+    return HPMesh(points, triangles, edges)
 end
 
 """
@@ -322,20 +324,22 @@ HPMesh{Float64, Int32, UInt8}
   Int32[4, 13] │ (0x01, :∂𝔑, :noref)
 ```
 """
-function hpmesh(vertices,h;
-                segments=nothing,
-                tags=nothing,
-                holes=nothing)
+function hpmesh(
+        vertices, h;
+        segments = nothing,
+        tags = nothing,
+        holes = nothing
+    )
     F = eltype(vertices)
     P = UInt8
     tri = TriangulateIO()
     tri.pointlist = F.(vertices)
     if isnothing(segments)
-        segments = _boundary_segments(size(vertices,2))
+        segments = _boundary_segments(size(vertices, 2))
     end
     if isnothing(tags)
-        tags = ones(P,size(vertices,2))
-    elseif eltype(tags)==Symbol
+        tags = ones(P, size(vertices, 2))
+    elseif eltype(tags) == Symbol
         tags = [BOUNDARY_DICT[m] for m in tags]
     end
     tri.segmentlist = segments
@@ -343,11 +347,11 @@ function hpmesh(vertices,h;
     if !isnothing(holes)
         tri.holelist = holes
     end
-    maxarea  = Printf.@sprintf "%0.15f" h^2/2
-    minangle = Printf.@sprintf "%0.15f" 30.
-    (tri,_) = triangulate("pea$(maxarea)q$(minangle)Q",tri)
+    maxarea = Printf.@sprintf "%0.15f" h^2 / 2
+    minangle = Printf.@sprintf "%0.15f" 30.0
+    (tri, _) = triangulate("pea$(maxarea)q$(minangle)Q", tri)
     I = eltype(tri.edgelist)
-    HPMesh{F,I,P}(tri)
+    return HPMesh{F, I, P}(tri)
 end
 
 """
@@ -356,35 +360,40 @@ sets the boundary edges of mesh `m` which satisfy `condition` to kind `s`, where
 
 See also [`setdirichlet!`](@ref) and [`setneumann!`](@ref).
 """
-function setboundary!(i::Integer,
-                       condition::Function,
-                       m::HPMesh{F,I,P}) where {F,I,P}
-    (;points,edgelist) = m
+function setboundary!(
+        i::Integer,
+        condition::Function,
+        m::HPMesh{F, I, P}
+    ) where {F, I, P}
+    (; points, edgelist) = m
     for ea in pairs(edgelist)
         e = first(ea)
         if condition(points[e[1]]) && condition(points[e[2]])
-            settag!(last(ea),P(i))
+            settag!(last(ea), P(i))
         end
     end
+    return
 end
-function setboundary!(s::Symbol,
-                       condition::Function,
-                       m::HPTriangulation)
+function setboundary!(
+        s::Symbol,
+        condition::Function,
+        m::HPTriangulation
+    )
     i = BOUNDARY_DICT[s]
-    setboundary!(i,condition,m)    
+    return setboundary!(i, condition, m)
 end
 """
     setdirichlet!(condition,m::HPMesh)
 Marks as `:dirichlet` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is tagged when both vertices satisfy `condition`.
 See also [`setneumann!`](@ref).
 """
-setdirichlet!(condition::Function,m::HPMesh) = setboundary!(1,condition,m)
+setdirichlet!(condition::Function, m::HPMesh) = setboundary!(1, condition, m)
 """
     setneumann!(condition,m::HPMesh)
 Marks as `:neumann` all boundary edges of `m` satisfying `condition`. Notice that `condition` is evaluated at the vertices of each edge. An edge is tagged when both vertices satisfy `condition`.
 See also [`setdirichlet!`](@ref).
 """
-setneumann!(condition::Function,m::HPMesh) = setboundary!(2,condition,m)
+setneumann!(condition::Function, m::HPMesh) = setboundary!(2, condition, m)
 
 
 ############################################
@@ -394,43 +403,43 @@ setneumann!(condition::Function,m::HPMesh) = setboundary!(2,condition,m)
     maybeconvert(::Type{T},arr) where T
 If necessary converts the elements of `arr` to type `T`.  
 """
-function maybeconvert(::Type{T},arr::AbstractArray) where T
-    eltype(arr)==T ? arr : convert.(T,arr)
+function maybeconvert(::Type{T}, arr::AbstractArray) where {T}
+    return eltype(arr) == T ? arr : convert.(T, arr)
 end
 
 """
     degtype(::HPMesh{F,I,P}) wehere {F,I,P}
 returns `P`  
 """
-degtype(::HPMesh{F,I,P}) where {F,I,P} = P
+degtype(::HPMesh{F, I, P}) where {F, I, P} = P
 """
     inttype(::HPMesh{F,I,P}) wehere {F,I,P}
 returns `I`  
 """
-inttype(::HPMesh{F,I,P}) where {F,I,P} = I
+inttype(::HPMesh{F, I, P}) where {F, I, P} = I
 """
     floattype(::HPMesh{F,I,P}) wehere {F,I,P}
 returns `F`  
 """
-floattype(::HPMesh{F,I,P}) where {F,I,P} = F
+floattype(::HPMesh{F, I, P}) where {F, I, P} = F
 
 
 function Base.copy(mesh::HPMesh)
-    HPMesh(deepcopy(mesh.points),deepcopy(mesh.trilist),deepcopy(mesh.edgelist))
+    return HPMesh(deepcopy(mesh.points), deepcopy(mesh.trilist), deepcopy(mesh.edgelist))
 end
 
 """
   edges(m)
 retuns the edges of `m`, being `m` an `HPMesh` or an `EdgeList`.  
 """
-@inline edges(list::T) where T<:EdgeList = keys(list)
-@inline edges(mesh::T) where T<:HPMesh = keys(mesh.edgelist)
+@inline edges(list::T) where {T <: EdgeList} = keys(list)
+@inline edges(mesh::T) where {T <: HPMesh} = keys(mesh.edgelist)
 """
   triangles(m) 
 retuns the triangles of `m`, being `m` and `HPMesh` or a `TriList`.
 """
-@inline triangles(list::T) where T<:TriangleList = keys(list)
-@inline triangles(mesh::T) where T<:HPMesh = keys(mesh.trilist)
+@inline triangles(list::T) where {T <: TriangleList} = keys(list)
+@inline triangles(mesh::T) where {T <: HPMesh} = keys(mesh.trilist)
 
 """
   dof(m)
@@ -459,10 +468,10 @@ retuns the degrees of freedom of the mesh `m`.
 
 Checks if 'e' is stored as presented or in reverse order. 
 """
-function _same_order(e::Edge{I},elist::EdgeList{I,P}) where {I,P}
-    _,(_,k) = gettoken(elist,e)
-    oe      = gettokenvalue(keys(elist),k)
-    oe == e
+function _same_order(e::Edge{I}, elist::EdgeList{I, P}) where {I, P}
+    _, (_, k) = gettoken(elist, e)
+    oe = gettokenvalue(keys(elist), k)
+    return oe == e
 end
 
 """
@@ -471,11 +480,11 @@ end
 returns a permutation of contiguous indices `ind` such that `v[ind]` is ordered. 
 """
 function psortperm(v)
-    i    = argmin(v)
-    if v[i] ≤ v[mod1(i+1,3)] ≤ v[mod1(i+2,3)]
-        ind = mod1.(i:i+2,3)
+    i = argmin(v)
+    if v[i] ≤ v[mod1(i + 1, 3)] ≤ v[mod1(i + 2, 3)]
+        ind = mod1.(i:(i + 2), 3)
     else
-        ind = mod1.(i:-1:i-2,3)
+        ind = mod1.(i:-1:(i - 2), 3)
     end
     return ind
 end
@@ -484,11 +493,11 @@ end
   $(SIGNATURES)  
 Given a triangle  `t`, of  a mesh `mesh` returs the degrees of the edges of `t`
 """
-function degrees(t::Triangle{I},mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;edgelist) = mesh
+function degrees(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; edgelist) = mesh
     eds = edges(t)
-    p = Tuple(degree.(getindices(edgelist,eds)))
-    sort(p)
+    p = Tuple(degree.(getindices(edgelist, eds)))
+    return sort(p)
 end
 
 """
@@ -497,10 +506,10 @@ end
 Given a triangle `t` belonging to a `mesh`, it returns the (sorted) degrees
 `p₁<=p₂<=p₃` of its edges, and the edges also sorted according to the degrees.
 """
-function psortededges(t::Triangle{I},mesh::HPMesh{F,I,P}) where {F,I,P}
-    p,nod = psortednodes(t,mesh)
-    eds   = [Edge(nod[SVector(i,mod1(i+1,3))]) for i in 1:3]
-    p,eds
+function psortededges(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
+    p, nod = psortednodes(t, mesh)
+    eds = [Edge(nod[SVector(i, mod1(i + 1, 3))]) for i in 1:3]
+    return p, eds
 end
 
 """
@@ -508,18 +517,18 @@ end
 
 Given a triangle `t` belonging to a `mesh`, it returns the degrees `p₁<=p₂<=p₃` of the edges (sorted) and the nodes of `t` also sorted according to the degrees. 
 """
-function psortednodes(t::Triangle{I},mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;edgelist) = mesh
+function psortednodes(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; edgelist) = mesh
     eds = edges(t)
-    p   = degree.(getindices(edgelist,eds))
+    p = degree.(getindices(edgelist, eds))
     pind = psortperm(p)
-    p[pind],first.(eds[pind])
+    return p[pind], first.(eds[pind])
 end
 
 # """
 #     $(SIGNATURES)
 
-# returns a list containing the indices of the vertices of `mesh` tha lie in its boundary. 
+# returns a list containing the indices of the vertices of `mesh` tha lie in its boundary.
 # """
 # function boundarynodes(mesh::HPMesh{F,I,P}) where {F,I,P}
 #     (;edgelist) = mesh
@@ -539,12 +548,11 @@ end
 # end
 
 
-            
 """
     _boundary_segments(n)
 creates pairs of indices for building a sequence of segments from a list of points.  
 """
-_boundary_segments(n) = reduce(hcat,[i,mod1(i+1,n)] for i in 1:n)
+_boundary_segments(n) = reduce(hcat, [i, mod1(i + 1, n)] for i in 1:n)
 
 
 """
@@ -556,7 +564,7 @@ _boundary_segments(n) = reduce(hcat,[i,mod1(i+1,n)] for i in 1:n)
 
 Computes the dimension of the space ℓp₁p₂p₃. 
 """
-compute_dimension(p₁::Integer, p₂::Integer, p₃::Integer) = sum(min(p₂, p₃ - j) + 1 for j = 0:p₁);
+compute_dimension(p₁::Integer, p₂::Integer, p₃::Integer) = sum(min(p₂, p₃ - j) + 1 for j in 0:p₁);
 # compute_dimension(p₁::Integer, p₂::Integer) = compute_dimension(p₁, p₂, p₂)
 # compute_dimension(p₁::Integer) = compute_dimension(p₁, p₁)
 # compute_dimension(t::T) where {T<:AbstractArray} = compute_dimension(t...)
@@ -567,16 +575,17 @@ compute_dimension(t::Tuple) = compute_dimension(t...)
 
 Creates a dictionary (from `Dictionaries.jl`) where the keys are the edges of `mesh` and the values are vectors with indices corresponding to the nodal degrees of freedom. 
 """
-function degrees_of_freedom_by_edge!(mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;points,edgelist,dofs) = mesh 
-    (;by_edge)  = dofs
-    i        = size(points,2)+1
+function degrees_of_freedom_by_edge!(mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; points, edgelist, dofs) = mesh
+    (; by_edge) = dofs
+    i = size(points, 2) + 1
     for edge in edges(edgelist)
-        med  = collect(I(i):I(i+degree(edgelist[edge])-2))
-        v = SVector{length(med)+2,I}(edge[1],med...,edge[2])
-        set!(by_edge,edge,v)
-        i   += degree(edgelist[edge])-1
+        med = collect(I(i):I(i + degree(edgelist[edge]) - 2))
+        v = SVector{length(med) + 2, I}(edge[1], med..., edge[2])
+        set!(by_edge, edge, v)
+        i += degree(edgelist[edge]) - 1
     end
+    return
 end
 
 
@@ -591,31 +600,31 @@ If a dictionary of degrees of freedom by edge has already been computed, it is r
 
     degrees_of_freedom!(mesh::HPMesh{F,I,P},by_edge::Dictionary{Edge{I},Vector{I}}) where {F,I,P}
 """
-function degrees_of_freedom!(mesh::HPMesh{F,I,P}) where {F,I,P}
-    (;edgelist,trilist,dofs) = mesh
-    (;n,by_edge,by_tri) = dofs
+function degrees_of_freedom!(mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; edgelist, trilist, dofs) = mesh
+    (; n, by_edge, by_tri) = dofs
     if isempty(by_edge)
         degrees_of_freedom_by_edge!(mesh)
     end
-    k       = maximum(maximum.(by_edge))+1 #first non-edge dof
+    k = maximum(maximum.(by_edge)) + 1 #first non-edge dof
     for t in triangles(trilist)
-        p,t_edges = psortededges(t,mesh)
-        newdofs = @MVector zeros(I,compute_dimension(p))
-        set!(by_tri,t,newdofs)
+        p, t_edges = psortededges(t, mesh)
+        newdofs = @MVector zeros(I, compute_dimension(p))
+        set!(by_tri, t, newdofs)
         j = 1 #counter of dof in current triangle
         @inbounds for i in 1:3
             newdof = by_edge[t_edges[i]]
-            if  _same_order(t_edges[i],edgelist)
-                newdofs[j:j+length(newdof)-2] .= newdof[1:end-1]
+            if _same_order(t_edges[i], edgelist)
+                newdofs[j:(j + length(newdof) - 2)] .= newdof[1:(end - 1)]
             else
-                newdofs[j:j+length(newdof)-2] .= reverse(newdof[2:end])
-            end 
-            j += length(newdof)-1
+                newdofs[j:(j + length(newdof) - 2)] .= reverse(newdof[2:end])
+            end
+            j += length(newdof) - 1
         end
-        newdofs[j:end] = k:k+(length(newdofs)-j)
-        k += length(newdofs)-j + 1
+        newdofs[j:end] = k:(k + (length(newdofs) - j))
+        k += length(newdofs) - j + 1
     end
-    n[] = k-1
+    return n[] = k - 1
 end
 
 
@@ -624,8 +633,8 @@ end
 
 Returs a list of indices corresponding to the degrees of freedom labeled with `tag`. If a vector of labels is passed, it returs degrees of freedom marked with any of them. 
 """
-function tagged_dof(mesh::HPMesh{F,I,P},tag::N) where {F,I,P,N<:Integer}
-    tagged_dof(mesh,[tag])
+function tagged_dof(mesh::HPMesh{F, I, P}, tag::N) where {F, I, P, N <: Integer}
+    return tagged_dof(mesh, [tag])
 end
 
 
@@ -633,24 +642,24 @@ end
     tagged_dof(mesh::HPMesh,tags)
 returns a list of all degrees of freedom tagged with a tag in `tag`.
 """
-function tagged_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
-    (;dofs) = mesh
+function tagged_dof(mesh::HPMesh{F, I, P}, tags) where {F, I, P}
+    (; dofs) = mesh
     msg = "The degrees of freedom of the mesh have not been computed."
     isempty(dofs) && throw(ArgumentError(msg))
-    _tagged_dof(mesh,tags)
+    return _tagged_dof(mesh, tags)
 end
 
 """
     _tagged_dof(mesh::HPMesh,tags)
 internal function. Returns a list of all degrees of freedom tagged with a tag in `tag`.  
 """
-function _tagged_dof(mesh::HPMesh{F,I,P},tags) where {F,I,P}
-    (;edgelist,dofs) = mesh
-    (;by_edge) = dofs
+function _tagged_dof(mesh::HPMesh{F, I, P}, tags) where {F, I, P}
+    (; edgelist, dofs) = mesh
+    (; by_edge) = dofs
     v = Vector{I}()
     for e in pairs(edgelist)
         if tag(last(e)) in tags
-            push!(v,by_edge[first(e)]...)
+            push!(v, by_edge[first(e)]...)
         end
     end
     return unique(v)
@@ -660,9 +669,9 @@ end
 #     boundary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
 
 # Returns a list of the degrees of freedom lying at the boundary of the mesh.
-# Internally, it calls `degrees_of_freedom_by_edge` in order to obtain the nodal degrees of freedom. If a dof by edge dictionary has already been computed, it is recommended to run: 
+# Internally, it calls `degrees_of_freedom_by_edge` in order to obtain the nodal degrees of freedom. If a dof by edge dictionary has already been computed, it is recommended to run:
 
-#     boundary_dof(mesh,by_edge) 
+#     boundary_dof(mesh,by_edge)
 # """
 # function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
 #     (;dofs) = mesh; (;by_edge) = dofs;

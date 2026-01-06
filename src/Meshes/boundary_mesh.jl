@@ -39,36 +39,35 @@ julia> ΓN = BoundaryHPMesh(Ω,:neumann);
 Alternatively, `1` can be used for `:dirichlet` and `2` for `:neumann`.
 
 """
-struct BoundaryHPMesh{F,I,P} <:HPTriangulation
-    mesh::HPMesh{F,I,P}
+struct BoundaryHPMesh{F, I, P} <: HPTriangulation
+    mesh::HPMesh{F, I, P}
     kind::P
-    function BoundaryHPMesh(m::HPMesh{F,I,P},i::Integer) where {F,I,P}
-        new{F,I,P}(m,P(i))
+    function BoundaryHPMesh(m::HPMesh{F, I, P}, i::Integer) where {F, I, P}
+        return new{F, I, P}(m, P(i))
     end
 end
 
-function BoundaryHPMesh(m::HPMesh{F,I,P},s::Symbol) where {F,I,P}
-    BoundaryHPMesh(m,BOUNDARY_DICT[s])
+function BoundaryHPMesh(m::HPMesh{F, I, P}, s::Symbol) where {F, I, P}
+    return BoundaryHPMesh(m, BOUNDARY_DICT[s])
 end
 
 """
    dirichletboundary(m::HPMesh)
 returns the Dirichlet boundary of `m` as a `BoundaryHPMesh`. 
 """
-dirichletboundary(m::HPMesh) = BoundaryHPMesh(m,1)
+dirichletboundary(m::HPMesh) = BoundaryHPMesh(m, 1)
 """
    dirichletboundary(m::HPMesh)
 returns the Neumann boundary of `m` as a `BoundaryHPMesh`. 
 """
-neumannboundary(m::HPMesh) = BoundaryHPMesh(m,2)
-
+neumannboundary(m::HPMesh) = BoundaryHPMesh(m, 2)
 
 
 """
     edges(bm::BoundaryMesh)
 returns the edges of `bm` as an `EdgeList` (a `Dictionary{Edge,EdgeAttributes}`). 
 """
-edges(bm::BoundaryHPMesh) = filter(istagged(bm.kind),bm.mesh.edgelist)
+edges(bm::BoundaryHPMesh) = filter(istagged(bm.kind), bm.mesh.edgelist)
 
 
 """
@@ -79,6 +78,3 @@ returns the underlying mesh in an `Triangulation`. If `m` is an `HPMesh`, then `
 """
 domainmesh(m::BoundaryHPMesh) = m.mesh
 domainmesh(m::HPMesh) = m
-
-
-

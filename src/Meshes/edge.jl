@@ -2,23 +2,23 @@
     Edge{I} <: SetTuple
 a struct for storing an edge of a triangulation. It contains an `NTuple{2,I}` that stores the indices of the two vertices. 
 """
-struct Edge{I} <: SetTuple{2,I}
-    data::NTuple{2,I}
+struct Edge{I} <: SetTuple{2, I}
+    data::NTuple{2, I}
 end
-Edge{I}(x::StaticArray) where I = Edge(I.(tuple(x...)))
-Edge{I}(x::Base.Generator) where I = Edge(tuple(x...))
-Edge{I}(x,y) where I = Edge((I(x),I(y)))
-function Edge{I}(x::T) where {I,T<:AbstractArray}
-    T<:AbstractVector || throw(ArgumentError("`Edge` can only be created from a one dimensional array."))
+Edge{I}(x::StaticArray) where {I} = Edge(I.(tuple(x...)))
+Edge{I}(x::Base.Generator) where {I} = Edge(tuple(x...))
+Edge{I}(x, y) where {I} = Edge((I(x), I(y)))
+function Edge{I}(x::T) where {I, T <: AbstractArray}
+    T <: AbstractVector || throw(ArgumentError("`Edge` can only be created from a one dimensional array."))
     length(x) == 2 || throw(DimensionMismatch("`Edge`s store two indices."))
-    Edge(I.(tuple(x...)))
+    return Edge(I.(tuple(x...)))
 end
 
 """
    data(e::Edge)
 returns the tuple defining `e`. 
 """
-data(e::Edge) = getproperty(e,:data)
+data(e::Edge) = getproperty(e, :data)
 
 
 """
@@ -29,14 +29,14 @@ constructs a `struct` for storing attributes of an edge. These attributes are:
 + `tag`: a tag indicating if the edge belongs to the boundary of the domain, or to an interface or to the interior. 
 + `refine`: `true` if the edge is marked for refinement. 
 """
-struct EdgeAttributes{P<:Integer} 
+struct EdgeAttributes{P <: Integer}
     degree::Base.RefValue{P}
     tag::Base.RefValue{P}
     refine::Base.RefValue{Bool}
     #adjacent::SVector{2,I}
-    EdgeAttributes{P}(d,m,r) where P = new{P}(Ref(P(d)),Ref(P(m)),Ref(r))
+    EdgeAttributes{P}(d, m, r) where {P} = new{P}(Ref(P(d)), Ref(P(m)), Ref(r))
 end
-EdgeAttributes(d::P,m::P,r::Bool) where P<:Integer = EdgeAttributes{P}(d,m,r)
+EdgeAttributes(d::P, m::P, r::Bool) where {P <: Integer} = EdgeAttributes{P}(d, m, r)
 # EdgeAttributes(e::EdgeAttributes)  = EdgeAttributes(e.degree,e.tag,e.refine)
 
 
@@ -63,14 +63,14 @@ check if `e` has tag `i`.
 It can be used passing only `i` to create a function that checks for tag `i`:
     istagged(i) 
 """
-@inline istagged(e::EdgeAttributes,i::Integer) = tag(e)==i
-@inline istagged(i::Integer) = Base.Fix{2}(istagged,i)
+@inline istagged(e::EdgeAttributes, i::Integer) = tag(e) == i
+@inline istagged(i::Integer) = Base.Fix{2}(istagged, i)
 
 """
     settag!(e::EdgeAttributes,i::Integer)
 sets the tag of `e` to `i`.  
 """
-@inline settag!(e::EdgeAttributes{P},i::Integer) where P = e.tag[] = P.(i)
+@inline settag!(e::EdgeAttributes{P}, i::Integer) where {P} = e.tag[] = P.(i)
 
 """
     mark!(e::EdgeAttributes)
@@ -82,7 +82,7 @@ marks `e` for refinement.
     setdegree!(e::EdgeAttributes,deg)
 sets the degree of `e`.  
 """
-@inline setdegree!(e::EdgeAttributes,deg) = e.degree[] = deg
+@inline setdegree!(e::EdgeAttributes, deg) = e.degree[] = deg
 
 """
     isinterior(e::EdgeAttributes)
@@ -94,7 +94,4 @@ returns `true` if the edge is an interior one.
     isboundary(e::EdgeAttributes)
 returns `true` if the edge is a boundary one.  
 """
-@inline isboundary(e::EdgeAttributes) = e.tag[]>0
-
-
-            
+@inline isboundary(e::EdgeAttributes) = e.tag[] > 0

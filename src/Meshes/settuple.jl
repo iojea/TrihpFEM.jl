@@ -8,7 +8,7 @@ abstract type for storing an immutable fixed size array. An `SetTuple` can be us
 Concrete subtypes of `SetTuple` should implement the function `data` to retrieve the underlying data. 
 """
 
-abstract type SetTuple{L,I<:Integer} <: StaticArray{Tuple{L},I,1} end
+abstract type SetTuple{L, I <: Integer} <: StaticArray{Tuple{L}, I, 1} end
 
 """
     data(s::SetTuple)
@@ -26,7 +26,7 @@ function Base.hash(s::SetTuple, h::UInt)
     for x in data(s)
         hv ⊻= hash(x)
     end
-    hash(hash(hv, h),hash(typeof(s)))
+    return hash(hash(hv, h), hash(typeof(s)))
 end
 
-Base.isequal(t1::SetTuple,t2::SetTuple) = length(t1)==length(t2) && issubset(t1,t2)
+Base.isequal(t1::SetTuple, t2::SetTuple) = length(t1) == length(t2) && issubset(t1, t2)

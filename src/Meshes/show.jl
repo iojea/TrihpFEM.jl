@@ -1,38 +1,37 @@
-
-function Base.show(io::IO,t::TriangleAttributes) 
-    symbs = Dictionary(0:3,[:noref,:green,:blue,:red])
-    show(io,symbs[t.refine[]])
+function Base.show(io::IO, t::TriangleAttributes)
+    symbs = Dictionary(0:3, [:noref, :green, :blue, :red])
+    return show(io, symbs[t.refine[]])
 end
 
 # Show EdgeAttributes
-# function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes) 
+# function Base.show(io::IO,mime::MIME"text/plain",t::EdgeAttributes)
 #     if t.tag[]==0
 #         m = :Ω°
 #     elseif t.tag[]==1
 #         m = :∂𝔇
 #     elseif t.tag[]==2
 #         m = :∂𝔑
-#     else 
+#     else
 #         m = t.tag[]
 #     end
 #     show(io,mime,(t.degree[],m,t.refine[]))
 # end
-function Base.show(io::IO,t::EdgeAttributes)
-    if t.tag[]==0
+function Base.show(io::IO, t::EdgeAttributes)
+    if t.tag[] == 0
         m = :Ω°
-    elseif t.tag[]==1
+    elseif t.tag[] == 1
         m = :∂𝔇
-    elseif t.tag[]==2
+    elseif t.tag[] == 2
         m = :∂𝔑
-    else 
+    else
         m = t.tag[]
-    end 
+    end
     if t.refine[]
         r = :refine
     else
         r = :noref
     end
-    show(io,(t.degree[],m,r))
+    return show(io, (t.degree[], m, r))
 end
 
 # Show HPList short.
@@ -58,14 +57,14 @@ end
 #     print(io, "}")
 # end
 
-function Base.show(io::IO,d::TriangleList{I,P,F}) where {I,P,F}
-    print(io,"TriangleList{$I,$P,$F} with $(length(d)) elements")
+function Base.show(io::IO, d::TriangleList{I, P, F}) where {I, P, F}
+    return print(io, "TriangleList{$I,$P,$F} with $(length(d)) elements")
 end
-function Base.show(io::IO,d::EdgeList{I,P}) where {I,P}
-    print(io,"EdgeList{$I,$P} with $(length(d)) elements")
+function Base.show(io::IO, d::EdgeList{I, P}) where {I, P}
+    return print(io, "EdgeList{$I,$P} with $(length(d)) elements")
 end
 # The "display"-like rendering
-function Base.show(io::IO, ::MIME"text/plain", d::Union{TriangleList,EdgeList})
+function Base.show(io::IO, ::MIME"text/plain", d::Union{TriangleList, EdgeList})
     if isempty(d)
         print(io, "0-element $(typeof(d))")
         return
@@ -150,9 +149,9 @@ function Base.show(io::IO, ::MIME"text/plain", d::Union{TriangleList,EdgeList})
         val_width = max_val_width
         ind_width = max_ind_width
         while ind_width + val_width > n_cols
-            if ind_width > val_width 
+            if ind_width > val_width
                 ind_width -= 1
-            else 
+            else
                 val_width -= 1
             end
         end
@@ -168,11 +167,12 @@ function Base.show(io::IO, ::MIME"text/plain", d::Union{TriangleList,EdgeList})
 
     for (ind_str, val_str) in zip(ind_strs, val_strs)
         print(io, "\n ")
-        print(io, " " ^ max(0, ind_width - textwidth(ind_str)))
+        print(io, " "^max(0, ind_width - textwidth(ind_str)))
         print(io, ind_str)
         print(io, " │ ")
         print(io, val_str)
     end
+    return
 end
 
 function shrink_to!(strs, width)
@@ -194,32 +194,37 @@ function shrink_to!(strs, width)
             strs[i] = new_str
         end
     end
+    return
 end
 
 # Show HPMesh
-function Base.show(io::IO,mime::MIME"text/plain",mesh::HPMesh) 
-    println(io,typeof(mesh))
-    header = Markdown.parse("""
-        + $(length(mesh.points)) nodes.
-        + $(length(mesh.trilist)) triangles.
-        + $(length(mesh.edgelist)) edges.
-    """)
-    show(io,mime,header)
+function Base.show(io::IO, mime::MIME"text/plain", mesh::HPMesh)
+    println(io, typeof(mesh))
+    header = Markdown.parse(
+        """
+            + $(length(mesh.points)) nodes.
+            + $(length(mesh.trilist)) triangles.
+            + $(length(mesh.edgelist)) edges.
+        """
+    )
+    show(io, mime, header)
     println(io)
-    show(io,mime,mesh.points)
+    show(io, mime, mesh.points)
     println(io)
-    show(io,mime,mesh.trilist)
+    show(io, mime, mesh.trilist)
     println(io)
-    show(io,mime,mesh.edgelist)
+    return show(io, mime, mesh.edgelist)
 end
 
-function Base.show(io::IO,mesh::HPMesh)
-    println(io,typeof(mesh))
-    header = Markdown.parse("""
-        + $(length(mesh.points)) nodes.
-        + $(length(mesh.trilist)) triangles.
-        + $(length(mesh.edgelist)) edges.
-    """)
+function Base.show(io::IO, mesh::HPMesh)
+    println(io, typeof(mesh))
+    return header = Markdown.parse(
+        """
+            + $(length(mesh.points)) nodes.
+            + $(length(mesh.trilist)) triangles.
+            + $(length(mesh.edgelist)) edges.
+        """
+    )
     # show(io,header)
     # println(io)
     # show(io,mesh.points)
@@ -231,5 +236,3 @@ function Base.show(io::IO,mesh::HPMesh)
     # println(io)
     # show(io,mesh.edgelist)
 end
-
-
