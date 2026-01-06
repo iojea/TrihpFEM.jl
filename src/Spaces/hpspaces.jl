@@ -14,16 +14,45 @@ end
 
 
 Poly.gradient(s::StdScalarSpace) = OperatorSpace(gradient,s)
-Poly.divergence(s::StdVectorSpace) = OperatorSpace(divergence,s)
+Poly.divergence(s::Union{StdVectorSpace,OperatorSpace}) = OperatorSpace(divergence,s)
 Poly.laplacian(s::StdScalarSpace) = OperatorSpace(laplacian,s)
 
 struct Order{B} end
 
 order(_) = Order{0}()
-order(::AbstractSpace) = Order{(0,)}()
-order(::OperatorSpace{typeof(gradient),S}) where S = Order{(1,)}()
-order(::OperatorSpace{typeof(divergence),S}) where S = Order{(1,)}()
-order(::OperatorSpace{typeof(laplacian),S}) where S = Order{(2,)}()
+order(::Union{AbstractSpace,Type{<:AbstractSpace}}) = Order{(0,)}()
+order(::typeof(divergence)) = Order{1}()
+order(::typeof(gradient)) = Order{1}()
+order(::typeof(laplacian)) = Order{2}()
+order(op::T) where T<:OperatorSpace = order(order(op.operator),order(op.space))
+function order(::Order{B},::Order{C}) where {B,C}
+    if B isa Integer && C isa Integer
+        Order{B+C}()
+    elseif B isa Integer && C isa Tuple
+        length(C)==1 || ArgumentError("Combination not implemented")
+        (D,) = C
+        Order{(D+B,)}()
+    else
+        ArgumentError("Combination not implemented")
+    end
+end
+      
+# order(::OperatorSpace{::typeof(gradient),::AbstractSpace})  = Order{(1,)}()
+# # order(::OperatorSpace{::typeof(divergence),::AbstractSpace}) = Order{(1,)}()
+# order(::OperatorSpace{::typeof(laplacian),::AbstractSpace})  = Order{(2,)}()
+# function order(op::T) where T<:OperatorSpace{typeof(divergence)}
+#     order(divergence,order(op.space))
+# end
+# order(::typeof(divergence),::Order{(B,)}) where B = Order{(B+1,)}()
+# order(::OperatorSpace{typeof(divergence),::AbstractSpace},::Order{0}) = Order{(1,)}()
+# function order(::OperatorSpace{::typeof(gradient),inner::OperatorSpace})
+#     order(::typeof(gradient),order(inner))
+# end
+# order(::OperatorSpace{typeof(laplacian)},::Order{(B,)}) = Order{(B+1,)}()
+# function order(::OperatorSpace{::typeof(laplacian)},inner::OperatorSpace})
+#     order(::typeof(laplacian),order(inner))
+# end
+# order(::OperatorSpace{typeof(divergence)},::Order{(B,)}) = Order{(B+1,)}()
 combine(::Order{B},::Order{C}) where {B,C} = Order{(B...,C...)}()
 combine(::Order{B},::Order{0}) where B = Order{B}()
 combine(::Order{0},::Order{B}) where B = Order{B}()
@@ -42,19 +71,19 @@ coefftype(::AbstractArray) = Constant()
 coefftype(::Number) = Constant()
 coefftype(::Function) = Variable()
 
-Base.promote(::Constant,::Variable) = Variable()
-Base.promote(::Variable,::Constant) = Variable()
-Base.promote(::Variable,::Variable) = Variable()
-Base.promote(::Constant,::Constant) = Constant()
-Base.promote(::Nothing,::B) where B<: CoeffType = B()
-Base.promote(::B,::Nothing) where B<: CoeffType = B()
+# Base.promote(::Constant,::Variable) = Variable()
+# Base.promote(::Variable,::Constant) = Variable()
+# Base.promote(::Variable,::Variable) = Variable()
+# Base.promote(::Constant,::Constant) = Constant()
+# Base.promote(::Nothing,::B) where B<: CoeffType = B()
+# Base.promote(::B,::Nothing) where B<: CoeffType = B()
 
-Base.promote_type(::Type{Constant},::Type{Variable}) = Variable
-Base.promote_type(::Type{Variable},::Type{Variable}) = Variable
-Base.promote_type(::Type{Constant},::Type{Constant}) = Constant
-Base.promote_type(::Type{Variable},::Type{Constant}) = Variable
-Base.promote_type(::Type{Nothing},::Type{B}) where B<:CoeffType = B
-Base.promote_type(::Type{B},::Type{Nothing}) where B<:CoeffType = B
+# Base.promote_type(::Type{Constant},::Type{Variable}) = Variable
+# Base.promote_type(::Type{Variable},::Type{Variable}) = Variable
+# Base.promote_type(::Type{Constant},::Type{Constant}) = Constant
+# Base.promote_type(::Type{Variable},::Type{Constant}) = Variable
+# Base.promote_type(::Type{Nothing},::Type{B}) where B<:CoeffType = B
+# Base.promote_type(::Type{B},::Type{Nothing}) where B<:CoeffType = B
 
 
 struct Operation{F<:Function,S1,S2}
