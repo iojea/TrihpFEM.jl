@@ -2,7 +2,7 @@ module TrihpFEM
 
 # In case you want to know, why the last line of the docstring below looks like it is:
 # It will show the package (local) path when help on the package is invoked like     help?> TrihpFEM
-# but it will interpolate to an empty string on CI server, 
+# but it will interpolate to an empty string on CI server,
 # preventing appearing the server local path in the documentation built there.
 
 """
@@ -39,12 +39,12 @@ include("Spaces/Spaces.jl")
 # Write your package code here.
 #
 
-using ..Meshes: Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
-export Edge,Triangle,HPMesh,BoundaryHPMesh,hpmesh,plothpmesh,dirichletboundary,neumannboundary,edges,setdirichlet!,setneumann!
+using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
+export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 
-using ..Poly: BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField,StandardBasis
-export BiPoly,PolyTensorField,PolyVectorField,PolyMatrixField,AffineToRef,GeneralField,StandardBasis
+using ..Poly: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
+export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
 
-using ..Spaces: StdScalarSpace,StdVectorSpace,OperatorSpace,order,CoeffType,coefftype,EvalType,Order,Eval,Pass,combine,basis,Variable,Constant
-export StdScalarSpace,StdVectorSpace,OperatorSpace,order,CoeffType,coefftype,EvalType,Order,Eval,Pass,combine,basis,Variable,Constant
+using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
+export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
 end

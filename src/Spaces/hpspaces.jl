@@ -7,36 +7,36 @@ abstract type TensorSpace <: AbstractSpace end
 struct StdScalarSpace <: ScalarSpace end
 struct StdVectorSpace <: VectorSpace end
 
-struct OperatorSpace{F<:Function,S<:AbstractSpace} <: AbstractSpace
+struct OperatorSpace{F <: Function, S <: AbstractSpace} <: AbstractSpace
     operator::F
     space::S
 end
 
 
-Poly.gradient(s::StdScalarSpace) = OperatorSpace(gradient,s)
-Poly.divergence(s::Union{StdVectorSpace,OperatorSpace}) = OperatorSpace(divergence,s)
-Poly.laplacian(s::StdScalarSpace) = OperatorSpace(laplacian,s)
+Poly.gradient(s::StdScalarSpace) = OperatorSpace(gradient, s)
+Poly.divergence(s::Union{StdVectorSpace, OperatorSpace}) = OperatorSpace(divergence, s)
+Poly.laplacian(s::StdScalarSpace) = OperatorSpace(laplacian, s)
 
 struct Order{B} end
 
 order(_) = Order{0}()
-order(::Union{AbstractSpace,Type{<:AbstractSpace}}) = Order{(0,)}()
+order(::Union{AbstractSpace, Type{<:AbstractSpace}}) = Order{(0,)}()
 order(::typeof(divergence)) = Order{1}()
 order(::typeof(gradient)) = Order{1}()
 order(::typeof(laplacian)) = Order{2}()
-order(op::T) where T<:OperatorSpace = order(order(op.operator),order(op.space))
-function order(::Order{B},::Order{C}) where {B,C}
-    if B isa Integer && C isa Integer
-        Order{B+C}()
+order(op::T) where {T <: OperatorSpace} = order(order(op.operator), order(op.space))
+function order(::Order{B}, ::Order{C}) where {B, C}
+    return if B isa Integer && C isa Integer
+        Order{B + C}()
     elseif B isa Integer && C isa Tuple
-        length(C)==1 || ArgumentError("Combination not implemented")
+        length(C) == 1 || ArgumentError("Combination not implemented")
         (D,) = C
-        Order{(D+B,)}()
+        Order{(D + B,)}()
     else
         ArgumentError("Combination not implemented")
     end
 end
-      
+
 # order(::OperatorSpace{::typeof(gradient),::AbstractSpace})  = Order{(1,)}()
 # # order(::OperatorSpace{::typeof(divergence),::AbstractSpace}) = Order{(1,)}()
 # order(::OperatorSpace{::typeof(laplacian),::AbstractSpace})  = Order{(2,)}()
@@ -53,12 +53,12 @@ end
 #     order(::typeof(laplacian),order(inner))
 # end
 # order(::OperatorSpace{typeof(divergence)},::Order{(B,)}) = Order{(B+1,)}()
-combine(::Order{B},::Order{C}) where {B,C} = Order{(B...,C...)}()
-combine(::Order{B},::Order{0}) where B = Order{B}()
-combine(::Order{0},::Order{B}) where B = Order{B}()
-combine(::Order{0},::Order{0}) = Order{0}()
+combine(::Order{B}, ::Order{C}) where {B, C} = Order{(B..., C...)}()
+combine(::Order{B}, ::Order{0}) where {B} = Order{B}()
+combine(::Order{0}, ::Order{B}) where {B} = Order{B}()
+combine(::Order{0}, ::Order{0}) = Order{0}()
 
-basis(::StdScalarSpace,p::Tuple) = StandardBasis(p)
+basis(::StdScalarSpace, p::Tuple) = StandardBasis(p)
 
 # A trait for identifying Constant Coefficients, which allow precomputation of local tensors.
 abstract type CoeffType end
@@ -86,27 +86,27 @@ coefftype(::Function) = Variable()
 # Base.promote_type(::Type{B},::Type{Nothing}) where B<:CoeffType = B
 
 
-struct Operation{F<:Function,S1,S2}
+struct Operation{F <: Function, S1, S2}
     operator::F
     left::S1
     right::S2
 end
-Operation(a,c,b)  = Operation{typeof(a),typeof(b),typeof(c)}(a,b,c)
-Operation(a,b) = Operation{typeof(a),typeof(b),Nothing}(a,b,nothing)
+Operation(a, c, b) = Operation{typeof(a), typeof(b), typeof(c)}(a, b, c)
+Operation(a, b) = Operation{typeof(a), typeof(b), Nothing}(a, b, nothing)
 
-const Sp = Union{AbstractSpace,Operation}
+const Sp = Union{AbstractSpace, Operation}
 
-Base.:*(thing::Union{Number,AbstractArray,Function,PolyField},s::Sp) = Operation(*,thing,s)
-Base.:*(s::Sp,thing::Union{Number,AbstractArray,Function,PolyField}) = thing*s
-Base.:*(s₁::Sp,s₂::Sp) = Operation(*,s₁,s₂)
+Base.:*(thing::Union{Number, AbstractArray, Function, PolyField}, s::Sp) = Operation(*, thing, s)
+Base.:*(s::Sp, thing::Union{Number, AbstractArray, Function, PolyField}) = thing * s
+Base.:*(s₁::Sp, s₂::Sp) = Operation(*, s₁, s₂)
 
-LinearAlgebra.dot(a::AbstractArray,op::Sp) = Operation(dot,a,op)
-LinearAlgebra.dot(op::Sp,a::AbstractArray) = Operation(dot,op,a)
-LinearAlgebra.dot(a::Sp,b::Sp) = Operation(dot,a,b)
+LinearAlgebra.dot(a::AbstractArray, op::Sp) = Operation(dot, a, op)
+LinearAlgebra.dot(op::Sp, a::AbstractArray) = Operation(dot, op, a)
+LinearAlgebra.dot(a::Sp, b::Sp) = Operation(dot, a, b)
 
-coefftype(op::Operation) = promote(coefftype(op.left),coefftype(op.right))
+coefftype(op::Operation) = promote(coefftype(op.left), coefftype(op.right))
 
-order(op::Operation) = combine(order(op.left),order(op.right))
+order(op::Operation) = combine(order(op.left), order(op.right))
 
 
 #Integrand(op) = Integrand()

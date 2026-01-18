@@ -1,21 +1,21 @@
 using TrihpFEM
 using Documenter
 
-DocMeta.setdocmeta!(TrihpFEM, :DocTestSetup, :(using TrihpFEM); recursive=true)
+DocMeta.setdocmeta!(TrihpFEM, :DocTestSetup, :(using TrihpFEM); recursive = true)
 
 makedocs(;
-    modules=[TrihpFEM],
-    authors="Ignacio Ojea <iojea@dm.uba.ar>",
-    sitename="TrihpFEM.jl",
-    format=Documenter.HTML(;
-        edit_link="main",
-        assets=String[],
+    modules = [TrihpFEM],
+    authors = "Ignacio Ojea <iojea@dm.uba.ar>",
+    sitename = "TrihpFEM.jl",
+    format = Documenter.HTML(;
+        edit_link = "main",
+        assets = String[],
     ),
-    pages=[
+    pages = [
         "Home" => "index.md",
     ],
     warnonly = [:cross_references, :missing_docs],
 )
-# deploydocs(
-#     repo = "github.com/iojea/TrihpFEM.jl.git",
-# ) NEED PERMISSIONS
+deploydocs(
+    repo = "github.com/iojea/TrihpFEM.jl.git",
+) 
