@@ -65,5 +65,6 @@ Computes the laplacian of a `PolyScalarField` and returns another `PolyScalarFie
 """
 laplacian(v::PolyScalarField) = divergence(gradient(v))
 
+######## WARNING #########
 # This method should be removed in the next Polynomials update
 Polynomials.derivative(p::ImmutablePolynomial{F, X, 1}) where {F, X} = zero(p)
