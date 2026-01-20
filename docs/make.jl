@@ -15,10 +15,10 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "User Guide" => [
-            "Mathematical background" => "basics.md",
-            "Meshes" => "meshes.md",
-            "Defining a problem" => "example.md"
-        ],
+            "Mathematical background" => "guide/basics.md",
+            "Meshes" => "guide/meshes.md",
+            "Defining a problem" => "guide/example.md"
+        ]
     ],
     warnonly = [:cross_references, :missing_docs],
 )
