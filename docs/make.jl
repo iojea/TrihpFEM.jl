@@ -8,10 +8,10 @@ makedocs(;
     format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
     authors = "Ignacio Ojea <iojea@dm.uba.ar>",
     sitename = "TrihpFEM.jl",
-    format = Documenter.HTML(;
-        edit_link = "main",
-        assets = String[],
-    ),
+    # format = Documenter.HTML(;
+    #     edit_link = "main",
+    #     assets = String[],
+    # ),
     pages = [
         "Home" => "index.md",
         "User Guide" => [
