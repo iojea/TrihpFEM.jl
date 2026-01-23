@@ -36,8 +36,7 @@ using Triangulate
 include("Meshes/Meshes.jl")
 include("Poly/Poly.jl")
 include("Spaces/Spaces.jl")
-# Write your package code here.
-#
+include("Integration/Integration.jl")
 
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
@@ -47,4 +46,7 @@ export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, G
 
 using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
 export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
+
+using ..Integration: Quadrature,gmquadrature,ref_integrate
+export Quadrature,gmquadrature,ref_integrate
 end

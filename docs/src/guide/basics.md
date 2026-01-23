@@ -10,12 +10,13 @@ The method needs a problem given in weak form and an a posteriori error estimato
 
 - A solution `$u_h$` is computed over `$\mathcal{T}$`.
 - The estimator `$\eta_T(u_h)$` is computed for every `$T\in\mathcal{T}$`.
-- Every `$T'\in\mathcal{T}$` such that `$\eta_{T'}(u_h)^2>\rho \frac{1}{|\mathcal{T}|}\sum_{T\in\mathcal{T}}\eta_T(u_h)$` is marked for refinement.
+- Every `$T'\in\mathcal{T}$` such that `$\eta_{T'}(u_h)^2>\rho \frac{1}{|\mathcal{T}|}\sum_{T\in\mathcal{T}}\eta_T(u_h)^2$` is marked for refinement. `$\rho$` is a parameter of the solver. 
 - An heuristic criterion is used to determine how `$T'$` will be refined. There are two possibilities:
   - `$T'$` is partitioned into 4 new triangles, by bisecting each edge (`$h$`-refinement).
   - The polynomial space associated to `$T'$` is enlarged by augmenting `$p_1\to p_1+1$` (`$p$`-refinement).
 - The refinement of a triangle typically implies some refinement of neighbouring triangles, to mantain conformity. The `$h$`-conformity is mantained using a classical newest vertex bisection algorithm (red-blue-green variation). The `$p$` conformity is mantained by a recursive routine that augments some degrees when the `$p$`-conformity condition is not verified.
 - The solver goes back to the first step, finding a new solution `$u_h$` over the new mesh (with its updated degrees). This is repeated until no triangle is marked for refinement or a maximal number of iterations is reached.
 
-All parameters can be set by an `Options` structure.
+This strategy requieres `$hp$`-meshes, since degrees ought to be stored for each edge. During an `$h$`-refinement step it is necessary to assign degrees to the new edges, in a way that guarantees `$p$`-conformity. Hence, meshes are handled by `TrihpFEM` and not by external packages. We use `Triangulate` as a backend to perform the initial Delaunay triangulation, but the resulting mesh is then converted to our own type, `MeshHP`.  
+
 

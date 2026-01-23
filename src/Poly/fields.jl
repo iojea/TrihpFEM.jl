@@ -15,6 +15,10 @@ indeterminates(::PolyField{F, X, Y}) where {F, X, Y} = (X, Y)
 #
 abstract type PolyScalarField{F, X, Y} <: PolyField{F, X, Y} end
 Base.length(::PolyScalarField) = 1
+
+Base.iterate(t::PolyScalarField) = (t,nothing)
+Base.iterate(::PolyScalarField, st) = nothing
+LinearAlgebra.:⋅(p::PolyScalarField, q::PolyScalarField) = p * q
 #
 # _zerofill(t::NTuple{K,T},N) where {K,T} = K>=N ? t : (t...,zeros(T,N-K)...)
 
@@ -83,8 +87,6 @@ Base.promote(t::BiPoly{F, X, Y}, s::BiPoly{F, X, Y}) where {F, X, Y} = (t, s)
 Base.:*(a::Number, p::BiPoly) = BiPoly(a * p.px, p.py, indeterminates(p)...)
 Base.:*(p::BiPoly, a::Number) = a * p
 
-Base.iterate(t::BiPoly) = t
-Base.iterate(::BiPoly, st) = nothing
 
 function Base.:*(p::AbstractPolynomial, q::BiPoly)
     return if indeterminate(p) === indeterminate(q.px)
@@ -102,7 +104,6 @@ function Base.:*(p::BiPoly{F}, q::BiPoly{F}) where {F}
     return BiPoly(p.px * q.px, p.py * q.py, indeterminates(p)...)
 end
 
-LinearAlgebra.:⋅(p::BiPoly, q::BiPoly) = p * q
 function Base.zero(p::BiPoly{F, X, Y}) where {F, X, Y}
     return BiPoly(zero(p.px), zero(p.py), X, Y)
 end

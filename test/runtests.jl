@@ -15,4 +15,7 @@ using Aqua
     @testset "Basis" begin
         include("basis.jl")
     end
+    @testset "Integration" begin
+        include("integration.jl")
+    end
 end
