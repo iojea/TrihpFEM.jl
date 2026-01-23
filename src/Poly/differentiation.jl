@@ -52,10 +52,6 @@ function divergence(v::PolyVectorField)
     return d1x + d2y
 end
 
-function LinearAlgebra.dot(::Type{typeof(gradient)}, v::PolyVectorField)
-    return divergence(v)
-end
-
 
 """
 ```
