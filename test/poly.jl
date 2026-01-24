@@ -117,4 +117,4 @@ voutgp = v ⊗ gp
 @test voutgp[1, 2](x) ≈ p(x) * gp[2](x)
 
 dvx = derivative(v,:x)
-@test dvx(x) ≈ derivative(p,:x)(x)
+@test dvx(x)[1] ≈ derivative(p,:x)(x)

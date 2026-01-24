@@ -147,13 +147,6 @@ function esc_non_params(expr,par)
 end
 
 
-function check_integrands_par(integrands,par)
-    for inte in integrands
-        all(map(in(inte.args),par.args)) || throw(ArgumentError("Some terms do not depend on all arguments."))
-        println(inte.args)
-        println(par.args)
-    end
-end
 """
 ```
    @form form_definition
@@ -188,7 +181,6 @@ macro form(expr)
        par = get_parameters(expr)
        terms = get_terms(expr)
        tira = fracture(terms,par,false)
-       check_integrands_par(tira[1:2:end],par)
        integrands = [esc_non_params(i,par) for i in tira[1:2:end]]
        Expr(:(=),name,Expr(:call,:_form,integrands...,tira[2:2:end]...))
 end

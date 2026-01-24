@@ -22,7 +22,7 @@ end
 function Polynomials.derivative(p::PolySum{F, X, Y}, z::Symbol) where {F, X, Y}
     z == X && return derivative(p.left, X) + derivative(p.right, X)
     z == Y && return derivative(p.left, Y) + derivative(p.right, Y)
-    throw(ArgumentError("Z must be an indeterminate present in the field, but Z=$z was provided for a field with indeterminates X=$X and Y=$Y"))
+    throw(ArgumentError("$z is not an indeterminate of the polynomial"))
 end
 
 Polynomials.derivative(p::PolyTensorField, z::Symbol) = PolyTensorField(derivative.(p.tensor, z))
