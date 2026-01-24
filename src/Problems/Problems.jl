@@ -9,15 +9,13 @@ using ..Meshes
 using ..Poly
 using ..Spaces
 using ..Integration
+using ..Measures
 using ..Forms
 
 
-include("auxiliarydata.jl")
-include("measures.jl")
 include("feproblem.jl")
 
 
-export Measure
 export FEProblem
 
 end; #module

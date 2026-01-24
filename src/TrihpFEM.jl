@@ -37,6 +37,8 @@ include("Meshes/Meshes.jl")
 include("Poly/Poly.jl")
 include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
+include("Forms/Forms.jl")
+include("Measures/Measures.jl")
 include("Problems/Problems.jl")
 
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
@@ -51,6 +53,12 @@ export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftyp
 using ..Integration: Quadrature,gmquadrature,ref_integrate
 export Quadrature,gmquadrature,ref_integrate
 
-using ..Problems: Measure
+using ..Forms: Form, @form
+export Form, @form
+
+using ..Measures: Measure
 export Measure
+
+using ..Problems: FEProblem
+export FEProblem
 end
