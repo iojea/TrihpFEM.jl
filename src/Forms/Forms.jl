@@ -1,5 +1,7 @@
 module Forms
 
+using ..Measures
+
 export Form
 export @form
 
