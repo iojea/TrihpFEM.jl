@@ -20,12 +20,13 @@ DΩ = Measure(Ω,13)
 
 A = rand(2,2)
 f(x) = x[1]*x[2]
-@form a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ
+@form a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ + ∫2(u*v)*dΩ
 @form b(v) = ∫(f*v)*dΩ
-
+c = Form((u,v)->∇(u)⋅∇(v),dΩ)
 
 @test typeof(a)<:Form{2}
 @test typeof(b)<:Form{1}
+@test typeof(c)<:Form{2}
 
 S = StdScalarSpace()
 g(x) = x[1]
