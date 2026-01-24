@@ -3,10 +3,10 @@
 
 A numerical quadrature scheme. Schemes are created by calling `gmquadrature`. 
 """
-struct Quadrature{D,T<:Number,P<:Integer}
+struct Quadrature{D,F<:Number,P<:Integer}
     dim::P
-    weights::Vector{T}
-    points::Vector{SVector{D,T}} #check dimensions
+    weights::Vector{F}
+    points::Vector{SVector{D,F}} #check dimensions
     degree::P
 end
 
@@ -50,10 +50,13 @@ function gmquadrature(::Val{D},degree::P,Tref) where {D,P<:Integer}
     L = numberofpoints(D,degree)
     _gmquadrature(T,Val(D),Val(L),degree,Tref)
 end
-function gmquadrature(d::Val{D},degree::P) where {D,P}
-    Tref = @SMatrix[-1. 1 1;-1. -1. 1]
+function gmquadrature(::Type{F},d::Val{D},degree::P) where{F,D,P}
+    Tref = SMatrix{2,3,F}([-1 1 1;-1 -1 1])
     gmquadrature(d,degree,Tref)
 end
+gmquadrature(d::Val{D},degree::P) where {D,P} = gmquadrature(Float64,d,degree)
+    
+
 
 
 _szero(::Val{D},::Type{T}) where {D,T} = MVector{D,T}(zero(T) for _ in 1:D)
@@ -89,7 +92,6 @@ function _iterate(::DegCombination{M},t) where M
     end
     return actual,actual
 end
-Base.IteratorSize(::DegCombination) = Base.HasLength()
 Base.length(::DegCombination{M}) where M = sum(M+1-i for i = 0:M+1)
 
 function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D,L,P}

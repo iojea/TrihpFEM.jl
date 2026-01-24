@@ -11,7 +11,7 @@ module Meshes
     using DocStringExtensions
 
 
-    export Edge, EdgeAttributes, Triangle, TriangleAttributes, HPMesh, DOF
+    export Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation,HPMesh, DOF
     export triangle, hpmesh, data
     export tag, degree, dof, longestedge, tagged_dof
     export ismarked, isgreen, isblue, isred, istagged, isinterior, isboundary
