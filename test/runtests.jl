@@ -18,9 +18,6 @@ using Aqua
     @testset "Integration" begin
         include("integration.jl")
     end
-    @testset "Forms" begin
-        include("forms.jl")
-    end
     @testset "Problems" begin
         include("problems.jl")
     end

@@ -16,12 +16,16 @@ dΩ = Measure(Ω)
 DΩ = Measure(Ω,13)
 @test typeof(DΩ)<:Measure
 @test DΩ.sch.degree == 13
-@test typeof(DΩ.sch.degree) == Int32
+@test typeof(DΩ.sch.degree) == UInt8
 
 A = rand(2,2)
 f(x) = x[1]*x[2]
 @form a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ
 @form b(v) = ∫(f*v)*dΩ
+
+
+@test typeof(a)<:Form{2}
+@test typeof(b)<:Form{1}
 
 S = StdScalarSpace()
 g(x) = x[1]
