@@ -44,29 +44,6 @@ function integrate(form::Form{2},space::Spaces.AbstractSpace)
     sparse(ivec,jvec,vals,N,N)
 end
 
-# function integrate(form::Form{1},space::Spaces.AbstractSpace)
-#     (;integrands,measures) = form
-#     mesh = domainmesh(first(measures))
-#     F = floattype(mesh)
-#     N = degrees_of_freedom!(mesh)
-#     ℓ = sum(Base.Fix{2}(^,2)∘length,tridofs(mesh))
-#     rhs = FixedSizeArray{F,1}(undef,ℓ)
-#     fill!(zero(F),rhs)
-#     for (fun,measure) in zip(integrands,measures)
-#         mock = fun(space,space)
-#         CT = coefftype(mock)
-#         ord = order(mock)
-#         rhs .+= buildvector(::Constant,ord::Order{B},fun,measure,space)
-#     end
-# end
-
-# function buildvector(::Constant,ord::Order{B},fun,measure,space)
-#     (;aux,mesh) = measure
-#     (;points,trilist,dofs) = mesh
-#     (;by_tri) = dofs
-    
-# end
-
 
 # Integration with constant coefficients
 function buildmatrix!(::Constant,ord::Order{B},ivec,jvec,vals,fun,measure,space) where B
@@ -101,7 +78,6 @@ function buildmatrix!(::Constant,ord::Order{B},ivec,jvec,vals,fun,measure,space)
     end
 end
 
-#Remove repetitions. It's symmetric! - This can only be done if matrices are separated from vectors...
 function build_local_tensor(::Constant,::Order{B},fun,base) where B
     inner_dim  = length(base)
     outer_dims = sum(B)
@@ -115,6 +91,28 @@ function build_local_tensor(::Constant,::Order{B},fun,base) where B
     return local_tensor
 end
 
+function integrate(form::Form{1},space::Spaces.AbstractSpace)
+    (;integrands,measures) = form
+    mesh = domainmesh(first(measures))
+    F = floattype(mesh)
+    N = degrees_of_freedom!(mesh)
+    ℓ = sum(Base.Fix{2}(^,2)∘length,tridofs(mesh))
+    rhs = FixedSizeArray{F,1}(undef,ℓ)
+    fill!(zero(F),rhs)
+    for (fun,measure) in zip(integrands,measures)
+        mock = fun(space,space)
+        CT = coefftype(mock)
+        ord = order(mock)
+        rhs .+= buildvector(CT,ord::Order{B},fun,measure,space)
+    end
+end
+
+# function buildvector(::Constant,ord::Order{B},fun,measure,space)
+#     (;aux,mesh) = measure
+#     (;points,trilist,dofs) = mesh
+#     (;by_tri) = dofs
+    
+# end
 # Integration with variable coefficients
 # function buildmatrix!(::Variable,ord::Order{B},ivec,jvec,vals,fun,measure,base) where B
 #     (;aux,mesh,sch) = measure
