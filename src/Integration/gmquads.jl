@@ -65,9 +65,9 @@ function _sszero(::Val{D},::Val{L},::Type{T}) where {D,L,T}
 end
 
 """
-    DegCombination{M}
+    DegCombination{L,D}
 
-An iterator for building all combinations of integers in tuples of length 3 and sum M. For example `DegCombination{2}()` iterates over `(2,0,0),(1,1,0),(1,0,1),(0,2,0),(0,1,1),(0,0,2)`. These combinations are necessary for building two dimensional Grundmann-Moeller schemes.
+An iterator for building all combinations of integers in tuples of length `L` and sum `D`. For example `DegCombination{3,2}()` iterates over `(2,0,0),(1,1,0),(1,0,1),(0,2,0),(0,1,1),(0,0,2)`. These combinations are necessary for building two dimensional Grundmann-Moeller schemes.
 The iterator allows lazy creation which avoids the allocations incurred in `GrundmannMoeller.jl`.
 """
 struct DegCombination{L,D} end
@@ -112,9 +112,8 @@ function _iterate(::DegCombination{L,D},st) where {L,D}
     end
 end
     
-Base.length(::DegCombination{1,D}) where D = 1
 function Base.length(::DegCombination{L,D}) where {L,D}
-    sum(length(DegCombination{L-1,i}) for i in 0:D)
+    (D==0 || L==1) ? 1 : sum(length(DegCombination{L-1,i}()) for i in 0:D)
 end
 
 function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D,L,P}
@@ -126,7 +125,7 @@ function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D
     points = _sszero(Val(D),Val(L),T)
     j = 1
     for i in 0:order
-        exponents = DegCombination{order-i}()
+        exponents = DegCombination{D+1,order-i}()
         w = T((-1)^i) * big(degree + D - 2 * i)^degree / (big(2)^(2 * order) *
              factorial(big(i)) *
              factorial(big(degree + D - i)))
