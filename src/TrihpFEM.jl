@@ -39,6 +39,7 @@ include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
 include("Measures/Measures.jl")
 include("Forms/Forms.jl")
+include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
@@ -47,8 +48,8 @@ export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboun
 using ..Poly: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
 export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
 
-using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
-export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant
+using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant,∇,Δ
+export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftype, EvalType, Order, Eval, Pass, combine, basis, Variable, Constant, ∇,Δ
 
 using ..Integration: Quadrature,gmquadrature,ref_integrate
 export Quadrature,gmquadrature,ref_integrate
@@ -58,6 +59,9 @@ export Form, @form
 
 using ..Measures: Measure
 export Measure
+
+using ..Assembly: integrate
+export integrate
 
 using ..Problems: FEProblem
 export FEProblem

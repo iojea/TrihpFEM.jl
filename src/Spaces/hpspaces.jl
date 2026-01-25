@@ -78,12 +78,12 @@ coefftype(::Function) = Variable()
 # Base.promote(::Nothing,::B) where B<: CoeffType = B()
 # Base.promote(::B,::Nothing) where B<: CoeffType = B()
 
-# Base.promote_type(::Type{Constant},::Type{Variable}) = Variable
-# Base.promote_type(::Type{Variable},::Type{Variable}) = Variable
-# Base.promote_type(::Type{Constant},::Type{Constant}) = Constant
-# Base.promote_type(::Type{Variable},::Type{Constant}) = Variable
-# Base.promote_type(::Type{Nothing},::Type{B}) where B<:CoeffType = B
-# Base.promote_type(::Type{B},::Type{Nothing}) where B<:CoeffType = B
+combine(::Constant,::Variable) = Variable()
+combine(::Variable,::Variable) = Variable()
+combine(::Constant,::Constant) = Constant()
+combine(::Variable,::Constant) = Variable()
+combine(::Nothing,::B) where B<:CoeffType = B()
+combine(::B,::Nothing) where B<:CoeffType = B()
 
 
 struct Operation{F <: Function, S1, S2}
@@ -104,7 +104,7 @@ LinearAlgebra.dot(a::AbstractArray, op::Sp) = Operation(dot, a, op)
 LinearAlgebra.dot(op::Sp, a::AbstractArray) = Operation(dot, op, a)
 LinearAlgebra.dot(a::Sp, b::Sp) = Operation(dot, a, b)
 
-coefftype(op::Operation) = promote(coefftype(op.left), coefftype(op.right))
+coefftype(op::Operation) = combine(coefftype(op.left), coefftype(op.right))
 
 order(op::Operation) = combine(order(op.left), order(op.right))
 

@@ -15,6 +15,7 @@ module Spaces
     export basis
     export OperatorSpace
     export gradient, divergence, laplacian
+    export ∇, Δ
     export dot
     export Order
     export order

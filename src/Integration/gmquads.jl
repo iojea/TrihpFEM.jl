@@ -70,29 +70,52 @@ end
 An iterator for building all combinations of integers in tuples of length 3 and sum M. For example `DegCombination{2}()` iterates over `(2,0,0),(1,1,0),(1,0,1),(0,2,0),(0,1,1),(0,0,2)`. These combinations are necessary for building two dimensional Grundmann-Moeller schemes.
 The iterator allows lazy creation which avoids the allocations incurred in `GrundmannMoeller.jl`.
 """
-struct DegCombination{M} end
+struct DegCombination{L,D} end
 
-function Base.iterate(::DegCombination{M}) where M
-    t = SVector{3,Int}(M,0,0)
-    t,t
+Base.iterate(::DegCombination{L,0}) where L = nothing
+Base.iterate(::DegCombination{L,0},st) where L = nothing
+
+function Base.iterate(::DegCombination{L,D}) where {L,D}
+    ini = D
+    tail = SVector{L-1,Int}(zeros(Int,L-1))
+    t = SVector{L,Int}(ini,tail...)
+    return t,(ini,tail)
 end
-function Base.iterate(e::DegCombination{M},t) where M
-    if t[3]==M
+
+function Base.iterate(e::DegCombination{L,D},st) where {L,D}
+    (_,tail) = st
+    if tail[end]==D
         return nothing
     else
-        return _iterate(e,t)
+        _iterate(e,st)
     end
 end
 
-function _iterate(::DegCombination{M},t) where M
-    if t[2]==0
-        actual = SVector{3,Int}(t[1]-1,M+1-t[1],0)
+function _iterate(::DegCombination{L,D},st) where {L,D}
+    (ini,tail) = st
+    if length(tail)==1
+        ini -= 1
+        tail = SVector{L-1,Int}(tail[1]+1,tail[2:end]...)
+        t = SVector{L,Int}(ini,tail...)
+        return t,(ini,tail)
     else
-        actual = SVector{3,Int}(t[1],t[2]-1,t[3]+1)
+        tailite = iterate(DegCombination{L-1,D-ini}(),(tail[1],tail[2:end]))
+        if isnothing(tailite)
+            ini = ini - 1
+            tail = SVector{L-1,Int}(D-ini,zeros(Int,L-2)...)
+            t = SVector{L,Int}(ini,tail...)
+            return t,(ini,tail)
+       else
+            t = SVector{L,Int}(ini,tailite[1]...)
+            return t,(ini,tailite[1])
+       end
     end
-    return actual,actual
 end
-Base.length(::DegCombination{M}) where M = sum(M+1-i for i = 0:M+1)
+    
+Base.length(::DegCombination{1,D}) where D = 1
+function Base.length(::DegCombination{L,D}) where {L,D}
+    sum(length(DegCombination{L-1,i}) for i in 0:D)
+end
 
 function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D,L,P}
     D::Int
