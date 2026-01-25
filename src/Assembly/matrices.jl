@@ -103,9 +103,9 @@ end
 
 #Remove repetitions. It's symmetric! - This can only be done if matrices are separated from vectors...
 function build_local_tensor(::Constant,::Order{B},fun,base) where B
-    inner_dims = size(base)
+    inner_dim  = length(base)
     outer_dims = sum(B)
-    dims = (inner_dims...,(2 for _ in 1:outer_dims)...)
+    dims = (inner_dim,inner_dim,(2 for _ in 1:outer_dims)...)
     local_tensor = FixedSizeArray{Float64}(undef,dims...)
     for (j,ψ) in enumerate(base)
         for (i,φ) in enumerate(base)

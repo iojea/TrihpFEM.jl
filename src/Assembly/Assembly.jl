@@ -5,6 +5,7 @@ using TensorOperations
 using FixedSizeArrays
 using EllipsisNotation
 using Dictionaries
+using SparseArrays
 
 
 using ..Meshes

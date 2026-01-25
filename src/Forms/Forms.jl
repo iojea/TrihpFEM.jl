@@ -95,10 +95,10 @@ function fracture(expr,arg,signed,others...)
             end
             bad_integrand(integrand) && throw(error("Integrands containing sums are not supported. Please use one integral per term in your form. "))
             fun_body = Expr(:->,arg,integrand)
+            return fun_body,measure,others...
         elseif expr.args[2].head == :call && expr.args[2].args[1] in (:*,:⋅)
             throw(error("Multiplication outside of integrals are not supported yet. Place the multiplication inside of the integrand instead.")) 
         end
-        return fun_body,measure,others...
     end
     if expr.head == :call && expr.args[1] == :+
         terms1 = fracture(expr.args[2],arg,false)
