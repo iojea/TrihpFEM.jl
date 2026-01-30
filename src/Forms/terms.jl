@@ -19,7 +19,7 @@ function IntegrationTerm(pf,f,meas)
     N = first(methods(pf)).nargs-1
     IntegrationTerm{T,N}(pf,f,meas)
 end
-
+numargs(::IntegrationType{C,N}) where {C,N} = N
 """
     strip_block(ex::Expr)
 removes the `:block` part of an expression, returning the meaningful part.
@@ -201,26 +201,13 @@ macro term(expr)
     head,termsexpr = head_and_terms(expr)
     name = get_name(head)
     params = get_parameters(head)
-    terms = separate_terms(termsexpr)
-    intterms = []
-    for t in terms
-        integrand,meas = process_term(t)
-        factor = get_factor(integrand,params)
-        funbody = cleanfactor(integrand,factor)
-        fun = build_polyfun(params,funbody)
-        it = Expr(:call,:IntegrationTerm,esc_non_params(fun,params),factor,esc(meas))
-        push!(intterms,it)
-    end
-    Expr(:(=),esc(name),Expr(:call,:Form,intterms...))
+    integrand,meas = process_term(termexpr)
+    factor = get_factor(integrand,params)
+    funbody = cleanfactor(integrand,factor)
+    fun = build_polyfun(params,funbody)
+    Expr(:call,:IntegrationTerm,esc_non_params(fun,params),factor,esc(meas))
 end
 
-
-
-struct Form{N}
-    terms  
-end
-Form(x::IntegrationTerm) = Form((x,))
-Form(x...) = Form(x)
 
 
 
