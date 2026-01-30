@@ -19,7 +19,8 @@ function IntegrationTerm(pf,f,meas)
     N = first(methods(pf)).nargs-1
     IntegrationTerm{T,N}(pf,f,meas)
 end
-numargs(::IntegrationType{C,N}) where {C,N} = N
+numargs(::IntegrationTerm{C,N}) where {C,N} = N
+
 """
     strip_block(ex::Expr)
 removes the `:block` part of an expression, returning the meaningful part.
