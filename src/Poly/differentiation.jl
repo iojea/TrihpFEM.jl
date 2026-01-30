@@ -71,7 +71,7 @@ Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, 
 ```
 Computes the laplacian of a `PolyScalarField` and returns another `PolyScalarField`, typically a `PolySum`. 
 """
-laplacian(v::PolyScalarField) = divergence(gradient(v))
+(::Laplacian)(v::PolyScalarField) = divergence(gradient(v))
 
 # This method should be removed in the next Polynomials update
 Polynomials.derivative(p::ImmutablePolynomial{F, X, 1}) where {F, X} = zero(p)

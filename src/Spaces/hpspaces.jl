@@ -13,17 +13,17 @@ struct OperatorSpace{F <: Function, S <: AbstractSpace} <: AbstractSpace
 end
 
 
-Poly.gradient(s::StdScalarSpace) = OperatorSpace(gradient, s)
-Poly.divergence(s::Union{StdVectorSpace, OperatorSpace}) = OperatorSpace(divergence, s)
-Poly.laplacian(s::StdScalarSpace) = OperatorSpace(laplacian, s)
+Poly.(::Gradient)(s::StdScalarSpace) = OperatorSpace(gradient, s)
+Poly.(::Divergence)(s::Union{StdVectorSpace, OperatorSpace}) = OperatorSpace(divergence, s)
+Poly.(::Laplacian)(s::StdScalarSpace) = OperatorSpace(laplacian, s)
 
 struct Order{B} end
 
 order(_) = Order{0}()
 order(::Union{AbstractSpace, Type{<:AbstractSpace}}) = Order{(0,)}()
-order(::typeof(divergence)) = Order{1}()
-order(::typeof(gradient)) = Order{1}()
-order(::typeof(laplacian)) = Order{2}()
+order(::Divergence) = Order{1}()
+order(::Gradient) = Order{1}()
+order(::Laplacian) = Order{2}()
 order(op::T) where {T <: OperatorSpace} = order(order(op.operator), order(op.space))
 function order(::Order{B}, ::Order{C}) where {B, C}
     return if B isa Integer && C isa Integer
