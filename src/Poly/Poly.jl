@@ -23,7 +23,8 @@ module Poly
     export PolySum
     export indeterminate, indeterminates, degs
     export LegendreIterator, StandardBasis
-    export derivative, gradient, divergence, laplacian, _outer
+    export DiffOperator,Gradient,Divergence,Laplacian
+    export ∂x,∂y,derivative, gradient, divergence, laplacian, _outer
     export dot
     export AffineToRef
     export affine!

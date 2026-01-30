@@ -8,14 +8,17 @@ coefftype(::Function) = Variable()
 coefftype(::DiffOperator) = Constant()
 
 
-struct IntegrationTerm{C<:CoeffType}
+struct IntegrationTerm{C<:CoeffType,N}
     polyfun
     factor
     measure
 end
 
-IntegrationTerm(pf,f,meas) = IntegrationTerm{typeof(coefftype(f))}(pf,f,meas)
-IntegrationTerm(pf,meas) = IntegrationTerm{Constant}(pf,I,meas)
+function IntegrationTerm(pf,f,meas)
+    T = typeof(coefftype(f))
+    N = first(methods(pf)).nargs-1
+    IntegrationTerm{T,N}(pf,f,meas)
+end
 
 """
     strip_block(ex::Expr)
@@ -166,8 +169,8 @@ end
    cleanfactor(expr,factor)
 takes the expressions `expr` and `factor`, where `factor` was obtained from `expr` using `get_factor` and cleans `expr` by removing `factor`, thus returning an expression containing only an operation between the parameters. 
 """
-function cleanfactor(expr,factor)
-    if length(expr.args)==n
+function cleanfactor(expr,factor,par)
+    if length(expr.args)==length(par.args)+1
         op,left,right = expr.args
         if left == factor
             return right
@@ -178,7 +181,7 @@ function cleanfactor(expr,factor)
             newright = cleanfactor(right,factor)
             return Expr(:call,op,newleft,newright)
         end
-    elseif length(expr.args)==n-1
+    elseif length(expr.args)==length(par.args)
         if expr.args[1] == :-
             nofactor = cleanfactor(expr.args[2],factor)
             Expr(:call,:-,nofactor)
@@ -213,7 +216,7 @@ end
 
 
 
-struct Form
+struct Form{N}
     terms  
 end
 Form(x::IntegrationTerm) = Form((x,))

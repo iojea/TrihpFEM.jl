@@ -13,9 +13,9 @@ struct OperatorSpace{F <: Function, S <: AbstractSpace} <: AbstractSpace
 end
 
 
-Poly.(::Gradient)(s::StdScalarSpace) = OperatorSpace(gradient, s)
-Poly.(::Divergence)(s::Union{StdVectorSpace, OperatorSpace}) = OperatorSpace(divergence, s)
-Poly.(::Laplacian)(s::StdScalarSpace) = OperatorSpace(laplacian, s)
+(::Gradient)(s::StdScalarSpace) = OperatorSpace(gradient, s)
+(::Divergence)(s::Union{StdVectorSpace, OperatorSpace}) = OperatorSpace(divergence, s)
+(::Laplacian)(s::StdScalarSpace) = OperatorSpace(laplacian, s)
 
 struct Order{B} end
 
