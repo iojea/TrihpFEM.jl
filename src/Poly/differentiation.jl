@@ -1,3 +1,21 @@
+abstract type DiffOperator end
+
+struct Derivatex <: DiffOperator end
+struct Derivatey <: DiffOperator end
+struct Gradient <: DiffOperator end
+struct Divergence <: DiffOperator end
+struct Laplacian <: DiffOperator end
+
+∂x = Derivatex()
+∂y = Derivatey()
+gradient = Gradient()
+divergence = Divergence()
+laplacian = Laplacian()
+
+const ∇ = gradient
+const Δ = laplacian
+
+
 """
 ```
    derivative(p::PolyField,z)
@@ -27,17 +45,16 @@ end
 
 Polynomials.derivative(p::PolyTensorField, z::Symbol) = PolyTensorField(derivative.(p.tensor, z))
 
+(::Derivatex)(p::PolyField{F,X,Y}) where {F,X,Y} = derivative(p,X)
+(::Derivatey)(p::PolyField{F,X,Y}) where {F,X,Y} = derivative(p,Y)
+              
 """
 ```
    gradient(p::PolyScalarField{F,X,Y}) where {F,X,Y}
 ```
 Computes the gradient of a `PolyScalarField` and returns a `PolyVectorField`. 
 """
-function gradient(p::PolyScalarField{F, X, Y}) where {F, X, Y}
-    dx = derivative(p, X)
-    dy = derivative(p, Y)
-    return PolyVectorField([dx, dy])
-end
+(::Gradient)(p::PolyScalarField) = PolyVectorField([∂x(p),∂y(p)])
 
 """
 ```
@@ -45,12 +62,7 @@ end
 ```
 Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, typically a  `PolySum`. 
 """
-function divergence(v::PolyVectorField)
-    X, Y = indeterminates(v)
-    d1x = derivative(v[1], :x)
-    d2y = derivative(v[2], :y)
-    return d1x + d2y
-end
+(::Divergence)(v::PolyVectorField) = ∂x(v[1])+∂y(v[2])
 
 
 """

@@ -1,3 +1,13 @@
+function outerprod(v...)
+    dims = tuple(Iterators.flatten(size.(v))...)
+    z = FixedSizeArrayDefault{Float64,length(dims)}(undef,dims...)
+    for (i,k) in enumerate(Iterators.product(v...))
+        z[i] = prod(k)
+    end
+    z
+end
+const ⊗ = outerprod
+
 abstract type PolyField{F, X, Y} end
 
 indeterminate(::AbstractPolynomial{T, X}) where {T, X} = X
