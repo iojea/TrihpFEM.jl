@@ -46,7 +46,7 @@ end
 
 
 # Integration with constant coefficients
-function buildmatrix!(::Constant,ord::Order{B},ivec,jvec,vals,fun,measure,space) where B
+function buildmatrix!(::ConstantCoeff,ord::Order{B},ivec,jvec,vals,fun,measure,space) where B
     (;aux,mesh) = measure
     (;points,trilist,dofs) = mesh
     (;by_tri) = dofs
@@ -61,7 +61,7 @@ function buildmatrix!(::Constant,ord::Order{B},ivec,jvec,vals,fun,measure,space)
         if isin
             loctensor = gettokenvalue(tensordict,token)
         else
-            loctensor = build_local_tensor(Constant(),ord,fun,basis(space,p))
+            loctensor = build_local_tensor(ConstantCoeff(),ord,fun,basis(space,p))
             set!(tensordict,p,loctensor)
         end
         affine!(aff,points[tri])
@@ -78,7 +78,7 @@ function buildmatrix!(::Constant,ord::Order{B},ivec,jvec,vals,fun,measure,space)
     end
 end
 
-function build_local_tensor(::Constant,::Order{B},fun,base) where B
+function build_local_tensor(::ConstantCoeff,::Order{B},fun,base) where B
     inner_dim  = length(base)
     outer_dims = sum(B)
     dims = (inner_dim,inner_dim,(2 for _ in 1:outer_dims)...)
@@ -107,7 +107,7 @@ function integrate(form::Form{1},space::Spaces.AbstractSpace)
     end
 end
 
-# function buildvector(::Constant,ord::Order{B},fun,measure,space)
+# function buildvector(::ConstantCoeff,ord::Order{B},fun,measure,space)
 #     (;aux,mesh) = measure
 #     (;points,trilist,dofs) = mesh
 #     (;by_tri) = dofs
@@ -287,7 +287,7 @@ end
 # end
 
 
-# function integrate(::Type{Spaces.Constant},::Type{Spaces.Order{B}},op,m::Measure{M}) where {B,F,I,P,M<:HPMesh{F,I,P}}
+# function integrate(::Type{Spaces.ConstantCoeff},::Type{Spaces.Order{B}},op,m::Measure{M}) where {B,F,I,P,M<:HPMesh{F,I,P}}
 #     (;mesh,aux) = m
 #     degrees_of_freedom!(mesh)
 #     dims = len(B)+sum(B)

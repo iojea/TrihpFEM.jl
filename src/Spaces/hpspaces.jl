@@ -60,32 +60,6 @@ combine(::Order{0}, ::Order{0}) = Order{0}()
 
 basis(::StdScalarSpace, p::Tuple) = StandardBasis(p)
 
-# A trait for identifying Constant Coefficients, which allow precomputation of local tensors.
-abstract type CoeffType end
-
-struct Constant <: CoeffType end
-struct Variable <: CoeffType end
-
-coefftype(::AbstractSpace) = Constant()
-coefftype(::AbstractArray) = Constant()
-coefftype(::Number) = Constant()
-coefftype(::Function) = Variable()
-
-# Base.promote(::Constant,::Variable) = Variable()
-# Base.promote(::Variable,::Constant) = Variable()
-# Base.promote(::Variable,::Variable) = Variable()
-# Base.promote(::Constant,::Constant) = Constant()
-# Base.promote(::Nothing,::B) where B<: CoeffType = B()
-# Base.promote(::B,::Nothing) where B<: CoeffType = B()
-
-combine(::Constant,::Variable) = Variable()
-combine(::Variable,::Variable) = Variable()
-combine(::Constant,::Constant) = Constant()
-combine(::Variable,::Constant) = Variable()
-combine(::Nothing,::B) where B<:CoeffType = B()
-combine(::B,::Nothing) where B<:CoeffType = B()
-
-
 struct Operation{F <: Function, S1, S2}
     operator::F
     left::S1
@@ -104,7 +78,6 @@ LinearAlgebra.dot(a::AbstractArray, op::Sp) = Operation(dot, a, op)
 LinearAlgebra.dot(op::Sp, a::AbstractArray) = Operation(dot, op, a)
 LinearAlgebra.dot(a::Sp, b::Sp) = Operation(dot, a, b)
 
-coefftype(op::Operation) = combine(coefftype(op.left), coefftype(op.right))
 
 order(op::Operation) = combine(order(op.left), order(op.right))
 

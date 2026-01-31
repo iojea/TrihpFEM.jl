@@ -1,11 +1,11 @@
 abstract type CoeffType end
 
-struct Constant <: CoeffType end
-struct Variable <: CoeffType end
+struct ConstantCoeff <: CoeffType end
+struct VariableCoeff <: CoeffType end
 
-coefftype(_) = Constant()
-coefftype(::Function) = Variable()
-coefftype(::DiffOperator) = Constant()
+coefftype(_) = ConstantCoeff()
+coefftype(::Function) = VariableCoeff()
+coefftype(::DiffOperator) = ConstantCoeff()
 
 
 struct IntegrationTerm{C<:CoeffType,N}

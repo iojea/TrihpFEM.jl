@@ -54,8 +54,8 @@ export StdScalarSpace, StdVectorSpace, OperatorSpace, order, CoeffType, coefftyp
 using ..Integration: Quadrature,gmquadrature,ref_integrate
 export Quadrature,gmquadrature,ref_integrate
 
-using ..Forms: Form, @form
-export Form, @form
+using ..Forms: Form, IntegrationTerm, @term, @form
+export IntegrationTerm, Form, @term, @form
 
 using ..Measures: Measure
 export Measure

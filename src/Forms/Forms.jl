@@ -9,7 +9,8 @@ include("form.jl")
 
 export IntegrationTerm
 export Form
+export @term
 export @form
+export CoeffType,ConstantCoeff,VariableCoeff
 
-export Constant, Variable
 end; #module
