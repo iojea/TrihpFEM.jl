@@ -20,7 +20,7 @@ function IntegrationTerm(pf,f,meas)
     IntegrationTerm{T,N}(pf,f,meas)
 end
 numargs(::IntegrationTerm{C,N}) where {C,N} = N
-
+coefftype(::IntegrationTerm{C,N}) where {C,N} = C()
 
 """
   A list of reserved symbols to discard when looking for the `factor` in an `IntegrationTerm`  

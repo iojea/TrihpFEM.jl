@@ -30,12 +30,12 @@ c = Form(IntegrationTerm((u,v)->∇(u)⋅∇(v),nothing,dΩ))
 
 @test a.terms[1].factor == A
 @test Forms.coefftype(a.terms[1]) isa ConstantCoeff
-@test Forms.coefftype(c.terms[1]) isa VariableCoeff
+@test Forms.coefftype(b.terms[1]) isa VariableCoeff
 
-@ter b₀(v) = ∫(2*v)*dΩ
+@term b₀(v) = ∫(2*v)*dΩ
 @term b₁(v) = ∫([1,2]⋅∇(v))*dΩ
 b = b₀ + b₁
-@test b₀ isa IntegrationTerm{Constant,1}
+@test b₀ isa IntegrationTerm{ConstantCoeff,1}
 @test b isa Form{1}
 
 S = StdScalarSpace()
