@@ -28,7 +28,11 @@ c = Form((u,v)->∇(u)⋅∇(v),dΩ)
 @test typeof(b)<:Form{1}
 @test typeof(c)<:Form{2}
 
-@term b₀(v) = ∫(2*v)*dΩ
+@test a.terms[1].factor == A
+@test Forms.coefftype(a.terms[1]) isa ConstantCoeff
+@test Forms.coefftype(c.terms[1]) isa VariableCoeff
+
+@ter b₀(v) = ∫(2*v)*dΩ
 @term b₁(v) = ∫([1,2]⋅∇(v))*dΩ
 b = b₀ + b₁
 @test b₀ isa IntegrationTerm{Constant,1}

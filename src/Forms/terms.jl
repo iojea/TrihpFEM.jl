@@ -214,7 +214,7 @@ macro term(expr)
     factor = get_factor(integrand,params)
     funbody = cleanfactor(integrand,factor,params)
     fun = build_polyfun(params,funbody)
-    Expr(:(=),esc(name),Expr(:call,:IntegrationTerm,esc_non_params(fun,params),esc(factor),esc(meas)))
+    Expr(:(=),esc(name),Expr(:call,:IntegrationTerm,esc_non_params(fun,params),$(esc(factor)),esc(meas)))
 end
 
 

@@ -25,7 +25,7 @@ macro form(expr)
         factor = get_factor(integrand,params)
         funbody = cleanfactor(integrand,factor,params)
         fun = build_polyfun(params,funbody)
-        it = Expr(:call,:IntegrationTerm,esc_non_params(fun,params),factor,esc(meas))
+        it = Expr(:call,:IntegrationTerm,esc_non_params(fun,params),esc(factor),esc(meas))
         push!(intterms,it)
     end
     Expr(:(=),esc(name),Expr(:call,:Form,intterms...))
