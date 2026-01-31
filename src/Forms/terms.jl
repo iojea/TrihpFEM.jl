@@ -21,6 +21,12 @@ function IntegrationTerm(pf,f,meas)
 end
 numargs(::IntegrationTerm{C,N}) where {C,N} = N
 
+
+"""
+  A list of reserved symbols to discard when looking for the `factor` in an `IntegrationTerm`  
+"""
+RESEVED_SYMBS = (:*,:⋅,:-,:∂x,:∂y,:gradient,:divergence,:laplacian,:∇,:Δ,:ε)
+
 """
     strip_block(ex::Expr)
 removes the `:block` part of an expression, returning the meaningful part.
@@ -144,25 +150,23 @@ Extracts a factor from a expression `s`. The function is meant to operate on an 
 """
 get_factor(s::Union{Number,AbstractArray},_) = s
 function get_factor(s::Symbol,par)
-    try es = Core.eval(__module__,s)
-        if !(es isa DiffOperator) && !(s in (:*,:⋅,:-)) && !(appearsin(s,par))
-            s
-        end
-    catch
+    if appearsin(s,par) || s in RESEVED_SYMBS
         :nothing
+    else
+        s
     end
 end
 function get_factor(s::Expr,par)
-    try Core.eval(__module__,s)
+    try eval(s)
         s
     catch
         for arg in s.args
             f = get_factor(arg,par)
-            if !isnothing(f)
+            if f != :nothing
                 return f
             end
         end
-        return :nothing
+        :nothing
     end
 end
 
@@ -171,24 +175,28 @@ end
 takes the expressions `expr` and `factor`, where `factor` was obtained from `expr` using `get_factor` and cleans `expr` by removing `factor`, thus returning an expression containing only an operation between the parameters. 
 """
 function cleanfactor(expr,factor,par)
-    if length(expr.args)==length(par.args)+1
-        op,left,right = expr.args
-        if left == factor
-            return right
-        elseif right == factor
-            return left
-        else
-            newleft = cleanfactor(left,factor)
-            newright = cleanfactor(right,factor)
-            return Expr(:call,op,newleft,newright)
+    if factor != :nothing
+        if expr isa Expr &&length(expr.args)==length(par.args)+1
+            op,left,right = expr.args
+            if left == factor
+                return right
+            elseif right == factor
+                return left
+            else
+                newleft = cleanfactor(left,factor,par)
+                newright = cleanfactor(right,factor,par)
+                return Expr(:call,op,newleft,newright)
+            end
+        elseif expr isa Expr && length(expr.args)==length(par.args)
+            if expr.args[1] == :-
+                nofactor = cleanfactor(expr.args[2],factor,par)
+                Expr(:call,:-,nofactor)
+            else
+                expr
+            end
         end
-    elseif length(expr.args)==length(par.args)
-        if expr.args[1] == :-
-            nofactor = cleanfactor(expr.args[2],factor)
-            Expr(:call,:-,nofactor)
-        else
-            expr
-        end
+    else
+        expr
     end
 end
 
@@ -199,14 +207,14 @@ builds an expression defining the function `par->body`.
 build_polyfun(par,body) = Expr(:->,par,body)
 
 macro term(expr)
-    head,termsexpr = head_and_terms(expr)
+    head,termexpr = head_and_terms(expr)
     name = get_name(head)
     params = get_parameters(head)
     integrand,meas = process_term(termexpr)
     factor = get_factor(integrand,params)
-    funbody = cleanfactor(integrand,factor)
+    funbody = cleanfactor(integrand,factor,params)
     fun = build_polyfun(params,funbody)
-    Expr(:call,:IntegrationTerm,esc_non_params(fun,params),factor,esc(meas))
+    Expr(:(=),esc(name),Expr(:call,:IntegrationTerm,esc_non_params(fun,params),esc(factor),esc(meas)))
 end
 
 

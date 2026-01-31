@@ -1,5 +1,6 @@
 module Forms
 
+using LinearAlgebra
 using ..Measures
 using ..Poly
 
@@ -8,7 +9,7 @@ include("form.jl")
 
 export IntegrationTerm
 export Form
-export @term
 export @form
 
+export Constant, Variable
 end; #module

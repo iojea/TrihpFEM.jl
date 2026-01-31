@@ -2,10 +2,11 @@ struct Form{N}
     terms  
 end
 Form(x::IntegrationTerm{C,N}) where {C,N} = Form{N}((x,))
+
 function Form(x...)
     all(isa.(x,IntegrationTerm)) || throw(ArgumentError("All parameters should be `IntegrationTerm`s."))
     N = numargs(x[1])
-    all(numargs.(x)==N) || throw(ArgumentError("Terms should operate on the same number of arguments."))
+    all(numargs.(x).==N) || throw(ArgumentError("Terms should operate on the same number of arguments."))
     Form{N}(x)
 end
 
@@ -22,7 +23,7 @@ macro form(expr)
     for t in terms
         integrand,meas = process_term(t)
         factor = get_factor(integrand,params)
-        funbody = cleanfactor(integrand,factor)
+        funbody = cleanfactor(integrand,factor,params)
         fun = build_polyfun(params,funbody)
         it = Expr(:call,:IntegrationTerm,esc_non_params(fun,params),factor,esc(meas))
         push!(intterms,it)

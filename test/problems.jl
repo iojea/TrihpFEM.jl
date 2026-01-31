@@ -28,6 +28,12 @@ c = Form((u,v)->∇(u)⋅∇(v),dΩ)
 @test typeof(b)<:Form{1}
 @test typeof(c)<:Form{2}
 
+@term b₀(v) = ∫(2*v)*dΩ
+@term b₁(v) = ∫([1,2]⋅∇(v))*dΩ
+b = b₀ + b₁
+@test b₀ isa IntegrationTerm{Constant,1}
+@test b isa Form{1}
+
 S = StdScalarSpace()
 g(x) = x[1]
 prob = FEProblem(a,b,S,g)
