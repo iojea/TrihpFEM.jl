@@ -19,8 +19,6 @@ module Spaces
     export dot
     export Order
     export order
-    export Constant, Variable
-    export coefftype
 
 
 end; #module
