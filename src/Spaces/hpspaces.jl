@@ -23,7 +23,6 @@ struct Operation{F, S1, S2}
     left::S1
     right::S2
 end
-Operation(a, c, b) = Operation{typeof(a), typeof(b), typeof(c)}(a, b, c)
 Operation(a, b) = Operation{typeof(a), typeof(b), Nothing}(a, b, nothing)
 
 const Sp = Union{AbstractSpace, Operation}
