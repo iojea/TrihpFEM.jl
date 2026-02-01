@@ -19,9 +19,15 @@ function IntegrationTerm(pf,f,meas)
     N = first(methods(pf)).nargs-1
     IntegrationTerm{T,N}(pf,f,meas)
 end
+
 numargs(::IntegrationTerm{C,N}) where {C,N} = N
+
 coefftype(::IntegrationTerm{C,N}) where {C,N} = C()
 
+function Spaces.order(term::IntegrationTerm{C,N},space::Spaces.AbstractSpace) where {C,N}
+    mock = term.polyfun((space for _ in 1:N)...)
+    order(mock)
+end
 """
   A list of reserved symbols to discard when looking for the `factor` in an `IntegrationTerm`  
 """

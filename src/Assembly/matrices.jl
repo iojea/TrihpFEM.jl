@@ -11,7 +11,7 @@ collapser(::Order{(1,1)},aff::AffineToRef) = aff.iA'*aff.iA
     _initvectors(I,F,ℓ)
 creates two vectors of type `I` for indices, and a vector of type `F` for values, all of them with size `ℓ`.  
 """
-function _initvectors(I,F,ℓ)
+function _initvectors(::HPMesh{F,I,P},ℓ) where {F,I,P}
     ivec = FixedSizeArray{I,1}(undef,ℓ)
     fill!(ivec,zero(I))
     jvec = FixedSizeArray{I,1}(undef,ℓ)
@@ -28,18 +28,14 @@ end
 Integrates the `Form` `form` using the basis of the space `space`.    
 """
 function integrate(form::Form{2},space::Spaces.AbstractSpace)
-    (;integrands,measures) = form
     mesh = domainmesh(first(measures))
-    F = floattype(mesh)
-    Itype = inttype(mesh)
-    N = degrees_of_freedom!(mesh)
+    N = length(dof(mesh))
     ℓ = sum(Base.Fix{2}(^,2)∘length,dof(mesh).by_tri)
-    ivec,jvec,vals = _initvectors(Itype,F,ℓ)
-    for (fun,measure) in zip(integrands,measures)
-        mock = fun(space,space)
-        CT = coefftype(mock)
+    ivec,jvec,vals = _initvectors(mesh,ℓ)
+    for term in terms(form)
+        mock = polyfun(space,space)
         ord = order(mock)
-        buildmatrix!(CT,ord,ivec,jvec,vals,fun,measure,space)
+        buildmatrix!(term,ord,ivec,jvec,vals,space)
     end
     sparse(ivec,jvec,vals,N,N)
 end

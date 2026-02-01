@@ -10,6 +10,7 @@ function Form(x...)
     Form{N}(x)
 end
 
+terms(form::Form) = form.terms 
 function Base.:+(t₁::IntegrationTerm{C,N},t₂::IntegrationTerm{D,N}) where {C,D,N}
     Form(t₁,t₂)
 end

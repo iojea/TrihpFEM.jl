@@ -3,6 +3,7 @@ module Forms
 using LinearAlgebra
 using ..Measures
 using ..Poly
+using ..Spaces
 
 include("terms.jl")
 include("form.jl")

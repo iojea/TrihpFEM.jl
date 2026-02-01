@@ -42,7 +42,8 @@ function Base.empty!(d::DOF{I}) where {I}
     empty!(d.by_tri)
     return d.n[] = zero(I)
 end
-Base.isempty(d::DOF{I}) where {I} = d.n[] == zero(I)
+Base.isempty(d::DOF) = d.n[] == zero(I)
+Base.length(d::DOF) = d.n[]
 
 ############################################
 ####      Domain Mesh construction      ####
