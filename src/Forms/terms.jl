@@ -25,7 +25,7 @@ coefftype(::IntegrationTerm{C,N}) where {C,N} = C()
 """
   A list of reserved symbols to discard when looking for the `factor` in an `IntegrationTerm`  
 """
-RESEVED_SYMBS = (:*,:⋅,:-,:∂x,:∂y,:gradient,:divergence,:laplacian,:∇,:Δ,:ε)
+RESERVED_SYMBS = (:*,:⋅,:-,:∂x,:∂y,:gradient,:divergence,:laplacian,:∇,:Δ,:ε)
 
 """
     strip_block(ex::Expr)
@@ -150,7 +150,7 @@ Extracts a factor from a expression `s`. The function is meant to operate on an 
 """
 get_factor(s::Union{Number,AbstractArray},_) = s
 function get_factor(s::Symbol,par)
-    if appearsin(s,par) || s in RESEVED_SYMBS
+    if appearsin(s,par) || s in RESERVED_SYMBS
         :nothing
     else
         s

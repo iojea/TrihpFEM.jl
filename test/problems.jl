@@ -19,9 +19,9 @@ DΩ = Measure(Ω,13)
 @test typeof(DΩ.sch.degree) == UInt8
 
 A = rand(2,2)
-f(x) = x[1]*x[2]
+g(x) = x[1]*x[2]
 @form a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ + ∫(2(u*v))*dΩ
-@form b(v) = ∫(f*v)*dΩ
+@form b(v) = ∫(g*v)*dΩ
 c = Form(IntegrationTerm((u,v)->∇(u)⋅∇(v),nothing,dΩ))
 
 @test typeof(a)<:Form{2}
@@ -29,6 +29,7 @@ c = Form(IntegrationTerm((u,v)->∇(u)⋅∇(v),nothing,dΩ))
 @test typeof(c)<:Form{2}
 
 @test a.terms[1].factor == A
+@test b.terms[1].factor == g
 @test Forms.coefftype(a.terms[1]) isa ConstantCoeff
 @test Forms.coefftype(b.terms[1]) isa VariableCoeff
 
@@ -39,7 +40,7 @@ b = b₀ + b₁
 @test b isa Form{1}
 
 S = StdScalarSpace()
-g(x) = x[1]
-prob = FEProblem(a,b,S,g)
+h(x) = x[1]
+prob = FEProblem(a,b,S,h)
 
 @test typeof(prob)<:FEProblem{StdScalarSpace}
