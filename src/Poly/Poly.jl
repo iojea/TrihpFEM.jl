@@ -3,6 +3,7 @@ module Poly
     using StaticArrays
     using Polynomials
     using LinearAlgebra
+    using FixedSizeArrays
     using ..Meshes
 
     include("fields.jl")
@@ -21,8 +22,8 @@ module Poly
     export PolySum
     export indeterminate, indeterminates, degs
     export LegendreIterator, StandardBasis
-    export DiffOperator,Gradient,Divergence,Laplacian
-    export ∂x,∂y,derivative, gradient, divergence, laplacian, _outer
+    export DiffOperator, Gradient, Divergence, Laplacian
+    export ∂x, ∂y, derivative, gradient, divergence, laplacian, _outer
     export dot
     export AffineToRef
     export affine!

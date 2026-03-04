@@ -21,6 +21,7 @@ using EllipsisNotation
 using ExactPredicates
 using FixedSizeArrays
 using LinearAlgebra
+using MacroTools
 using Makie
 using Markdown
 using Pkg
@@ -30,7 +31,6 @@ using SparseArrays
 using StaticArrays
 using Test
 using Triangulate
-using MacroTools
 
 include("Meshes/Meshes.jl")
 include("Poly/Poly.jl")
@@ -44,14 +44,14 @@ include("Problems/Problems.jl")
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 
-using ..Poly: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
-export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
+using ..Poly: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis, ⊗
+export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis, ⊗
 
-using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order,  EvalType, Order, Eval, Pass, combine, basis, ∇,Δ
-export StdScalarSpace, StdVectorSpace, OperatorSpace, order,  EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
+using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
+export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
 
-using ..Integration: Quadrature,gmquadrature,ref_integrate
-export Quadrature,gmquadrature,ref_integrate
+using ..Integration: Quadrature, gmquadrature, ref_integrate
+export Quadrature, gmquadrature, ref_integrate
 
 using ..Forms: Form, IntegrationTerm, @term, @form
 export IntegrationTerm, Form, @term, @form
