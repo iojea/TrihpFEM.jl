@@ -8,6 +8,9 @@ function outerprod(v...)
 end
 const ⊗ = outerprod
 
+contract(x,y) = sum(x.*y)
+
+
 abstract type PolyField{F, X, Y} end
 
 indeterminate(::AbstractPolynomial{T, X}) where {T, X} = X
@@ -223,12 +226,12 @@ end
 Base.:*(v::T, p::PolyScalarField) where {T <: PolyTensorField} = p * v
 
 
-function _outer(p::PolyVectorField, q::PolyVectorField)
-    @cast a[i, j] := p.tensor[i] * q.tensor[j]
-    return PolyTensorField(a)
-end
+# function _outer(p::PolyVectorField, q::PolyVectorField)
+#     @cast a[i, j] := p.tensor[i] * q.tensor[j]
+#     return PolyTensorField(a)
+# end
 
-LinearAlgebra.dot(p::PolyVectorField, q::PolyVectorField) = dot(p.tensor, q.tensor)
+LinearAlgebra.dot(p::PolyVectorField, q::PolyVectorField) = outerprod(p.tensor, q.tensor)
 
 
 ###############################

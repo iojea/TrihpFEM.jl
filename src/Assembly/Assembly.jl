@@ -1,7 +1,6 @@
 module Assembly
 
 using LinearAlgebra
-using TensorOperations
 using FixedSizeArrays
 using EllipsisNotation
 using Dictionaries

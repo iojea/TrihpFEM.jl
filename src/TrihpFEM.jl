@@ -28,10 +28,9 @@ using Polynomials
 using Printf
 using SparseArrays
 using StaticArrays
-using TensorCast
-using TensorOperations
 using Test
 using Triangulate
+using MacroTools
 
 include("Meshes/Meshes.jl")
 include("Poly/Poly.jl")

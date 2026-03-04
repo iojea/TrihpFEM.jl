@@ -3,7 +3,6 @@ module Poly
     using StaticArrays
     using Polynomials
     using LinearAlgebra
-    using TensorCast
     using ..Meshes
 
     include("fields.jl")
@@ -15,7 +14,6 @@ module Poly
 
     const ∇ = gradient
     const Δ = laplacian
-    const ⊗ = _outer
     export PolyField
     export BiPoly
     export PolyScalarField, PolyVectorField, PolyTensorField

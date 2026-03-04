@@ -1,6 +1,7 @@
 module Forms
 
 using LinearAlgebra
+using ..Meshes
 using ..Measures
 using ..Poly
 using ..Spaces

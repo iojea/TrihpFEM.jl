@@ -1,3 +1,8 @@
+
+"""
+    abstract type CoeffType end
+An abstract type for defining a treat that allow `IntegrationTerm`s to be dispatched to different methods for integration. Exact integration for constant coefficient terms and quadrature rules for variable coefficient terms.
+"""
 abstract type CoeffType end
 
 struct ConstantCoeff <: CoeffType end
@@ -7,7 +12,10 @@ coefftype(_) = ConstantCoeff()
 coefftype(::Function) = VariableCoeff()
 coefftype(::DiffOperator) = ConstantCoeff()
 
-
+"""
+   IntegrationTerm(pf,f,meas)
+Builds an integration term of the form `term(args...) = ∫(f*pf(args...))*meas`, where `pf` is a function to be evaluated on the local basis, `f` is a factor that can be constant or variable and `meas` is a measure for integration. 
+"""
 struct IntegrationTerm{C<:CoeffType,N}
     polyfun
     factor
@@ -24,10 +32,13 @@ numargs(::IntegrationTerm{C,N}) where {C,N} = N
 
 coefftype(::IntegrationTerm{C,N}) where {C,N} = C()
 
+Meshes.domainmesh(t::IntegrationTerm) = domainmesh(t.measure)
+
 function Spaces.order(term::IntegrationTerm{C,N},space::Spaces.AbstractSpace) where {C,N}
     mock = term.polyfun((space for _ in 1:N)...)
     order(mock)
 end
+
 """
   A list of reserved symbols to discard when looking for the `factor` in an `IntegrationTerm`  
 """
@@ -38,6 +49,37 @@ RESERVED_SYMBS = (:*,:⋅,:-,:∂x,:∂y,:gradient,:divergence,:laplacian,:∇,:
 removes the `:block` part of an expression, returning the meaningful part.
 """
 strip_block(ex::Expr) = ex.head == :block ? ex.args[2] : ex
+
+"""
+   @term ex
+
+Builds an `IntegrationTerm` from expression `ex`. `ex` should be a one line function definition defined by an integral.
+
+# Examples
+
+```julia
+julia> Ω = circmesh(0.1);
+julia> dΩ = Measure(Ω,5);
+julia> A = rand(2,2);
+julia> @term a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ
+```
+creates an `IntegrationTerm` named `a`, with function `(u,v)->∇(u)*∇(v)`, constant `A` and measure `dΩ`
+""" 
+macro term(ex)
+    if @capture(ex,name_(args_)=term_)
+        term = strip_block(term)
+        msg = "Terms does not include summations. Maybe you want to create a `Form`. See `@form`."
+        "+" in string(term) && throw(ArgumentError(msg))
+        "-" in string(term) && throw(ArgumentError(msg))
+        if @capture(term,∫(integrand_)*meas_)
+            
+        else
+            throw(ArgumentError)
+        end
+    else
+        throw(ArgumentError("Malformed expression. A term of the form `name(args...) = ∫(fun)*measure` is expected"))
+    end
+end
 
 """
     head_and_terms(ex::Expr)

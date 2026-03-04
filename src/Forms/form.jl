@@ -15,6 +15,8 @@ function Base.:+(t₁::IntegrationTerm{C,N},t₂::IntegrationTerm{D,N}) where {C
     Form(t₁,t₂)
 end
 
+Meshes.domainmesh(f::Form) = domainmesh(f.terms[1])
+
 macro form(expr)
     head,termsexpr = head_and_terms(expr)
     name = get_name(head)

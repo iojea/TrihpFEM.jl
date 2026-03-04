@@ -28,7 +28,7 @@ end
 Integrates the `Form` `form` using the basis of the space `space`.    
 """
 function integrate(form::Form{2},space::Spaces.AbstractSpace)
-    mesh = domainmesh(first(measures))
+    mesh = domainmesh(form)
     N = length(dof(mesh))
     ℓ = sum(Base.Fix{2}(^,2)∘length,dof(mesh).by_tri)
     ivec,jvec,vals = _initvectors(mesh,ℓ)
@@ -42,7 +42,8 @@ end
 
 
 # Integration with constant coefficients
-function buildmatrix!(::ConstantCoeff,ord::Order{B},ivec,jvec,vals,fun,measure,space) where B
+function buildmatrix!(term::IntegrationTerm{ConstantCoeff,2},ord::Order{B},ivec,jvec,vals,space) where B
+    (;measure) = term
     (;aux,mesh) = measure
     (;points,trilist,dofs) = mesh
     (;by_tri) = dofs
@@ -57,7 +58,7 @@ function buildmatrix!(::ConstantCoeff,ord::Order{B},ivec,jvec,vals,fun,measure,s
         if isin
             loctensor = gettokenvalue(tensordict,token)
         else
-            loctensor = build_local_tensor(ConstantCoeff(),ord,fun,basis(space,p))
+            loctensor = build_local_tensor(term,ord,basis(space,p))
             set!(tensordict,p,loctensor)
         end
         affine!(aff,points[tri])
@@ -65,7 +66,7 @@ function buildmatrix!(::ConstantCoeff,ord::Order{B},ivec,jvec,vals,fun,measure,s
         doft = by_tri[tri]
         dim = length(doft)
         C = aux[p].C
-        @tensor v[i,j] := loctensor[i,j,k,l]*Ascale[k,l]
+        # @tensor v[i,j] := loctensor[i,j,k,l]*Ascale[k,l]
         v .= jac(aff)*C'*v*C
         ivec[r:r+dim^2-1] .+= repeat(doft,dim)
         jvec[r:r+dim^2-1] .+= repeat(doft,inner=dim)
