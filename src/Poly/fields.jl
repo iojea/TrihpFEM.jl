@@ -1,16 +1,3 @@
-function outerprod(v...)
-    dims = tuple(Iterators.flatten(size.(v))...)
-    z = FixedSizeArrayDefault{Float64,length(dims)}(undef,dims...)
-    for (i,k) in enumerate(Iterators.product(v...))
-        z[i] = prod(k)
-    end
-    z
-end
-const ⊗ = outerprod
-
-contract(x,y) = sum(x.*y)
-
-
 abstract type PolyField{F, X, Y} end
 
 indeterminate(::AbstractPolynomial{T, X}) where {T, X} = X
@@ -29,7 +16,7 @@ indeterminates(::PolyField{F, X, Y}) where {F, X, Y} = (X, Y)
 abstract type PolyScalarField{F, X, Y} <: PolyField{F, X, Y} end
 Base.length(::PolyScalarField) = 1
 
-Base.iterate(t::PolyScalarField) = (t,nothing)
+Base.iterate(t::PolyScalarField) = (t, nothing)
 Base.iterate(::PolyScalarField, st) = nothing
 LinearAlgebra.:⋅(p::PolyScalarField, q::PolyScalarField) = p * q
 #
@@ -123,7 +110,14 @@ end
 function Base.zero(::Type{BiPoly{F, X, Y}}) where {F, X, Y}
     return BiPoly(zero(ImmutablePolynomial{F, X}), zero(ImmutablePolynomial{F, Y}), X, Y)
 end
+function Base.one(p::BiPoly{F, X, Y}) where {F, X, Y}
+    return BiPoly(one(p.px), one(p.py), X, Y)
+end
+function Base.one(::Type{BiPoly{F, X, Y}}) where {F, X, Y}
+    return BiPoly(one(ImmutablePolynomial{F, X}), one(ImmutablePolynomial{F, Y}), X, Y)
+end
 
+Base.convert(::Type{T}, x::N) where {F, X, Y, T <: PolyField{F, X, Y}, N <: Number} = x * one(T)
 ###############################
 #       TENSOR FIELDS
 ###############################
@@ -163,10 +157,14 @@ If the type of the component fields is not uniform, they are promoted to a commo
 ```
 """
 struct PolyTensorField{F, X, Y, T <: PolyScalarField{F, X, Y}, N} <: PolyField{F, X, Y}
-    tensor::Array{T, N}
+    tensor::FixedSizeArrayDefault{T, N}
+    function PolyTensorField(arr::AbstractArray{T, N}) where {F, X, Y, T <: PolyScalarField{F, X, Y}, N}
+        tensor = FixedSizeArrayDefault{T, N}(arr)
+        return new{F, X, Y, T, N}(tensor)
+    end
 end
 function PolyTensorField{T, N}() where {N, T <: PolyScalarField}
-    a = Array{T, N}(undef, [2 for _ in 1:N]...)
+    a = FixedSizeArrayDefault{T, N}(undef, [2 for _ in 1:N]...)
     return PolyTensorField(a)
 end
 
@@ -178,7 +176,7 @@ PolyVectorField(x::AbstractArray{T, 1}) where {T} = PolyTensorField(x)
 const PolyMatrixField{F, X, Y, T} = PolyTensorField{F, X, Y, T, 2}
 PolyMatrixField(x::AbstractArray{T, 2}) where {T} = PolyTensorField(x)
 function (v::PolyTensorField{F, X, Y, T, N})(x, y) where {F, X, Y, T, N}
-    z = Array{F, N}(undef, size(v.tensor)...)
+    z = FixedSizeArrayDefault{F, N}(undef, size(v.tensor)...)
     for i in eachindex(v.tensor)
         z[i] = v.tensor[i](x, y)
     end
@@ -190,16 +188,16 @@ function (v::PolyTensorField{F, X, Y, T, N})(x) where {F, X, Y, T, N}
 end
 
 Base.IteratorSize(::PolyTensorField{F, X, Y, T, N}) where {F, X, Y, T, N} = Base.HasShape{N}()
-Base.length(p::PolyTensorField) = length(p.tensor)
-Base.size(p::PolyTensorField) = size(p.tensor)
-function Base.iterate(p::PolyTensorField, st = nothing)
+Base.length(p::T) where {T <: PolyTensorField} = length(p.tensor)
+Base.size(p::T) where {T <: PolyTensorField} = size(p.tensor)
+function Base.iterate(p::T, st = nothing) where {T <: PolyTensorField}
     return isnothing(st) ? iterate(p.tensor) : iterate(p.tensor, st)
 end
-Base.getindex(p::PolyTensorField, i...) = getindex(p.tensor, i...)
-Base.zero(p::PolyTensorField) = PolyTensorField(zero(p.tensor))
+Base.getindex(p::T, i...) where {T <: PolyTensorField} = getindex(p.tensor, i...)
+Base.zero(p::T) where {T <: PolyTensorField} = PolyTensorField(zero(p.tensor))
 
-Base.:*(a::Number, p::PolyTensorField) = PolyTensorField(a * p.tensor)
-Base.:*(p::PolyTensorField, a::Number) = a * p
+Base.:*(a::N, p::T) where {N <: Number, T <: PolyTensorField} = PolyTensorField(a * p.tensor)
+Base.:*(p::T, a::N) where {N <: Number, T <: PolyTensorField} = a * p
 
 # This function needs improvements to avoid the type instability.
 function Base.:*(A::AbstractArray, p::PolyTensorField{F, X, Y, T, N}) where {F, X, Y, T, N}
@@ -224,6 +222,31 @@ function Base.:*(p::PolyScalarField, v::T) where {T <: PolyTensorField}
     return T(w)
 end
 Base.:*(v::T, p::PolyScalarField) where {T <: PolyTensorField} = p * v
+
+
+Base.promote_type(T::Type{<:Number}, P::Type{<:PolyField}) = P
+
+"""
+   outerprod(v...)
+   outerproduct(v::PolyField,w::PolyField)
+Outer product of tensors. Can be used as a binary operator with ⊗. 
+"""
+function outerprod(v...)
+    dims = tuple(Iterators.flatten(size.(v))...)
+    T = promote_type(eltype.(v)...)
+    z = FixedSizeArrayDefault{T, length(dims)}(undef, dims...)
+    for (i, k) in enumerate(Iterators.product(v...))
+        z[i] = prod(k)
+    end
+    return z
+end
+const ⊗ = outerprod
+
+contract(x, y) = sum(x .* y)
+
+outerprod(v::PolyTensorField, w::PolyTensorField) = PolyTensorField(v.tensor ⊗ w.tensor)
+outerprod(v, w::PolyScalarField) = v * w
+outerprod(v::AbstractArray, w::PolyTensorField) = PolyTensorField(v ⊗ w.tensor)
 
 
 # function _outer(p::PolyVectorField, q::PolyVectorField)
@@ -287,45 +310,26 @@ Base.:+(p::PolyTensorField, q::PolyTensorField) = PolyTensorField(p .+ q)
 
 A struct for defining and updating an affine transformation from the reference triangle to some other triangle. 
 """
-struct AffineToRef{F}
-    A::MMatrix{2, 2, F, 4}
-    iA::MMatrix{2, 2, F, 4}
-    b::MVector{2, F}
-    jacobian::Base.RefValue{F}
-    function AffineToRef{F}(A, b) where {F <: Number}
-        @assert size(A) == (2, 2)
-        @assert size(b) == (2,)
-        iA = det(A) != 0 ? inv(A) : zero(A)
-        return new{F}(F.(A), iA, F.(b), Base.RefValue(abs(det(A))))
+struct AffineToRef{F <: Number}
+    A::Tensor{2, 2, F}
+    b::Tensor{1, 2, F}
+    function AffineToRef{F}(vert) where {F <: Number}
+        A = affinetoref_matrix(F, vert)
+        b = affinetoref_vec(F, vert)
+        return new{F}(A, b)
     end
 end
-function AffineToRef(A, b)
-    TA = eltype(A)
-    Tb = eltype(b)
-    T = promote_type(TA, Tb)
-    return AffineToRef{T}(A, b)
+function affinetoref_matrix(::Type{F}, vert) where {F}
+    return Tensor{2, 2, F}((i, j) -> vert[mod1(j, 2)][i] - vert[3][i])
+end
+function affinetoref_vec(::Type{F}, vert) where {F}
+    return Tensor{1, 2, F}(i -> (vert[1][i] + vert[3][i]) / 2)
 end
 
-AffineToRef{F}() where {F} = AffineToRef(@MMatrix(zeros(F, 2, 2)), @MVector(zeros(F, 2)))
+(aff::AffineToRef{F})(x) where {F} = aff.A * x + aff.b
 
-(aff::AffineToRef)(x) = aff.A * x + aff.b
 
-"""
-```
-   affine!(aff::AffinetTransformation,vert) 
-```
-Updates the `AffineToRef` `aff` so that it transforms the reference triangle into the trangle of vertices given by `vert`. `vert` should be a vector of points.
-"""
-function affine!(aff::AffineToRef, vert)
-    (; A, iA, b, jacobian) = aff
-    @views A[:, 1] .= 0.5(vert[3] - vert[2])
-    @views A[:, 2] .= 0.5(vert[1] - vert[2])
-    @views b .= 0.5(vert[1] + vert[3])
-    iA .= inv(A)
-    return jacobian[] = abs(det(A))
-end
-
-jac(aff::AffineToRef) = aff.jacobian[]
+jac(aff::AffineToRef) = det(aff.A)
 # area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
 # area(v::Vector) = area(v...)
 area(t::AffineToRef) = 2jac(t)

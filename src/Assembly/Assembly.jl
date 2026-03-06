@@ -1,20 +1,20 @@
 module Assembly
 
-using LinearAlgebra
-using FixedSizeArrays
-using EllipsisNotation
-using Dictionaries
-using SparseArrays
+    using LinearAlgebra
+    using FixedSizeArrays
+    using EllipsisNotation
+    using Dictionaries
+    using SparseArrays
+    using Tensors
 
+    using ..Meshes
+    using ..Poly
+    using ..Spaces
+    using ..Integration
+    using ..Forms
+    using ..Measures
 
-using ..Meshes
-using ..Poly
-using ..Spaces
-using ..Integration
-using ..Forms
-using ..Measures
+    include("matrices.jl")
 
-include("matrices.jl")
-
-export integrate
+    export integrate
 end; #module

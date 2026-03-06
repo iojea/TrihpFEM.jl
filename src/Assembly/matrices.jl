@@ -3,22 +3,37 @@
 
 computes de matrix used for tensor collapsing depending on the order of the operator.   
 """
-collapser(::Order{(0,0)},aff::AffineToRef) = I(2)
-collapser(::Order{(1,0)},aff::AffineToRef) = aff.iA
-collapser(::Order{(1,1)},aff::AffineToRef) = aff.iA'*aff.iA
-
+collapser(term::IntegrationTerm{NoCoeff, 2}, ::AffineToRef) = one(SymmetricTensor{2, 2})
+collapser(term::IntegrationTerm{ConstantCoeff, 2}, aff::AffineToRef) = inv(aff.A)
+function collapser(term::IntegrationTerm{T, 2}, aff::AffineToRef) where {T}
+    iA = inv(aff.A)
+    return otimesl(iA', iA)
+end
 """
     _initvectors(I,F,ℓ)
 creates two vectors of type `I` for indices, and a vector of type `F` for values, all of them with size `ℓ`.  
 """
-function _initvectors(::HPMesh{F,I,P},ℓ) where {F,I,P}
-    ivec = FixedSizeArray{I,1}(undef,ℓ)
-    fill!(ivec,zero(I))
-    jvec = FixedSizeArray{I,1}(undef,ℓ)
-    fill!(jvec,zero(I))
-    vals = FixedSizeArray{F,1}(undef,ℓ)
-    fill!(vals,zero(F))
-    ivec,jvec,vals
+function _initvectors(::HPMesh{F, I, P}, ℓ) where {F, I, P}
+    ivec = FixedSizeArray{I, 1}(undef, ℓ)
+    fill!(ivec, zero(I))
+    jvec = FixedSizeArray{I, 1}(undef, ℓ)
+    fill!(jvec, zero(I))
+    vals = FixedSizeArray{F, 1}(undef, ℓ)
+    fill!(vals, zero(F))
+    return ivec, jvec, vals
+end
+
+
+function build_local_tensor(term::IntegrationTerm, ::Order{B}, base) where {B}
+    F = floattype(domainmesh(term))
+    n = length(base)
+    M = FizedSizeArrayDefault{Tensor{4, 2, F}, 2}(undef, (n, n))
+    for φ in base
+        for ψ in base
+            M[i, j] = term.constant ⊗ term.polyfun(φ, ψ)
+        end
+    end
+    return M
 end
 
 
@@ -27,88 +42,77 @@ end
 
 Integrates the `Form` `form` using the basis of the space `space`.    
 """
-function integrate(form::Form{2},space::Spaces.AbstractSpace)
+function integrate(form::Form{2}, space::Spaces.AbstractSpace)
     mesh = domainmesh(form)
     N = length(dof(mesh))
-    ℓ = sum(Base.Fix{2}(^,2)∘length,dof(mesh).by_tri)
-    ivec,jvec,vals = _initvectors(mesh,ℓ)
+    ℓ = sum(Base.Fix{2}(^, 2) ∘ length, dof(mesh).by_tri)
+    ivec, jvec, vals = _initvectors(mesh, ℓ)
     for term in terms(form)
-        mock = polyfun(space,space)
+        mock = polyfun(space, space)
         ord = order(mock)
-        buildmatrix!(term,ord,ivec,jvec,vals,space)
+        buildmatrix!(term, ord, ivec, jvec, vals, space)
     end
-    sparse(ivec,jvec,vals,N,N)
+    return sparse(ivec, jvec, vals, N, N)
 end
 
 
 # Integration with constant coefficients
-function buildmatrix!(term::IntegrationTerm{ConstantCoeff,2},ord::Order{B},ivec,jvec,vals,space) where B
-    (;measure) = term
-    (;aux,mesh) = measure
-    (;points,trilist,dofs) = mesh
-    (;by_tri) = dofs
+function buildmatrix!(term::IntegrationTerm{ConstantCoeff, 2}, ord::Order{B}, ivec, jvec, vals, space) where {B}
+    (; measure) = term
+    (; aux, mesh) = measure
+    (; points, trilist, dofs) = mesh
+    (; by_tri) = dofs
     F = eltype(vals)
     Itype = eltype(ivec)
-    tensordict = Dictionary{NTuple{3,Itype},FixedSizeArray{F,2+sum(B)}}()
+    tensordict = Dictionary{NTuple{3, Itype}, FixedSizeArray{F, 2 + sum(B)}}()
     aff = AffineToRef{F}()
     r = 1
     for tri in keys(trilist)
-        p,_ = psortednodes(tri,mesh)
-        isin,token = gettoken(tensordict,p)
+        p, _ = psortednodes(tri, mesh)
+        isin, token = gettoken(tensordict, p)
         if isin
-            loctensor = gettokenvalue(tensordict,token)
+            loctensor = gettokenvalue(tensordict, token)
         else
-            loctensor = build_local_tensor(term,ord,basis(space,p))
-            set!(tensordict,p,loctensor)
+            loctensor = build_local_tensor(term, ord, basis(space, p))
+            set!(tensordict, p, loctensor)
         end
-        affine!(aff,points[tri])
-        Ascale = collapser(ord,aff);
+        affine!(aff, points[tri])
+        COl = collapser(ord, aff)
         doft = by_tri[tri]
         dim = length(doft)
         C = aux[p].C
-        # @tensor v[i,j] := loctensor[i,j,k,l]*Ascale[k,l]
-        v .= jac(aff)*C'*v*C
-        ivec[r:r+dim^2-1] .+= repeat(doft,dim)
-        jvec[r:r+dim^2-1] .+= repeat(doft,inner=dim)
-        vals[r:r+dim^2-1] .+= v[:]
+        v .= jac(aff) * C' * v * C
+        ivec[r:(r + dim^2 - 1)] .+= repeat(doft, dim)
+        jvec[r:(r + dim^2 - 1)] .+= repeat(doft, inner = dim)
+        vals[r:(r + dim^2 - 1)] .+= v[:]
         r += dim^2
     end
+    return
 end
 
-function build_local_tensor(::ConstantCoeff,::Order{B},fun,base) where B
-    inner_dim  = length(base)
-    outer_dims = sum(B)
-    dims = (inner_dim,inner_dim,(2 for _ in 1:outer_dims)...)
-    local_tensor = FixedSizeArray{Float64}(undef,dims...)
-    for (j,ψ) in enumerate(base)
-        for (i,φ) in enumerate(base)
-            local_tensor[i,j,..] .= ref_integrate(fun(φ,ψ))
-        end
-    end
-    return local_tensor
-end
 
-function integrate(form::Form{1},space::Spaces.AbstractSpace)
-    (;integrands,measures) = form
+function integrate(form::Form{1}, space::Spaces.AbstractSpace)
+    (; integrands, measures) = form
     mesh = domainmesh(first(measures))
     F = floattype(mesh)
     N = degrees_of_freedom!(mesh)
-    ℓ = sum(Base.Fix{2}(^,2)∘length,tridofs(mesh))
-    rhs = FixedSizeArray{F,1}(undef,ℓ)
-    fill!(zero(F),rhs)
-    for (fun,measure) in zip(integrands,measures)
-        mock = fun(space,space)
+    ℓ = sum(Base.Fix{2}(^, 2) ∘ length, tridofs(mesh))
+    rhs = FixedSizeArray{F, 1}(undef, ℓ)
+    fill!(zero(F), rhs)
+    for (fun, measure) in zip(integrands, measures)
+        mock = fun(space, space)
         CT = coefftype(mock)
         ord = order(mock)
-        rhs .+= buildvector(CT,ord::Order{B},fun,measure,space)
+        rhs .+= buildvector(CT, ord::Order{B}, fun, measure, space)
     end
+    return
 end
 
 # function buildvector(::ConstantCoeff,ord::Order{B},fun,measure,space)
 #     (;aux,mesh) = measure
 #     (;points,trilist,dofs) = mesh
 #     (;by_tri) = dofs
-    
+
 # end
 # Integration with variable coefficients
 # function buildmatrix!(::Variable,ord::Order{B},ivec,jvec,vals,fun,measure,base) where B
@@ -174,7 +178,7 @@ end
 #     V = Vector{Float64}(undef,ℓ)
 #     affₜ = AffineToRef{F}()
 #     r = 1
-    
+
 #     @inbounds for t in triangles(trilist)
 #         dofT = dof[t]
 #         p, pnod = psortednodes(t, mesh)
@@ -185,7 +189,7 @@ end
 #             local_tensor = build_local_tensor(fun,p)
 #             tensors[p] = local_tensor
 #         end
-            
+
 #         v = zeros(dim, dim)
 #         for j = 1:dim, i = 1:j
 #             v[i, j] = S[i, j, :] ⋅ z
@@ -297,7 +301,7 @@ end
 #     V = Vector{Float64}(undef,ℓ)
 #     Aₜ = MMatrix{2,2}(zeros(2,2))
 #     iAₜ = MMatrix{2,2}(zeros(2,2))
-    
+
 #     r = 1
 #     @inbounds for t in triangles(trilist)
 #         dofT = dof[t]
@@ -321,5 +325,3 @@ end
 #     end
 #     sparse(J, K, V)
 # end
-    
-

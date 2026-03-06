@@ -6,11 +6,12 @@ abstract type CoeffType end
 
 struct ConstantCoeff <: CoeffType end
 struct VariableCoeff <: CoeffType end
+struct NoCoeff <: CoeffType end
 
 coefftype(_) = ConstantCoeff()
 coefftype(::Function) = VariableCoeff()
 coefftype(::DiffOperator) = ConstantCoeff()
-
+coefftype(::Nothing) = NoCoeff()
 """
    IntegrationTerm(pf,f,meas)
 Builds an integration term of the form `term(args...) = ∫(f*pf(args...))*meas`, where `pf` is a function to be evaluated on the local basis, `f` is a factor that can be constant or variable and `meas` is a measure for integration. 
@@ -102,13 +103,11 @@ get_parameters(ex::Expr) = Expr(:tuple, ex.args[2:end]...)
 Extracts the integrand and the measure from an integral, discarding the integral symbol. For example: `process_term(:(∫(u*v)*dΩ))` returns `:(u*v)` and `:(dΩ)`.
 """
 function process_term(ex::Expr)
-    if ex.args[1] == :*
-        validate_integrand(ex.args[2])
-        return ex.args[2].args[2], ex.args[3]
-    elseif ex.args[1] == :-
-        integrand, measure = process_term(ex)
-        negint = Expr(:call, :-, integrand)
-        return negint, measure
+    if @capture(ex, ∫(fun_) * meas_)
+        return fun, meas
+    elseif @capture(ex, -∫(fun_) * meas_)
+        negfun = Expr(:call, :-, fun)
+        return negfun, meas
     end
 end
 
@@ -214,7 +213,10 @@ function tensorize_body(body)
     sbody = string(body)
     sbody = replace(sbody, "*" => "⊗")
     sbody = replace(sbody, "⋅" => "⊗")
-    return Meta.parse(sbody)
+    # left, right = split(sbody, '⊗')
+    # ordleft = Int8(occursin('∇', left) || occursin("∂x", left) || occursin("∂y", left))
+    # ordright = Int8(occursin('∇', right) || occursin("∂x", right) || occursin("∂y", right))
+    return Meta.parse(sbody) #, Order{(ordleft, ordright)}()
 end
 """
     build_polyfun(par,body)

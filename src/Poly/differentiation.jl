@@ -45,16 +45,16 @@ end
 
 Polynomials.derivative(p::PolyTensorField, z::Symbol) = PolyTensorField(derivative.(p.tensor, z))
 
-(::Derivatex)(p::PolyField{F,X,Y}) where {F,X,Y} = derivative(p,X)
-(::Derivatey)(p::PolyField{F,X,Y}) where {F,X,Y} = derivative(p,Y)
-              
+(::Derivatex)(p::PolyField{F, X, Y}) where {F, X, Y} = derivative(p, X)
+(::Derivatey)(p::PolyField{F, X, Y}) where {F, X, Y} = derivative(p, Y)
+
 """
 ```
    gradient(p::PolyScalarField{F,X,Y}) where {F,X,Y}
 ```
 Computes the gradient of a `PolyScalarField` and returns a `PolyVectorField`. 
 """
-(::Gradient)(p::PolyScalarField) = PolyVectorField([∂x(p),∂y(p)])
+(::Gradient)(p::PolyScalarField) = PolyVectorField([∂x(p), ∂y(p)])
 
 """
 ```
@@ -62,7 +62,7 @@ Computes the gradient of a `PolyScalarField` and returns a `PolyVectorField`.
 ```
 Computes the divergence of a `PolyVectorField` and returns a `PolyScalarField`, typically a  `PolySum`. 
 """
-(::Divergence)(v::PolyVectorField) = ∂x(v[1])+∂y(v[2])
+(::Divergence)(v::PolyVectorField) = ∂x(v[1]) + ∂y(v[2])
 
 
 """

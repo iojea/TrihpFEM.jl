@@ -4,6 +4,7 @@ module Poly
     using Polynomials
     using LinearAlgebra
     using FixedSizeArrays
+    using Tensors
     using ..Meshes
 
     include("fields.jl")
@@ -33,6 +34,5 @@ module Poly
     export evaluate
     export ∇
     export Δ
-    export _outer, ⊗
 
 end; #module

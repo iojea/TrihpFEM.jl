@@ -14,6 +14,6 @@ module Forms
     export Form
     export @term
     export @form
-    export CoeffType, ConstantCoeff, VariableCoeff
+    export CoeffType, NoCoeff, ConstantCoeff, VariableCoeff
 
 end; #module
