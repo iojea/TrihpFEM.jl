@@ -226,27 +226,27 @@ Base.:*(v::T, p::PolyScalarField) where {T <: PolyTensorField} = p * v
 
 Base.promote_type(T::Type{<:Number}, P::Type{<:PolyField}) = P
 
-"""
-   outerprod(v...)
-   outerproduct(v::PolyField,w::PolyField)
-Outer product of tensors. Can be used as a binary operator with ⊗. 
-"""
-function outerprod(v...)
-    dims = tuple(Iterators.flatten(size.(v))...)
-    T = promote_type(eltype.(v)...)
-    z = FixedSizeArrayDefault{T, length(dims)}(undef, dims...)
-    for (i, k) in enumerate(Iterators.product(v...))
-        z[i] = prod(k)
-    end
-    return z
-end
-const ⊗ = outerprod
+# """
+#    outerprod(v...)
+#    outerproduct(v::PolyField,w::PolyField)
+# Outer product of tensors. Can be used as a binary operator with ⊗. 
+# """
+# function outerprod(v...)
+#     dims = tuple(Iterators.flatten(size.(v))...)
+#     T = promote_type(eltype.(v)...)
+#     z = FixedSizeArrayDefault{T, length(dims)}(undef, dims...)
+#     for (i, k) in enumerate(Iterators.product(v...))
+#         z[i] = prod(k)
+#     end
+#     return z
+# end
+# const ⊗ = outerprod
 
-contract(x, y) = sum(x .* y)
+# contract(x, y) = sum(x .* y)
 
-outerprod(v::PolyTensorField, w::PolyTensorField) = PolyTensorField(v.tensor ⊗ w.tensor)
-outerprod(v, w::PolyScalarField) = v * w
-outerprod(v::AbstractArray, w::PolyTensorField) = PolyTensorField(v ⊗ w.tensor)
+# outerprod(v::PolyTensorField, w::PolyTensorField) = PolyTensorField(v.tensor ⊗ w.tensor)
+# outerprod(v, w::PolyScalarField) = v * w
+# outerprod(v::AbstractArray, w::PolyTensorField) = PolyTensorField(v ⊗ w.tensor)
 
 
 # function _outer(p::PolyVectorField, q::PolyVectorField)

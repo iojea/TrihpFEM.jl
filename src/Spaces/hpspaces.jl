@@ -7,7 +7,7 @@ abstract type TensorSpace <: AbstractSpace end
 struct StdScalarSpace <: ScalarSpace end
 struct StdVectorSpace <: VectorSpace end
 
-struct OperatorSpace{F<:DiffOperator, S <: AbstractSpace} <: AbstractSpace
+struct OperatorSpace{F<:DiffOperator, O<:Order, S <: AbstractSpace} <: AbstractSpace
     operator::F
     space::S
 end

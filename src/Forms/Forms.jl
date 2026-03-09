@@ -4,8 +4,11 @@ module Forms
     using MacroTools
     using ..Meshes
     using ..Measures
-    using ..Poly
-    using ..Spaces
+    using ..PolyFields
+
+
+    import ..DifferentialOperators: DiffOperator,Identity,Derivatex,Derivatey,Gradient,Divergence,Laplacian
+    import ..DifferentialOperators: ∂x,∂y,gradient,∇,divergence,laplacian,Δ
 
     include("terms.jl")
     include("form.jl")

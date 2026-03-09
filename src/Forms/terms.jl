@@ -66,21 +66,17 @@ julia> @term a(u,v) = ∫((A*∇(u))⋅∇(v))*dΩ
 creates an `IntegrationTerm` named `a`, with function `(u,v)->∇(u)*∇(v)`, constant `A` and measure `dΩ`
 """
 macro term(ex)
-    return if @capture(ex, name_(args__) = term_)
+    if @capture(ex, name_(args__) = term_)
         term = strip_block(term)
         msg = "Terms does not include summations. Maybe you want to create a `Form`. See `@form`."
         occursin("+", string(term)) && throw(ArgumentError(msg))
-        occursin("-", string(term)) && throw(ArgumentError(msg))
-        if @capture(term, ∫(integrand_) * meas_)
-            factor = get_factor(integrand, args)
-            intbody = cleanfactor(integrand, factor, args)
-            fun = build_polyfun(args, intbody)
-            Expr(:(=), esc(name), Expr(:call, :IntegrationTerm, esc_non_params(fun, args), (esc(factor)), esc(meas)))
-        else
-            throw(ArgumentError("Malformed expression. The right hand side must be an integral of the form `∫(fun)*measure`"))
-        end
+        integrand,meas = process_term(term)
+        factor = get_factor(integrand, args)
+        intbody = cleanfactor(integrand, factor, args)
+        fun = build_polyfun(args, intbody)
+        return Expr(:(=), esc(name), Expr(:call, :IntegrationTerm, esc_non_params(fun, args), (esc(factor)), esc(meas)))
     else
-        throw(ArgumentError("Malformed expression. A term of the form `name(args...) = ∫(fun)*measure` is expected"))
+        throw(ArgumentError("Malformed expression. The right hand side must be an integral of the form `∫(fun)*measure`"))
     end
 end
 
@@ -213,10 +209,7 @@ function tensorize_body(body)
     sbody = string(body)
     sbody = replace(sbody, "*" => "⊗")
     sbody = replace(sbody, "⋅" => "⊗")
-    # left, right = split(sbody, '⊗')
-    # ordleft = Int8(occursin('∇', left) || occursin("∂x", left) || occursin("∂y", left))
-    # ordright = Int8(occursin('∇', right) || occursin("∂x", right) || occursin("∂y", right))
-    return Meta.parse(sbody) #, Order{(ordleft, ordright)}()
+    return Meta.parse(sbody) 
 end
 """
     build_polyfun(par,body)
@@ -227,7 +220,19 @@ function build_polyfun(par, body)
     return Expr(:->, Expr(:tuple, par...), tbody)
 end
 
-# macro term(expr)
+# function get_order(nargs,body)
+#     sbody = string(body)
+#     if nargs == 2
+#         left, right = split(sbody, '⊗')
+#         ordl = Int8(occursin('∇', left) || occursin("∂x", left) || occursin("∂y", left))
+#         ordr = Int8(occursin('∇', right) || occursin("∂x", right) || occursin("∂y", right))
+#         return Order{(ordl,ordr)}()
+#     elseif nargs == 1
+#         ord = Int8(occursin('∇', left) || occursin("∂x", left) || occursin("∂y", left))
+#         return Order{(ord,)}()
+#     end      
+# end
+# # macro term(expr)
 #     head,termexpr = head_and_terms(expr)
 #     name = get_name(head)
 #     params = get_parameters(head)

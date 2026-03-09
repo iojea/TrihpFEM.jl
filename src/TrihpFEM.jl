@@ -33,7 +33,8 @@ using Test
 using Triangulate
 
 include("Meshes/Meshes.jl")
-include("Poly/Poly.jl")
+include("DifferentialOperators/DifferentialOperators.jl")
+include("PolyFields/PolyFields.jl")
 include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
 include("Measures/Measures.jl")
@@ -44,11 +45,13 @@ include("Problems/Problems.jl")
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 
-using ..Poly: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis, ⊗
-export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis, ⊗
+using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey,Gradient,Divergence,Laplacian,gradient,divergence,laplacian,∇,Δ
+
+using ..PolyFields: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
+export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
 
 using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
-export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
+export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis
 
 using ..Integration: Quadrature, gmquadrature, ref_integrate
 export Quadrature, gmquadrature, ref_integrate

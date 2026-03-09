@@ -3,6 +3,7 @@
 
 computes de matrix used for tensor collapsing depending on the order of the operator.   
 """
+collapser(term::IntegrationTerm{T,1},::AffineToRef) where T = one(SymmetricTensor{1,1})
 collapser(term::IntegrationTerm{NoCoeff, 2}, ::AffineToRef) = one(SymmetricTensor{2, 2})
 collapser(term::IntegrationTerm{ConstantCoeff, 2}, aff::AffineToRef) = inv(aff.A)
 function collapser(term::IntegrationTerm{T, 2}, aff::AffineToRef) where {T}
