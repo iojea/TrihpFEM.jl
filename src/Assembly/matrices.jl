@@ -3,14 +3,26 @@
 
 computes de matrix used for tensor collapsing depending on the order of the operator.   
 """
-collapser(::Order{(0,)},::AffineToRef) = one(SymmetricTensor{1,1})
-collapser(::Order{(0,0)}, ::AffineToRef) = one(SymmetricTensor{1,1})
-collapser(::Order{(1,0)}, aff::AffineToRef) = inv(aff.A)
-collapser(::Order{(0,1)}, aff::AffineToRef) = inv(aff.A)
-function collapser(::Order{(1,1)}, aff::AffineToRef)     iA = inv(aff.A)
+collapser(::Order{(0,)}, ::AffineToRef) = one(SymmetricTensor{1, 1})
+collapser(::Order{(0, 0)}, ::AffineToRef) = one(SymmetricTensor{1, 1})
+collapser(::Order{(1, 0)}, aff::AffineToRef) = inv(aff.A)
+collapser(::Order{(0, 1)}, aff::AffineToRef) = inv(aff.A)
+function collapser(::Order{(1, 1)}, aff::AffineToRef)
+    iA = inv(aff.A)
     return otimesl(iA', iA)
 end
-collapser(f::T,aff::AffineToRef) where T<:Integrand = collapser(order(f),aff)
+collapser(f::T, aff::AffineToRef) where {T <: Integrand} = collapser(order(f), aff)
+
+
+function collapse(aff::AffineToRef, t::Tensor{4, 2})
+    iA = inv(aff.A)
+    return sum(otimesl(iA', iA) .* t)
+end
+
+collapse(aff::AffineToRef, t::Tensor{2, 2}) = inv(aff.A) ⋅ t
+collapse(aff::AffineToRef, t::Tensor{1, 1}) = one(SymmetricTensor{1, 1}) ⋅ t
+
+
 """
     _initvectors(I,F,ℓ)
 creates two vectors of type `I` for indices, and a vector of type `F` for values, all of them with size `ℓ`.  
@@ -25,18 +37,78 @@ function _initvectors(::HPMesh{F, I, P}, ℓ) where {F, I, P}
     return ivec, jvec, vals
 end
 
-function ref_integrate(term::Term{C,Order{B},2,M},degs::T) where {C,B,M,T<:Tuple}
-    dim = sum(B)>0 ? 2 : 1
-    (;factor,funs) = integrand
-    b₁,b₂ = basis.(funs,degs)
-    o₁,o₂ = operator.(funs)
-    F = floattype(domainmesh(M))
-    iter = (factor⊗Tensor{2,dim,F}((i,j)->ref_integrate(o₁(φ)[i]*o₂(ψ)[j])) for φ in b₁, ψ in b₂)
-    K₀ = collect_as(FixedSizeArray, iter)  
+tensorize(factor::Number) = factor
+function tensorize(factor::AbstractArray)
+    ord = ndims(factor)
+    return Tensor{ord, 2}(factor)
 end
 
-oprod(t₁::T,t::S) where {T<:Tensor,S<:Tensor} = t₁⊗t₂ 
-oprod(::Nothing,t) = t
+function ref_tensors(inte::Integrand{ConstantCoeff, T, Order{B}, 2}, degs) where {T, B}
+    dim = sum(B) > 0 ? 2 : 1
+    ord = max(1, sum(B))
+    (; factor, funs) = inte
+    b₁ = basis(funs[1], degs); b₂ = basis(funs[2], degs)
+    o₁, o₂ = operator.(funs)
+    f = tensorize(factor)
+    return collect_as(FixedSizeArrayDefault, (f ⊗ _tensor(o₁(φ), o₂(ψ), Val(sum(B))) for φ in b₁, ψ in b₂))
+end
+
+_tensor(f, g, ::Val{2}) = Tensor{2, 2}((i, j) -> Integration.ref_integrate(f[i] * g[j]))
+_tensor(f, g, ::Val{1}) = Tensor{1, 2}(i -> Integration.ref_integrate(f[i] * g))
+_tensor(f, g, ::Val{0}) = Tensor{1, 1}((Integration.ref_integrate(f * g),))
+
+
+function assembly_matrix(term::Term{C, O, T, N, M}) where {C, O, T, N, M}
+    return assembly_matrix(Form{N}((term,)))
+end
+function assembly_matrix(form::Form{2})
+    (; terms) = form
+    mesh = domainmesh(first(terms))
+    ℓ = degrees_of_freedom!(mesh)
+    N = sum(map(length, mesh.dofs.by_tri) .^ 2)
+    ivec, jvec, vals = _initvectors(mesh, N)
+    for t in terms
+        add_to_matrix!(ivec, jvec, vals, t)
+    end
+    return sparse(ivec, jvec, vals, ℓ, ℓ)
+end
+
+function add_to_matrix!(ivec, jvec, vals, t::Term{ConstantCoeff, O, T, 2, M}) where {O, T, M}
+    (; integrand, measure) = t
+    (; aux, mesh) = measure
+    (; points, trilist, dofs) = mesh
+    (; by_tri) = dofs
+    r = 1
+    tensordict = Dictionary()
+    for tri in keys(trilist)
+        degs, _ = psortednodes(tri, mesh)
+        isin, token = gettoken(tensordict, degs)
+        if isin
+            loctensor = gettokenvalue(tensordict, token)
+        else
+            loctensor = ref_tensors(integrand, degs)
+            set!(tensordict, degs, loctensor)
+        end
+        aff = AffineToRef(points[tri])
+        doft = by_tri[tri]
+        dim = length(doft)
+        C = aux[degs].C
+        v = collect_as(FixedSizeArrayDefault, (collapse(aff, loctensor[i, j]) for i in 1:dim, j in 1:dim))
+        v .= jac(aff) * C' * v * C
+        println("dim:", dim)
+        println("ℓ:", length(ivec))
+        println("r:", r)
+        ivec[r:(r + dim^2 - 1)] .+= repeat(doft, dim)
+        jvec[r:(r + dim^2 - 1)] .+= repeat(doft, inner = dim)
+        vals[r:(r + dim^2 - 1)] .+= v[:]
+        r += dim^2
+    end
+    return
+end
+
+
+# oprod(t₁::T, t::S) where {T <: Tensor, S <: Tensor} = t₁ ⊗ t₂
+# oprod(::Nothing, t) = t
 
 # function build_local_tensor(term::Term{C,Order{B},N,M}) where {C<:Union{ConstantCoeff,NoCoeff},B,M}
 #     (;integrand,measure) = term
@@ -66,7 +138,7 @@ oprod(::Nothing,t) = t
 # """
 #   integrate(form::Form{2},space::AbstractSpace)
 
-# Integrates the `Form` `form` using the basis of the space `space`.    
+# Integrates the `Form` `form` using the basis of the space `space`.
 # """
 # function integrate(form::Form{2}, space::Spaces.AbstractSpace)
 #     mesh = domainmesh(form)

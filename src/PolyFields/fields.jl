@@ -229,7 +229,7 @@ Base.promote_type(T::Type{<:Number}, P::Type{<:PolyField}) = P
 # """
 #    outerprod(v...)
 #    outerproduct(v::PolyField,w::PolyField)
-# Outer product of tensors. Can be used as a binary operator with ⊗. 
+# Outer product of tensors. Can be used as a binary operator with ⊗.
 # """
 # function outerprod(v...)
 #     dims = tuple(Iterators.flatten(size.(v))...)
@@ -313,7 +313,9 @@ A struct for defining and updating an affine transformation from the reference t
 struct AffineToRef{F <: Number}
     A::Tensor{2, 2, F}
     b::Tensor{1, 2, F}
-    function AffineToRef{F}(vert) where {F <: Number}
+    function AffineToRef(vert)
+        length(vert) == 3 || throw(ArgumentError("Three vertices are needed."))
+        F = eltype(vert[1])
         A = affinetoref_matrix(F, vert)
         b = affinetoref_vec(F, vert)
         return new{F}(A, b)

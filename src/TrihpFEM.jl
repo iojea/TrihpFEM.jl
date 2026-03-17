@@ -45,8 +45,8 @@ include("Problems/Problems.jl")
 using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!
 
-using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey,Gradient,Divergence,Laplacian,gradient,divergence,laplacian,∇,Δ
-export DiffOperator, Identity, Derivatex, Derivatey,Gradient,Divergence,Laplacian,gradient,divergence,laplacian,∇,Δ
+using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
+export DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
 
 using ..PolyFields: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
 export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
@@ -58,14 +58,14 @@ export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, G
 using ..Integration: Quadrature, gmquadrature, ref_integrate
 export Quadrature, gmquadrature, ref_integrate
 
-using ..Forms: basis,Form, Term, ShapeFunction,CoeffType, NoCoeff, ConstantCoeff, VariableCoeff,∫
-export basis,Term,Form,ShapeFunction,CoeffType, NoCoeff, ConstantCoeff, VariableCoeff,∫
+using ..Forms: basis, Form, Term, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
+export basis, Term, Form, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
 
 using ..Measures: Measure
 export Measure
 
-using ..Assembly: integrate
-export integrate,ref_integrate
+using ..Assembly: ref_integrate, ref_tensors, assembly_matrix
+export ref_integrate, ref_tensors, assembly_matrix
 
 using ..Problems: FEProblem
 export FEProblem

@@ -42,7 +42,7 @@ function Base.empty!(d::DOF{I}) where {I}
     empty!(d.by_tri)
     return d.n[] = zero(I)
 end
-Base.isempty(d::DOF{I}) where I = d.n[] == zero(I)
+Base.isempty(d::DOF{I}) where {I} = d.n[] == zero(I)
 Base.length(d::DOF) = d.n[]
 
 ############################################
@@ -581,12 +581,12 @@ function degrees_of_freedom_by_edge!(mesh::HPMesh{F, I, P}) where {F, I, P}
     (; by_edge) = dofs
     i = size(points, 2) + 1
     for edge in edges(edgelist)
-        med = collect(I(i):I(i + degree(edgelist[edge]) - 2))
+        med = I(i):I(i + degree(edgelist[edge]) - 2)
         v = SVector{length(med) + 2, I}(edge[1], med..., edge[2])
         set!(by_edge, edge, v)
         i += degree(edgelist[edge]) - 1
     end
-    return
+    return i
 end
 
 
