@@ -1,4 +1,4 @@
-module Poly
+module PolyFields
 
     using StaticArrays
     using Polynomials
@@ -7,15 +7,14 @@ module Poly
     using Tensors
     using ..Meshes
 
+    import ..DifferentialOperators: DiffOperator, Identity,Derivatex,Derivatey,Gradient,Divergence,Laplacian
+    import ..DifferentialOperators: ∂x,∂y,gradient,∇,divergence,laplacian,Δ
+
     include("fields.jl")
-    # include("opfields.jl")
     include("differentiation.jl")
     include("legendre.jl")
-
     include("show.jl")
 
-    const ∇ = gradient
-    const Δ = laplacian
     export PolyField
     export BiPoly
     export PolyScalarField, PolyVectorField, PolyTensorField
@@ -23,8 +22,6 @@ module Poly
     export PolySum
     export indeterminate, indeterminates, degs
     export LegendreIterator, StandardBasis
-    export DiffOperator, Gradient, Divergence, Laplacian
-    export ∂x, ∂y, derivative, gradient, divergence, laplacian, _outer
     export dot
     export AffineToRef
     export affine!
@@ -32,7 +29,5 @@ module Poly
     export area
     export EvalType, Eval, Compose, Pass
     export evaluate
-    export ∇
-    export Δ
 
 end; #module

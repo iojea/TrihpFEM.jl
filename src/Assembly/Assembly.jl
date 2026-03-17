@@ -6,15 +6,15 @@ module Assembly
     using Dictionaries
     using SparseArrays
     using Tensors
+    using Collects
 
     using ..Meshes
-    using ..Poly
-    using ..Spaces
+    using ..PolyFields
     using ..Integration
     using ..Forms
     using ..Measures
 
     include("matrices.jl")
 
-    export integrate
+    export ref_integrate,integrate
 end; #module
