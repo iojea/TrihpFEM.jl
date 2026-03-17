@@ -11,7 +11,7 @@ Defines a Finite Element Problem (no refinement) of the form `a(u,v)=b(v)` over 
 + `g` a function defining the Dirichlet boundary condition.
 """
 
-struct FEProblem{S<:AbstractSpace}
+struct FEProblem{S}
     a::Form
     b::Form
     space::S

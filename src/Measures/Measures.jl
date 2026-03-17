@@ -6,7 +6,7 @@ using FixedSizeArrays
 using Dictionaries
 
 using ..Meshes
-using ..Poly
+using ..PolyFields
 using ..Integration
 
 include("auxiliarydata.jl")

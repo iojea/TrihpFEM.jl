@@ -6,8 +6,7 @@ using Dictionaries
 using FixedSizeArrays
 using LinearAlgebra
 using ..Meshes
-using ..Poly
-using ..Spaces
+using ..PolyFields
 using ..Integration
 using ..Measures
 using ..Forms

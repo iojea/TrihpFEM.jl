@@ -4,7 +4,7 @@ using StaticArrays
 using Polynomials
 using FixedSizeArrays
 
-using ..Poly
+using ..PolyFields
 
 include("gmquads.jl")
 include("integrate.jl")

@@ -2,6 +2,7 @@ module Forms
 
     using LinearAlgebra
     using MacroTools
+    using Tensors
     using ..Meshes
     using ..Measures
     using ..PolyFields
@@ -10,13 +11,15 @@ module Forms
     import ..DifferentialOperators: DiffOperator,Identity,Derivatex,Derivatey,Gradient,Divergence,Laplacian
     import ..DifferentialOperators: ∂x,∂y,gradient,∇,divergence,laplacian,Δ
 
-    include("terms.jl")
+    # include("terms.jl")
     include("form.jl")
 
-    export IntegrationTerm
+    export Term
     export Form
-    export @term
-    export @form
-    export CoeffType, NoCoeff, ConstantCoeff, VariableCoeff
+    export ShapeFunction
+    export Integrand
+    export Order,CoeffType, NoCoeff, ConstantCoeff, VariableCoeff
+    export basis,order,coefftype,operator
+    export ∂x,∂y,gradient,∇,divergence,laplacian,Δ,∫
 
 end; #module
