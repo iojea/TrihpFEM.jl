@@ -1,25 +1,13 @@
 """
-  collapser(::Order,aff::AffineToRef)
-
-computes de matrix used for tensor collapsing depending on the order of the operator.   
+   collapse(aff:AffineToRef,t::Tensor)
+performs an appropriate contraction of the tensor `t` with the change of variables `aff`. 
 """
-collapser(::Order{(0,)}, ::AffineToRef) = one(SymmetricTensor{1, 1})
-collapser(::Order{(0, 0)}, ::AffineToRef) = one(SymmetricTensor{1, 1})
-collapser(::Order{(1, 0)}, aff::AffineToRef) = inv(aff.A)
-collapser(::Order{(0, 1)}, aff::AffineToRef) = inv(aff.A)
-function collapser(::Order{(1, 1)}, aff::AffineToRef)
-    iA = inv(aff.A)
-    return otimesl(iA', iA)
-end
-collapser(f::T, aff::AffineToRef) where {T <: Integrand} = collapser(order(f), aff)
-
-
 function collapse(aff::AffineToRef, t::Tensor{4, 2})
     iA = inv(aff.A)
-    return sum(otimesl(iA', iA) .* t)
+    return iA'⊡t⊡iA
 end
 
-collapse(aff::AffineToRef, t::Tensor{2, 2}) = inv(aff.A) ⋅ t
+collapse(aff::AffineToRef, t::Tensor{2, 2}) = inv(aff.A) ⊡ t
 collapse(aff::AffineToRef, t::Tensor{1, 1}) = one(SymmetricTensor{1, 1}) ⋅ t
 
 
@@ -36,13 +24,36 @@ function _initvectors(::HPMesh{F, I, P}, ℓ) where {F, I, P}
     fill!(vals, zero(F))
     return ivec, jvec, vals
 end
+function _init_rhs(::HPMesh{F,I,P},ℓ) where {F,I,P}
+    vec = FixedSizeArray{F,1}(undef,ℓ)
+    fill!(vec,zero(F))
+end
 
+"""
+   tensorize(f)
+When appropriate, converts `f` to a tensor or to a function returning a tensor. This is done in order to perform an outer product using `f`.
+
+**Important:** `tensorize` transposes `f` if `f` is a matrix. 
+"""
 tensorize(factor::Number) = factor
 function tensorize(factor::AbstractArray)
     ord = ndims(factor)
-    return Tensor{ord, 2}(factor)
+    return Tensor{ord, 2}(factor')
 end
 
+"""
+    outer(operand,factor)
+performs the appropriate operation for the tensor product between the `operand` that comes from integrating basis functions and `factor`, that can be a matrix, vector or number.   
+"""
+outer(operand::Tensor{2, 2}, factor::Tensor{2, 2}) = otimesl(operand, factor)
+outer(operand::Tensor{1, 2}, factor::Tensor{1, 2}) = factor ⊗ operand
+outer(operand::Tensor{1, 1}, factor) = factor * operand
+
+
+"""
+   ref_tensors(inte::Integrand,degs)
+Compute the local tensors produced by `inte` over a reference element with degrees given by `degs`. These tensors are later contracted wih the corresponding `affineToRef` change of variables. 
+"""
 function ref_tensors(inte::Integrand{ConstantCoeff, T, Order{B}, 2}, degs) where {T, B}
     dim = sum(B) > 0 ? 2 : 1
     ord = max(1, sum(B))
@@ -50,16 +61,19 @@ function ref_tensors(inte::Integrand{ConstantCoeff, T, Order{B}, 2}, degs) where
     b₁ = basis(funs[1], degs); b₂ = basis(funs[2], degs)
     o₁, o₂ = operator.(funs)
     f = tensorize(factor)
-    return collect_as(FixedSizeArrayDefault, (f ⊗ _tensor(o₁(φ), o₂(ψ), Val(sum(B))) for φ in b₁, ψ in b₂))
+    return collect_as(FixedSizeArrayDefault, (outer(_tensor(o₁(φ), o₂(ψ), Val(sum(B)),f) for φ in b₁, ψ in b₂))
 end
 
 _tensor(f, g, ::Val{2}) = Tensor{2, 2}((i, j) -> Integration.ref_integrate(f[i] * g[j]))
 _tensor(f, g, ::Val{1}) = Tensor{1, 2}(i -> Integration.ref_integrate(f[i] * g))
 _tensor(f, g, ::Val{0}) = Tensor{1, 1}((Integration.ref_integrate(f * g),))
 
-
-function assembly_matrix(term::Term{C, O, T, N, M}) where {C, O, T, N, M}
-    return assembly_matrix(Form{N}((term,)))
+"""
+   assembly_matrix(form::Form{2})
+assembles the matrix corresponding to the bilinear form  `form`.
+"""
+function assembly_matrix(term::Term{C, O, T, 2, M}) where {C, O, T, 2, M}
+    return assembly_matrix(Form{2}((term,)))
 end
 function assembly_matrix(form::Form{2})
     (; terms) = form
@@ -73,6 +87,10 @@ function assembly_matrix(form::Form{2})
     return sparse(ivec, jvec, vals, ℓ, ℓ)
 end
 
+"""
+    add_to_matrix!(ivec,jvec,vals,t::Term)
+integrates `t` adding the results to `ivec`,`jvec` and `vals`, for later building a sparse matrix.
+"""
 function add_to_matrix!(ivec, jvec, vals, t::Term{ConstantCoeff, O, T, 2, M}) where {O, T, M}
     (; integrand, measure) = t
     (; aux, mesh) = measure
@@ -107,7 +125,64 @@ function add_to_matrix!(ivec, jvec, vals, t::Term{ConstantCoeff, O, T, 2, M}) wh
 end
 
 
-# oprod(t₁::T, t::S) where {T <: Tensor, S <: Tensor} = t₁ ⊗ t₂
+"""
+   assembly_rhs(form::Form{1})
+assembles the rhs corresponding to the bilinear form  `form`.
+"""
+function assembly_rhs(term::Term{C, O, T, 1, M}) where {C, O, T, 1, M}
+    return assembly_rhs(Form{1}((term,)))
+end
+function assembly_rhs(form::Form{1})
+    (; terms) = form
+    mesh = domainmesh(first(terms))
+    ℓ    = ndofs(mesh)
+    vals = _init_rhs(mesh,N)
+    for t in terms
+        add_to_rhs!(vals, t)
+    end
+    return vals
+end
+
+"""
+    add_to_rhs!(vals,t::Term)
+integrates `t` adding the results to `vals`.
+"""
+function add_to_rhs!(vals, t::Term{ConstantCoeff, O, T, 1, M}) where {O, T, M}
+    (; integrand, measure) = t
+    (; aux, mesh) = measure
+    (; points, trilist, dofs) = mesh
+    (; by_tri) = dofs
+    r = 1
+    tensordict = Dictionary()
+    for tri in keys(trilist)
+        degs, _ = psortednodes(tri, mesh)
+        isin, token = gettoken(tensordict, degs)
+        if isin
+            loctensor = gettokenvalue(tensordict, token)
+        else
+            loctensor = ref_tensors(integrand, degs)
+            set!(tensordict, degs, loctensor)
+        end
+        aff = AffineToRef(points[tri])
+        doft = by_tri[tri]
+        dim = length(doft)
+        C = aux[degs].C
+        v = collect_as(FixedSizeArrayDefault, (collapse(aff, loctensor[i, j]) for i in 1:dim, j in 1:dim))
+        v .= jac(aff) * C' * v * C
+        println("dim:", dim)
+        println("ℓ:", length(ivec))
+        println("r:", r)
+        ivec[r:(r + dim^2 - 1)] .+= repeat(doft, dim)
+        jvec[r:(r + dim^2 - 1)] .+= repeat(doft, inner = dim)
+        vals[r:(r + dim^2 - 1)] .+= v[:]
+        r += dim^2
+    end
+    return
+end
+
+
+# oprod(t₁::T, t::S) where {
+# T <: Tensor, S <: Tensor} = t₁ ⊗ t₂
 # oprod(::Nothing, t) = t
 
 # function build_local_tensor(term::Term{C,Order{B},N,M}) where {C<:Union{ConstantCoeff,NoCoeff},B,M}
