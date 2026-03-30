@@ -28,6 +28,16 @@ function Measure(mesh::HPMesh{F,I,P}) where {F,I,P}
 end
 
 Meshes.domainmesh(m::Measure) = domainmesh(m.mesh)
+function dof(ed::Edge,m::Measure)
+    indofs,token = gettoken(m.mesh.dofs.by_edge,ed)
+    indofs || throw(ArgumentError("No degrees of freedom are associated to the edge $ed.l Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
+    return gettokenvalue(m.mesh.dofs.by_edge,token)
+end
+     
+function dof(t::Triangle,m::Measure)
+    indofs,token = gettoken(m.mesh.dofs.by_tri,t)
+    indofs || throw(ArgumentError("No degrees of freedom are associated to the triangle $t.l Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
+    return gettokenvalue(m.mesh.dofs.by_tri,token)
+end
 
-
-
+elements(m::Measure) = elements(m.mesh)

@@ -1,4 +1,13 @@
 """
+   ref_integrate(p::ImmutablePolynomial)
+
+Integrates `p` in the interval [-1,1]. The integration is performed exactly, with no quadratures.
+"""
+function ref_integrate(p::ImmutablePolynomial{F,X,N}) where {F,X,N}
+    ip = Polynomials.integrate(p)
+    ip(one(F))-ip(-one(F))
+end
+"""
 
     ref_integrate(p::PolyScalarField)
 

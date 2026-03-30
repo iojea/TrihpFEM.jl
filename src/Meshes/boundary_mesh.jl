@@ -78,3 +78,8 @@ returns the underlying mesh in an `Triangulation`. If `m` is an `HPMesh`, then `
 """
 domainmesh(m::BoundaryHPMesh) = m.mesh
 domainmesh(m::HPMesh) = m
+
+#### IMPLEMENT:
+function elements(bm::BoundaryHPMesh)
+    nothing
+end

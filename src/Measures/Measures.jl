@@ -9,9 +9,11 @@ using ..Meshes
 using ..PolyFields
 using ..Integration
 
+import ..Meshes: elements
+
 include("auxiliarydata.jl")
 include("meas.jl")
 
-export Measure
+export Measure, elements
 
 end; #module

@@ -470,8 +470,8 @@ retuns the degrees of freedom of the mesh `m`.
 Checks if 'e' is stored as presented or in reverse order. 
 """
 function _same_order(e::Edge{I}, elist::EdgeList{I, P}) where {I, P}
-    _, (_, k) = gettoken(elist, e)
-    oe = gettokenvalue(keys(elist), k)
+    _, t = gettoken(elist, e)
+    oe = gettokenvalue(keys(elist), t)
     return oe == e
 end
 
@@ -525,7 +525,7 @@ function psortednodes(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
     pind = psortperm(p)
     return p[pind], first.(eds[pind])
 end
-
+psortednodes(e::Edge{I},mesh::HPMesh{F,I,P}) where {F,I,P} = degree(mesh.edgelist[e])
 # """
 #     $(SIGNATURES)
 
@@ -649,23 +649,34 @@ function tagged_dof(mesh::HPMesh{F, I, P}, tags) where {F, I, P}
     isempty(dofs) && throw(ArgumentError(msg))
     return _tagged_dof(mesh, tags)
 end
+function tagged_dof(cond::Function,mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; dofs) = mesh
+    msg = "The degrees of freedom of the mesh have not been computed."
+    isempty(dofs) && throw(ArgumentError(msg))
+    return _tagged_dof(cond,mesh)
+end
 
 """
     _tagged_dof(mesh::HPMesh,tags)
 internal function. Returns a list of all degrees of freedom tagged with a tag in `tag`.  
 """
-function _tagged_dof(mesh::HPMesh{F, I, P}, tags) where {F, I, P}
-    (; edgelist, dofs) = mesh
-    (; by_edge) = dofs
+_tagged_dof(mesh::HPMesh, tags) = _tagged_dof(in(tags),mesh)
+function _tagged_dof(cond::Function,mesh::HPMesh{F,I,P}) where {F,I,P}
+    (; edgelist,dofs) = mesh
+    (;by_edge) = dofs
     v = Vector{I}()
     for e in pairs(edgelist)
-        if tag(last(e)) in tags
-            push!(v, by_edge[first(e)]...)
+        if cond(tag(last(e)))
+            push!(v,by_edge[first(e)]...)
         end
     end
-    return unique(v)
+    unique(v)
 end
 
+dof(t::Triangle,mesh::HPMesh) = mesh.dofs.by_tri[t]
+dof(e::Edge,mesh::HPMesh) = mesh.dofs.by_edge[e]
+ndof(mesh::HPMesh) = mesh.dofs.n[]
+elements(mesh::HPMesh) = keys(mesh.trilist)
 # """
 #     boundary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
 

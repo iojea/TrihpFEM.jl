@@ -8,6 +8,7 @@ using SparseArrays
 using Tensors
 using Collects
 
+using ..DifferentialOperators
 using ..Meshes
 using ..PolyFields
 using ..Integration
@@ -16,6 +17,6 @@ using ..Measures
 
 include("matrices.jl")
 
-export ref_tensors, assembly_matrix
+export assembly_matrix, assembly_rhs
 
 end

@@ -310,31 +310,37 @@ Base.:+(p::PolyTensorField, q::PolyTensorField) = PolyTensorField(p .+ q)
 
 A struct for defining and updating an affine transformation from the reference triangle to some other triangle. 
 """
-struct AffineToRef{F <: Number}
-    A::Tensor{2, 2, F}
+struct AffineToRef{D,F <: Number}
+    A::Tensor{D, 2, F}
     b::Tensor{1, 2, F}
     function AffineToRef(vert)
-        length(vert) == 3 || throw(ArgumentError("Three vertices are needed."))
-        F = eltype(vert[1])
-        A = affinetoref_matrix(F, vert)
-        b = affinetoref_vec(F, vert)
-        return new{F}(A, b)
+        F = eltype(promote(Tuple(v[i] for i in 1:2, v in vert)...))
+        D = length(vert)-1
+        D ∈ (1,2) || throw(ArgumentError("Two or three vertices are needed."))
+        A = affinetoref_matrix(Val(D),F,vert)
+        b = affinetoref_vec(F,vert)
+        return new{D,F}(A, b)
     end
 end
-function affinetoref_matrix(::Type{F}, vert) where {F}
-    return Tensor{2, 2, F}((i, j) -> vert[mod1(j, 2)][i] - vert[3][i])
+function affinetoref_matrix(::Val{2},::Type{F}, vert) where F
+    return Tensor{2, 2, F}((i, j) -> (vert[j+1][i] - vert[j][i])/2)
 end
-function affinetoref_vec(::Type{F}, vert) where {F}
-    return Tensor{1, 2, F}(i -> (vert[1][i] + vert[3][i]) / 2)
+function affinetoref_matrix(::Val{1},::Type{F}, vert) where F
+    return Tensor{1, 2, F}(i -> (last(vert)[i] - first(vert)[i])/2)
+end
+
+function affinetoref_vec(::Type{F},vert) where F
+    return Tensor{1, 2, F}(i -> (first(vert)[i] + last(vert)[i]) / 2)
 end
 
 (aff::AffineToRef{F})(x) where {F} = aff.A * x + aff.b
 
 
-jac(aff::AffineToRef) = det(aff.A)
+jac(aff::AffineToRef{2,F}) where F = det(aff.A)
+jac(aff::AffineToRef{1,F}) where F = norm(aff.A)
 # area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
 # area(v::Vector) = area(v...)
-area(t::AffineToRef) = 2jac(t)
+area(t::AffineToRef{2,F}) where F = 2jac(t)
 
 
 ##########################################################################################
