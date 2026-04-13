@@ -235,6 +235,11 @@ function refine!(mesh::HPMesh{F, I, P}) where {F <: AbstractFloat, I <: Integer,
     return filter!(!ismarked, mesh.edgelist)
 end
 
+function refine(mesh::HPMesh{F,I,P}) where {F,I,P}
+    out = copy(mesh)
+    refine!(out)
+    out
+end 
 
 """
     $(SIGNATURES)

@@ -1,12 +1,12 @@
 """
+
     Quadrature
 
-A numerical quadrature scheme. Schemes are created by calling `gmquadrature`. 
+A numerical quadrature scheme. 2D-schemes can be created by calling `gmquadrature`. However,`TrihpFEM` uses precomputed schemes, for performance reasons. 1D-schemes are only available in precomputed version. 
 """
-struct Quadrature{D,F<:Number,P<:Integer}
-    dim::P
-    weights::Vector{F}
-    points::Vector{SVector{D,F}} #check dimensions
+struct Quadrature{D,R,V<:AbstractVector,P<:Integer}
+    weights::R
+    points::V #check dimensions
     degree::P
 end
 
@@ -18,17 +18,13 @@ A very simple function that computes recursively the jump between the number of 
 @inline _jump(i) = i
 @inline _jump(dim,i) = dim == 1 ? _jump(i) : sum(1:_jump(dim-1,i))
 
-"""
-   _numberofpoints(i,dim)
-Computes the number of points for a quadrature of degree `deg` where `i=deg÷2`.
-"""
-@inline _numberofpoints(dim,deg) =  deg == 1 ? 1 : _numberofpoints(dim,deg-1)+_jump(dim,deg)
 
 """
    numberofpoints(deg,dim)
-Computes the number of points for a quadrature of odd degree `deg`. It works for `dim=1,2,3`.
+Computes the number of points for a quadrature of odd degree `deg`. It works for `dim=2,3`.
 """
 numberofpoints(dim,deg)= _numberofpoints(dim,1+deg÷2)
+@inline _numberofpoints(dim,deg) =  deg == 1 ? 1 : _numberofpoints(dim,deg-1)+_jump(dim,deg)
 
 
 """
@@ -44,14 +40,17 @@ Builds a `Quadrature` for dimension `D` over the simplex `Tref`. If the last arg
 # Output
 - A `Quadrature` of the desired degree.
 """
+function tref(::Type{F}) where {F}
+    return SMatrix{2,3,F}([-1 1 1;-1 -1 1])
+end
+
 function gmquadrature(::Val{D},degree::P,Tref) where {D,P<:Integer}
-    @assert D == size(Tref,1)
     T = eltype(Tref)
     L = numberofpoints(D,degree)
     _gmquadrature(T,Val(D),Val(L),degree,Tref)
 end
 function gmquadrature(::Type{F},d::Val{D},degree::P) where{F,D,P}
-    Tref = SMatrix{2,3,F}([-1 1 1;-1 -1 1])
+    Tref = tref(F)
     gmquadrature(d,degree,Tref)
 end
 gmquadrature(d::Val{D},degree::P) where {D,P} = gmquadrature(Float64,d,degree)
@@ -60,8 +59,9 @@ gmquadrature(d::Val{D},degree::P) where {D,P} = gmquadrature(Float64,d,degree)
 
 
 _szero(::Val{D},::Type{T}) where {D,T} = MVector{D,T}(zero(T) for _ in 1:D)
+_szero(::Val{1},::Type{T}) where T = zero(T)
 function _sszero(::Val{D},::Val{L},::Type{T}) where {D,L,T}
-    FixedSizeVector{MVector{2,T}}([_szero(Val(D),T) for _ in 1:L])
+    collect_as(FixedSizeVector,(_szero(Val(D),T) for _ in 1:L))
 end
 
 """
@@ -72,8 +72,10 @@ The iterator allows lazy creation which avoids the allocations incurred in `Grun
 """
 struct DegCombination{L,D} end
 
-Base.iterate(::DegCombination{L,0}) where L = nothing
-Base.iterate(::DegCombination{L,0},st) where L = nothing
+Base.iterate(::DegCombination{1,0}) = nothing
+Base.iterate(::DegCombination{1,0},st) = nothing
+
+# Base.iterate(::DegCombination{L,0}) where L= SVector{L,Int}(zeros(Int,L)) 
 
 function Base.iterate(::DegCombination{L,D}) where {L,D}
     ini = D
@@ -131,11 +133,13 @@ function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D
              factorial(big(degree + D - i)))
         weights[j:j+length(exponents)-1] .= w
         for part in exponents
-            points[j]  .= (Tref*(map(p -> T(2 * p + 1) / (degree + D - 2 * i), part)))
+            points[j] .= Tref*(map(p -> T(2 * p + 1) / (degree + D - 2 * i), part))
             j += 1
         end
     end
     weights /= sum(weights)
-    return Quadrature{D,T,P}(D, weights, points, degree)
+    rw = RepVec(weights)
+    F = eltype(first(points))
+    return Quadrature{D,typeof(rw),typeof(points),P}(rw, points, degree)
 end
 

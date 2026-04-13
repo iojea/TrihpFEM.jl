@@ -31,9 +31,10 @@ ref_integrate(p::PolySum) = ref_integrate(p.left) + ref_integrate(p.right)
 
 Integrates `fun` in the reference triangle using the `Quadrature` `sch.  
 """
-function ref_integrate(fun,sch)
+function ref_integrate(fun,sch::Quadrature{D,R,V,P}) where {D,R,V,P}
     (;weights,points)= sch
-    2sum(w*fun(p) for (w,p) in zip(weights,points))
+     #measure of the element. Weights for 1D quadratures are already scaled to [-1,1], so we multiply by 1. The reference triangle has area 2. 
+    D*sum(w*fun(p) for (w,p) in zip(weights,points))
 end
 
 

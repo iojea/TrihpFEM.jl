@@ -336,7 +336,7 @@ end
 (aff::AffineToRef{F})(x) where {F} = aff.A * x + aff.b
 
 
-jac(aff::AffineToRef{2,F}) where F = det(aff.A)
+jac(aff::AffineToRef{2,F}) where F = abs(det(aff.A))
 jac(aff::AffineToRef{1,F}) where F = norm(aff.A)
 # area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
 # area(v::Vector) = area(v...)

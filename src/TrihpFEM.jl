@@ -55,8 +55,8 @@ export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, G
 # export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis
 
 
-using ..Integration: Quadrature, gmquadrature, ref_integrate
-export Quadrature, gmquadrature, ref_integrate
+using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature
+export Quadrature, gmquadrature, ref_integrate, quadrature
 
 using ..Forms: basis, Form, Term, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
 export basis, Term, Form, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
@@ -67,6 +67,6 @@ export Measure
 using ..Assembly: ref_integrate, ref_tensors, assembly_matrix
 export ref_integrate, ref_tensors, assembly_matrix
 
-using ..Problems: FEProblem,FESolution,solve,plotsol
-export FEProblem,FESolution,solve,plotsol
+using ..Problems: FEProblem,FESolution,solve,plotsol, error
+export FEProblem,FESolution,solve,plotsol,error
 end
