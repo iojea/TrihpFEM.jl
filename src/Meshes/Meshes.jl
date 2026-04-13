@@ -11,9 +11,9 @@ module Meshes
     using DocStringExtensions
 
 
-    export Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation,HPMesh, DOF
+    export Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation, HPMesh, DOF
     export triangle, hpmesh, data, elements
-    export tag, degree, dof, ndof,longestedge, tagged_dof
+    export tag, degree, dof, ndof, longestedge, tagged_dof
     export ismarked, isgreen, isblue, isred, istagged, isinterior, isboundary
     export inttype, floattype, degtype
     export degrees_of_freedom!, isempty, empty!
@@ -24,7 +24,7 @@ module Meshes
     export mark!, refine!, p_conformity!, check_p_conformity, setdegrees!
     export circmesh, circmesh_graded_center, rectmesh, squaremesh
     export plothpmesh, degplot
-    
+
 
     BOUNDARY_DICT = Dict(:dirichlet => 1, :neumann => 2)
 

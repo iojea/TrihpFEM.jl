@@ -42,8 +42,9 @@ include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
-using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot
+using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh,squaremesh
 export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot
+, circmesh, rectmesh,squaremesh
 
 using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
 export DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ

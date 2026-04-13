@@ -17,13 +17,11 @@ circmesh(h) = circmesh(1.0, h)
    correct_boundary_circular(mesh::HPMesh)
 corrects the boundary nodes of `mesh` projecting them to the boundary.  
 """
-function correct_boundary_circular(mesh::HPMesh)
+function correct_boundary_circular!(mesh::HPMesh)
     (; points, edgelist) = mesh
     for e in keys(edgelist)
         if tag(edgelist[e]) > 0
             i, j = e
-            # points[:,i] .= points[:,i]/norm(points[:,i])
-            # points[:,j] .= points[:,j]/norm(points[:,j])
             points[i] = points[i] / norm(points[i])
             points[j] = points[j] / norm(points[j])
         end
