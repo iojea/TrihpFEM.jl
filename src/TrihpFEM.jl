@@ -42,9 +42,8 @@ include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
-using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh,squaremesh
-export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot
-, circmesh, rectmesh,squaremesh
+using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh, squaremesh
+export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh, squaremesh
 
 using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
 export DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
@@ -68,6 +67,6 @@ export Measure
 using ..Assembly: ref_integrate, ref_tensors, assembly_matrix
 export ref_integrate, ref_tensors, assembly_matrix
 
-using ..Problems: FEProblem,FESolution,solve,plotsol, error
-export FEProblem,FESolution,solve,plotsol,error
+using ..Problems: FEProblem, FESolution, solve, plotsol, error
+export FEProblem, FESolution, solve, plotsol, error
 end
