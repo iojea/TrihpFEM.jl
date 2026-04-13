@@ -137,9 +137,22 @@ function Base.:-(term::Term)
     return Term(newintegrand, measure)
 end
 
-function Base.:+(t₁::Term{C₁, O₁, N, M₁}, t₂::Term{C₂, O₂, N, M₂}) where {C₁, O₁, N, M₁, C₂, O₂, M₂}
+function Base.:+(t₁::Term{C₁, O₁,T₁, N, M₁}, t₂::Term{C₂, O₂,T₂, N, M₂}) where {C₁, O₁,T₁, N, M₁, C₂, O₂,T₂, M₂}
     return Form{N}((t₁, t₂))
 end
-function Base.:-(t₁::Term{C₁, O₁, N, M₁}, t₂::Term{C₂, O₂, N, M₂}) where {C₁, O₁, N, M₁, C₂, O₂, M₂}
-    return Form{N}((t₁, -t₂))
+function Base.:-(t₁::Term{C₁, O₁,T₁, N, M₁}, t₂::Term{C₂, O₂,T₂, N, M₂}) where {C₁, O₁,T₁, N, M₁, C₂, O₂,T₂, M₂}
+        return Form{N}((t₁, -t₂))
+end
+
+function Base.:+(form::Form{N},term::Term{C,O,T,N,M}) where {C,O,T,N,M}
+    return Form{N}((form.terms...,term))
+end
+function Base.:+(term::Term{C,O,T,N,M},form::Form{N}) where {C,O,T,N,M}
+    return Form{N}((term,form.terms...))
+end
+function Base.:-(form::Form{N},term::Term{C,O,T,N,M}) where {C,O,T,N,M}
+    return Form{N}((form.terms...,-term))
+end
+function Base.:-(term::Term{C,O,T,N,M},form::Form{N}) where {C,O,T,N,M}
+    return Form{N}((term,(-t for t in form.terms)...))
 end

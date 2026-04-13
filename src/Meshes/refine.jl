@@ -235,6 +235,11 @@ function refine!(mesh::HPMesh{F, I, P}) where {F <: AbstractFloat, I <: Integer,
     return filter!(!ismarked, mesh.edgelist)
 end
 
+function refine(mesh::HPMesh{F,I,P}) where {F,I,P}
+    out = copy(mesh)
+    refine!(out)
+    out
+end 
 
 """
     $(SIGNATURES)
@@ -319,6 +324,28 @@ function neighbor(mesh::HPMesh{F, I, P}, t::Triangle{I}, e::Edge{I}) where {F, I
     end
 end
 
+"""
+    
+"""
+function setdegrees!(p::Function,mesh::HPMesh)
+    (;points,edgelist) = mesh
+    done = false
+    while !done
+        done = true
+        for e in keys(edgelist)
+            deg = degree(edgelist[e])
+            med = (sum(points[e])/2)
+            if deg < round(Int,p(med))
+                setdegree!(edgelist[e],deg+1)
+                done = false
+            elseif deg > round(Int,p(med))
+                setdegree!(edgelist[e],deg-1)
+                done = false
+            end
+        end
+        p_conformity!(mesh)
+    end
+end
 ###########################################################################################
 ### ESTIM Functions
 """
@@ -360,3 +387,5 @@ end
 `estim` function for grading a mesh towards the origin. See the docs for `estim_point`.
 """
 estim_origin(vert; args...) = estim_point(vert; center = SVector(0.0, 0.0), args...)
+
+

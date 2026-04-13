@@ -5,7 +5,6 @@ struct Measure{T<:HPTriangulation,A<:AuxMeshData,Q<:Quadrature}
     aux::A
     sch::Q
 end
-Measure(mesh,aux,sch) = Mesh{typeof(mesh),typeof(aux),typeof(sch)}(mesh,aux,sch)
 
 function Measure(mesh::HPMesh{F,I,P},degsch) where {F,I,P}
     aux = AuxMeshData{P,F}()
@@ -16,8 +15,7 @@ function Measure(mesh::HPMesh{F,I,P},degsch) where {F,I,P}
             set!(aux,d,AuxDegData(F,d))
         end
     end
-    degsch = isodd(degsch) ? P(degsch) : P(degsch+1)
-    sch = gmquadrature(F,Val(2),degsch)
+    sch = quadrature(F,P,Val(2),Val(degsch))
     Measure(mesh,aux,sch)
 end
 
@@ -27,7 +25,19 @@ function Measure(mesh::HPMesh{F,I,P}) where {F,I,P}
     Measure(mesh,2maxdeg+1)
 end
 
+mesh(m::Measure) = m.mesh
 Meshes.domainmesh(m::Measure) = domainmesh(m.mesh)
 
+function dof(ed::Edge,m::Measure)
+    indofs,token = gettoken(m.mesh.dofs.by_edge,ed)
+    indofs || throw(ArgumentError("No degrees of freedom are associated to the edge $ed.l Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
+    return gettokenvalue(m.mesh.dofs.by_edge,token)
+end
+     
+function dof(t::Triangle,m::Measure)
+    indofs,token = gettoken(m.mesh.dofs.by_tri,t)
+    indofs || throw(ArgumentError("No degrees of freedom are associated to the triangle $t.l Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
+    return gettokenvalue(m.mesh.dofs.by_tri,token)
+end
 
-
+elements(m::Measure) = elements(m.mesh)
