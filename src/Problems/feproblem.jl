@@ -1,3 +1,5 @@
+abstract type AbstractProblem end
+
 """
 
     FEProblem(a,b,space,g)
@@ -11,50 +13,59 @@ Defines a Finite Element Problem (no refinement) of the form `a(u,v)=b(v)` over 
 """
 
 _toform(a::Form) = a
-_toform(a::Term{C,O,T,N,M}) where {C,O,T,N,M} = Form{N}((a,))
-struct FEProblem{F₁,F₂}
+_toform(a::Term{C, O, T, N, M}) where {C, O, T, N, M} = Form{N}((a,))
+mutable struct FEProblem{F₁, F₂} <: AbstractProblem
     a::F₁
     b::F₂
     g
     K
     rhs
-    function FEProblem(a,b,g)
+    function FEProblem(a, b, g)
         K = assembly_matrix(a)
         rhs = assembly_rhs(b)
         fa = _toform(a)
         fb = _toform(b)
-        new{typeof(fa),typeof(fb)}(fa,fb,g,K,rhs)
-    end        
+        return new{typeof(fa), typeof(fb)}(fa, fb, g, K, rhs)
+    end
 end
-FEProblem(a,b) = FEProblem(a,b,x->zero(eltype(x)))
+FEProblem(a, b) = FEProblem(a, b, x -> zero(eltype(x)))
 
-function solve(prob::FEProblem{F₁,F₂}) where {F₁,F₂}
+Meshes.domainmesh(p::AbstractProblem) = domainmesh(first(p.a.terms))
+
+function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
     mesh = domainmesh(first(prob.a.terms).measure)
-   (;points,edgelist,dofs) = mesh
-    vals = FixedSizeVector{floattype(mesh)}(undef,ndof(mesh))
-    dirichlet = Vector{inttype(mesh)}(undef,0)
+    (; points, edgelist, dofs) = mesh
+    vals = FixedSizeVector{floattype(mesh)}(undef, ndof(mesh))
+    dirichlet = Vector{inttype(mesh)}(undef, 0)
     for e in keys(edgelist)
-        if istagged(edgelist[e],1)
+        if istagged(edgelist[e], 1)
             locdof = dofs.by_edge[e]
             i1 = first(locdof)
             i2 = last(locdof)
             x1 = points[i1]
             x2 = points[i2]
             n = length(locdof)
-            for (i,k) in enumerate(locdof)
-                vals[k] = prob.g(((n-i)*x1+(i-1)*x1)/(n-1))
+            for (i, k) in enumerate(locdof)
+                vals[k] = prob.g(((n - i) * x1 + (i - 1) * x1) / (n - 1))
             end
-            push!(dirichlet,locdof...)
+            push!(dirichlet, locdof...)
         end
     end
     unique!(dirichlet)
-    valid = setdiff(1:ndof(mesh),dirichlet)
-    vals[valid] = prob.K[valid,valid]\prob.rhs[valid]
-    return FESolution(mesh,vals)
-end 
+    valid = setdiff(1:ndof(mesh), dirichlet)
+    vals[valid] = prob.K[valid, valid] \ prob.rhs[valid]
+    return FESolution(mesh, vals)
+end
+
+function update!(prob::FEProblem)
+    Meshes.empty!(domainmesh(prob).dofs)
+    prob.K = assembly_matrix(prob.a)
+    prob.rhs = assembly_rhs(prob.b)
+    return nothing
+end
+
 
 # function FEProblem(a,b,space,g)
 #     matrix = integrate(a,space)
 #     rhs = integrate(b,space)
 # end
-
