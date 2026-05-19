@@ -87,6 +87,12 @@ function _initvectors(::HPMesh{F, I, P}, ℓ) where {F, I, P}
     fill!(vals, zero(F))
     return ivec, jvec, vals
 end
+
+"""
+
+    _init_rhs(m::HPMesh{F,I,P},ℓ)
+creates a rhs vector of type  `I` and length `ℓ`
+"""
 function _init_rhs(::HPMesh{F, I, P}, ℓ) where {F, I, P}
     vec = FixedSizeArray{F, 1}(undef, ℓ)
     fill!(vec, zero(F))
@@ -202,12 +208,12 @@ function assembly_matrix(form::Form{2})
     return sparse(ivec, jvec, vals, ℓ, ℓ)
 end
 
+### Constant Coefficients
 """
 
     add_to_matrix!(ivec,jvec,vals,t::Term)
 integrates the `Term` `t` adding the results to `ivec`,`jvec` and `vals`, for later building a sparse matrix.
 """
-# ConstantCoeff version
 function add_to_matrix!(ivec, jvec, vals, t::Term{ConstantCoeff, O, T, 2, M}) where {O, T, M}
     (; integrand, measure) = t
     (; mesh, aux) = measure
@@ -297,12 +303,12 @@ function assembly_rhs(form::Form{1})
     return vals
 end
 
+# ConstantCoeff version
 """
 
     add_to_rhs!(vals,t::Term)
 integrates `t` adding the results to `vals`.
 """
-# ConstantCoeff version
 function add_to_rhs!(vals, t::Term{ConstantCoeff, O, T, 1, M}) where {O, T, M}
     (; integrand, measure) = t
     (; mesh, aux) = measure
