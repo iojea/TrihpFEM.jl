@@ -33,6 +33,12 @@ function compute_error(d::Error{D, F, E}, m::Measure) where {D, F, E}
     return err
 end
 
+"""
+
+    estimate_order(problem,u;boundary_projection=nothing,E=2,iterations=3,deg=11)
+solves `problem` iteratively refining all triangles in the mesh. After each iteration the `E` norm of the error is computed, with respect to the exact solution `u`.  The optional argument `boundary_projection` is used to project boundary nodes to the real boundary (when working on non-polygonal domains). The estimated order of convergence is returned. 
+
+"""
 function estimate_order(problem, u; boundary_projection = nothing, E = 2, iterations = 3, deg = 11)
     uₕ = solve(problem)
     Ω = domainmesh(problem)
@@ -50,6 +56,6 @@ function estimate_order(problem, u; boundary_projection = nothing, E = 2, iterat
         uₕ = solve(problem)
         e[k] = (∫(u - uₕ)^E * dΩ)^(1 / E)
     end
-    ord = (e[2:end] - e[1:(end - 1)]) ./ (log(0.25) - log(0.5))
+    ord = (log.(e[2:end]) - log.(e[1:(end - 1)])) ./ (-log(2))
     return e, ord
 end

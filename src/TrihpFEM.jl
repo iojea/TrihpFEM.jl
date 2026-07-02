@@ -67,6 +67,6 @@ export Measure
 using ..Assembly: ref_integrate, ref_tensors, assembly_matrix
 export ref_integrate, ref_tensors, assembly_matrix
 
-using ..Problems: FEProblem, FESolution, solve, plotsol, error
-export FEProblem, FESolution, solve, plotsol, error
+using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
+export FEProblem, FESolution, solve, plotsol, error, estimate_order
 end

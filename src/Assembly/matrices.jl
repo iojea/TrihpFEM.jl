@@ -15,7 +15,6 @@ end
 collapse(aff::AffineToRef, t::Tensor{2, 2}) = inv(aff.A) ⊡ t
 collapse(aff::AffineToRef, t::Tensor{1, 1}) = Tensor{1, 1}((1,)) ⋅ t
 function collapse(factors, aff::AffineToRef, tensors)
-    iA = inv(aff.A)
     fac = (_collapser(f, aff) for f in factors)
     return sum(_contraction(f, t) for (f, t) in zip(fac, tensors))
 end
@@ -30,15 +29,15 @@ _contraction(f::Tensor{2, 2}, t::Tensor{2, 2}) = f ⊡ t
 
 """
 
-#     _collapser(::Order,aff::AffineToRef)
-# computes de matrix used for tensor collapsing depending on the order of the operator.
+    _collapser(::Order,aff::AffineToRef)
+computes de matrix used for tensor collapsing depending on the order of the operator.
 
     _collapser(aff:AffineToRef,t::Tensor)
 performs an appropriate contraction of the tensor `t` with the change of variables `aff`.
 """
 function _collapser(f::Tensor{2, 2}, aff::AffineToRef)
     iA = inv(aff.A)
-    return Tensor{2, 2}((i, j) -> iA[i, :] ⋅ f' ⋅ iA[:, j])
+    return Tensor{2, 2}((i, j) -> iA[i, :] ⋅ f' ⋅ iA[j, :])
 end
 function _collapser(f::Tensor{1, 2}, aff::AffineToRef)
     iA = inv(aff.A)
@@ -61,16 +60,32 @@ _collapser(f::Tensor{1, 1}, aff::AffineToRef) = f
 
 Receives a non-constant factor `f` (a `Function`), an affine transformation `aff` and a quadrature scheme, `sch` and computes a sequence of `Tensor`s produced by evaluating `f` on the nodes of `sch`. 
 """
-function variablefactors(f, aff::AffineToRef, sch::Quadrature{D, F, P}) where {D, F, P}
-    s = size(f(zeros(F, D)))
-    dim = length(s)
-    ord = dim > 0 ? 2 : 1
-    if dim > 0
-        return (Tensor{ord, dim}(f(aff(x))) for x in sch.points)
+
+function variablefactors(::Val{0}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
+    return (D * Tensor{1, 1}((f(aff(x)),)) for x in sch.points)
+end
+
+function variablefactors(::Val{1}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
+    return (D * Tensor{2, 1}(f(aff(x))) for x in sch.points)
+end
+
+function variablefactors(::Val{2}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
+    k = ndims(f(zeros(eltype(R), D)))
+    g = to_matrix(f ∘ aff, Val(k), eltype(R))
+    if k == 0
+        return (D * SymmetricTensor{2, 2}(g(x)) for x in sch.points)
     else
-        return (Tensor{ord, 1}((f(aff(x)),)) for x in sch.points)
+        return (D * Tensor{2, 2}(g(x)) for x in sch.points)
     end
 end
+
+"""
+
+    to_matrix(f::Function,::Type{T}) 
+"""
+to_matrix(f::Function, ::Val{0}, ::Type{T}) where {T} = f
+to_matrix(f::Function, ::Val{2}, ::Type{T}) where {T} = x -> (f(x), zero(T), f(x))
+
 
 """
 
@@ -190,7 +205,7 @@ _quadtensor(f, ::Val{0}) = Tensor{1, 1}((f,))
 
 """
 
-    assembly_matrix(form::Form{2})
+    assembly_matrix(form::Form{2}) 
 assembles the matrix corresponding to the bilinear form  `form`.
 """
 function assembly_matrix(term::Term{C, O, T, 2, M}) where {C, O, T, M}
@@ -248,7 +263,7 @@ function add_to_matrix!(ivec, jvec, vals, t::Term{ConstantCoeff, O, T, 2, M}) wh
 end
 
 # VariableCoeff version
-function add_to_matrix!(ivec, jvec, vals, t::Term{VariableCoeff, O, T, 2, M}) where {O, T, M}
+function add_to_matrix!(ivec, jvec, vals, t::Term{VariableCoeff, Order{B}, T, 2, M}) where {B, T, M}
     (; integrand, measure) = t
     (; mesh, aux, sch) = measure
     r = 1
@@ -268,17 +283,13 @@ function add_to_matrix!(ivec, jvec, vals, t::Term{VariableCoeff, O, T, 2, M}) wh
         locdof = dof(el, mesh)
         dim = length(locdof)
         C = aux[degs].C
-        factors = variablefactors(integrand.factor, aff, sch)
-        for i in 1:dim, j in 1:dim
-            v[i, j] = collapse(aff, loctensor[i, j])
-            ││
-        end
-        # v = collect_as(FixedSizeArrayDefault, (collapse(factors,aff, loctensor[i,j]) for i in 1:dim, j in 1:dim))
+        factors = variablefactors(Val(sum(B)), integrand.factor, aff, sch)
+        v[1:dim, 1:dim] .= collect_as(FixedSizeArrayDefault, (collapse(factors, aff, loctensor[i, j]) for i in 1:dim, j in 1:dim))
         @views v[1:dim, 1:dim] .= jac(aff) * C' * v[1:dim, 1:dim] * C
         # v .= jac(aff) * C' * v * C
         ivec[r:(r + dim^2 - 1)] .= repeat(locdof, dim)
         jvec[r:(r + dim^2 - 1)] .= repeat(locdof, inner = dim)
-        @views vals[r:(r + dim^2 - 1)] .+= v[1:dim, 1:dim]
+        @views vals[r:(r + dim^2 - 1)] .+= v[1:dim, 1:dim][:]
         r += dim^2
     end
     return

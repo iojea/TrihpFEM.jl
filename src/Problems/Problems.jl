@@ -27,5 +27,5 @@ module Problems
 
     export FEProblem, FESolution, solve, plotsol
     export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
-    export error
+    export error, estimate_order
 end; #module
