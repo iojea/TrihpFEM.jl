@@ -62,20 +62,20 @@ Receives a non-constant factor `f` (a `Function`), an affine transformation `aff
 """
 
 function variablefactors(::Val{0}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
-    return (D * Tensor{1, 1}((f(aff(x)),)) for x in sch.points)
+    return collect_as(FixedSizeArray,D * Tensor{1, 1}((f(aff(x)),)) for x in sch.points))
 end
 
 function variablefactors(::Val{1}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
-    return (D * Tensor{2, 1}(f(aff(x))) for x in sch.points)
+    return collect_as(FixedSizeArray,(D * Tensor{2, 1}(f(aff(x))) for x in sch.points))
 end
 
 function variablefactors(::Val{2}, f, aff::AffineToRef, sch::Quadrature{D, R, V, P}) where {D, R, V, P}
     k = ndims(f(zeros(eltype(R), D)))
     g = to_matrix(f ∘ aff, Val(k), eltype(R))
     if k == 0
-        return (D * SymmetricTensor{2, 2}(g(x)) for x in sch.points)
+        return collect_as(FixedSizeArray,(D * SymmetricTensor{2, 2}(g(x)) for x in sch.points))
     else
-        return (D * Tensor{2, 2}(g(x)) for x in sch.points)
+        return collect_as(FixedSizeArray,D * Tensor{2, 2}(g(x)) for x in sch.points))
     end
 end
 
@@ -143,64 +143,66 @@ outer(operand::Tensor{1, 1}, factor::Number) = factor * operand
 
 """
 
-    ref_tensors(inte::Integrand{ConstantCoeff,T,Order{B},N},degs) where {T,B,N}
+    ref_tensors(inte::Integrand{ConstantCoeff,Order{B},T,N},degs) where {T,B,N}
 Computes the local tensors produced by `inte` over a reference element with degrees given by `degs`. These tensors are later contracted with the corresponding `AffineToRef` change of variables.
 
-    ref_tensors(inte::Integrand{VariableCoeff,T,Order{B},N},degs,sch) where {T,B,N}
+    ref_tensors(inte::Integrand{VariableCoeff,Order{B},T,N},degs,sch) where {T,B,N}
 does the same for a `VariableCoeff` integrand. In this case instead of a `Tensor` a sequence of `Tensor`s is given where each `Tensor` corresponds to the evaluation of the integrand in a node of the quadrature scheme `sch`.
     """
-function ref_tensors(inte::Integrand{ConstantCoeff, T, Order{B}, 2}, degs) where {T, B}
+function ref_tensors(inte::Integrand{ConstantCoeff, O, T, 2}, degs) where {O, T}
     (; factor, funs) = inte
     b₁ = basis(funs[1], degs); b₂ = basis(funs[2], degs)
     o₁, o₂ = operator.(funs)
     f = tensorize(factor)
-    return collect_as(FixedSizeArrayDefault, (outer(_tensor(o₁(φ), o₂(ψ), Val(sum(B))), f) for φ in b₁, ψ in b₂))
+    return collect_as(FixedSizeArrayDefault, (outer(_tensor(o₁(φ), o₂(ψ), O()), f) for φ in b₁, ψ in b₂))
 end
 
-function ref_tensors(inte::Integrand{ConstantCoeff, T, Order{B}, 1}, degs) where {T, B}
+function ref_tensors(inte::Integrand{ConstantCoeff, O, T, 1}, degs) where {O, T}
     (; factor, funs) = inte
     b = basis(funs[1], degs)
     o = operator(funs[1])
     f = tensorize(factor)
-    return collect_as(FixedSizeArrayDefault, (outer(_tensor(o(φ), Val(sum(B))), f) for φ in b))
+    return collect_as(FixedSizeArrayDefault, (outer(_tensor(o(φ), O()), f) for φ in b))
 end
-function ref_tensors(inte::Integrand{VariableCoeff, T, Order{B}, 2}, degs, sch) where {T, B}
+function ref_tensors(inte::Integrand{VariableCoeff, O, T, 2}, degs, sch) where {O, T}
     (; funs) = inte
     (; points, weights) = sch
     b₁ = basis(funs[1], degs); b₂ = basis(funs[2], degs)
     o₁, o₂ = operator.(funs)
-    return collect_as(FixedSizeArrayDefault, ((w * _quadtensor(o₁(φ)(x), o₂(ψ)(x), Val(sum(B))) for (x, w) in zip(points, weights)) for φ in b₁, ψ in b₂))
+    return collect_as(FixedSizeArrayDefault, ((w * _quadtensor(o₁(φ)(x), o₂(ψ)(x), O()) for (x, w) in zip(points, weights)) for φ in b₁, ψ in b₂))
 end
-function ref_tensors(inte::Integrand{VariableCoeff, T, Order{B}, 1}, degs, sch) where {T, B}
+function ref_tensors(inte::Integrand{VariableCoeff, O, T, 1}, degs, sch) where {O, T}
     (; funs) = inte
     (; points, weights) = sch
     b = basis(funs[1], degs)
     o = operator(funs[1])
-    return collect_as(FixedSizeArrayDefault, ((w * _quadtensor(o(φ)(x), Val(sum(B))) for (x, w) in zip(points, weights)) for φ in b))
+    return collect_as(FixedSizeArrayDefault, ((w * _quadtensor(o(φ)(x), O()) for (x, w) in zip(points, weights)) for φ in b))
 end
 
 """
 
-    _tensor(f,g,::Val{N}) where N
-    _tensor(f,::Val{N})
-an auxiliary function that builds a tensor by integrating `f*g` in the reference triangle. `N` is given to indicate the order of the `Tensor`. `N==2` corresponds to two derivatives (∇⋅∇), `N==1` to one derivative 
+    _tensor(f,g,::Order{B}) 
+    _tensor(f,::Order{B})
+an auxiliary function that builds a tensor by integrating `f*g` in the reference triangle. `B` is given to indicate the order of the `Tensor`. `B=(1,1)` corresponds to two derivatives (∇⋅∇), `B=(1,0)` to one derivative, etc.
 """
-_tensor(f, g, ::Val{2}) = Tensor{2, 2}((i, j) -> ref_integrate(f[i] * g[j]))
-_tensor(f, g, ::Val{1}) = Tensor{1, 2}(i -> ref_integrate(f[i] * g))
-_tensor(f, g, ::Val{0}) = Tensor{1, 1}((ref_integrate(f * g),))
-_tensor(f, ::Val{0}) = Tensor{1, 1}((ref_integrate(f),))
+_tensor(f, g, ::Order{(1, 1)}) = Tensor{2, 2}((i, j) -> ref_integrate(f[i] * g[j]))
+_tensor(f, g, ::Order{(1, 0)}) = Tensor{1, 2}(i -> ref_integrate(f[i] * g))
+_tensor(f, g, ::Order{(0, 1)}) = Tensor{1, 2}(i -> ref_integrate(f * g[i]))
+_tensor(f, g, ::Order{(0, 0)}) = Tensor{1, 1}((ref_integrate(f * g),))
+_tensor(f, ::Order{0}) = Tensor{1, 1}((ref_integrate(f),))
 
 
 """
 
-    _quadtensor(f,g,::Val{N}) where N
-    _quadtensor(f,::Val{N})
+    _quadtensor(f,g,::Order{B})
+    _quadtensor(f,::Order{B})
 similar to `_tensor` but for evaluating the functions on quadrature nodes instead of integrating them directly. This is the version used for non-constant coefficients.
 """
-_quadtensor(f, g, ::Val{2}) = Tensor{2, 2}((i, j) -> f[i] * g[j])
-_quadtensor(f, g, ::Val{1}) = Tensor{1, 2}(i -> f[i] * g)
-_quadtensor(f, g, ::Val{0}) = Tensor{1, 1}((f * g,))
-_quadtensor(f, ::Val{0}) = Tensor{1, 1}((f,))
+_quadtensor(f, g, ::Order{(1, 1)}) = Tensor{2, 2}((i, j) -> f[i] * g[j])
+_quadtensor(f, g, ::Order{(1, 0)}) = Tensor{1, 2}(i -> f[i] * g)
+_quadtensor(f, g, ::Order{(0, 1)}) = Tensor{1, 2}(i -> f * g[i])
+_quadtensor(f, g, ::Order{(0, 0)}) = Tensor{1, 1}((f * g,))
+_quadtensor(f, ::Order{0}) = Tensor{1, 1}((f,))
 
 
 """

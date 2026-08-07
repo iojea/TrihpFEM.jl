@@ -20,8 +20,8 @@ end
 (::Laplacian)(::ShapeFunction{Identity, 1}) = ShapeFunction{Laplacian, 1}()
 (::Divergence)(::ShapeFunction{Gradient, 1}) = ShapeFunction{Laplacian, 1}()
 
-basis(sf::ShapeFunction{O, 1}, degs) where {O} = StandardBasis(degs)
-operator(sf::ShapeFunction{O, D}) where {O, D} = O()
+basis(::ShapeFunction{O, 1}, degs) where {O} = StandardBasis(degs)
+operator(::ShapeFunction{O, D}) where {O, D} = O()
 
 
 function (sf::ShapeFunction{O, D})(p::PolyField) where {O, D}
@@ -53,13 +53,13 @@ order(::Type{Identity}) = 0
 order(::Type{Divergence}) = 1
 order(::Type{Gradient}) = 1
 order(::Type{Laplacian}) = 2
-order(sf::ShapeFunction{O, D}) where {O, D} = order(O)
+order(::ShapeFunction{O, D}) where {O, D} = order(O)
 
 """
    Integrand{C<:CoeffType,O<:Order,N}
-A product of `ShapeFunction`s and a factor. `N` is the number of `ShapeFunction`s involved, `O` their order and  `C` the type of coefficient of the factor.  
+A product of `ShapeFunction`s and a factor. `N` is the number of `ShapeFunction`s involved, `O` their order,  `T` the type of the factor, and  `C` the type of coefficient of the factor.  
 """
-struct Integrand{C <: CoeffType, T, O <: Order, N}
+struct Integrand{C <: CoeffType, O <: Order, T, N}
     factor::T
     funs::Tuple
     function Integrand(fac, tup)
@@ -137,22 +137,22 @@ function Base.:-(term::Term)
     return Term(newintegrand, measure)
 end
 
-function Base.:+(t₁::Term{C₁, O₁,T₁, N, M₁}, t₂::Term{C₂, O₂,T₂, N, M₂}) where {C₁, O₁,T₁, N, M₁, C₂, O₂,T₂, M₂}
+function Base.:+(t₁::Term{C₁, O₁, T₁, N, M₁}, t₂::Term{C₂, O₂, T₂, N, M₂}) where {C₁, O₁, T₁, N, M₁, C₂, O₂, T₂, M₂}
     return Form{N}((t₁, t₂))
 end
-function Base.:-(t₁::Term{C₁, O₁,T₁, N, M₁}, t₂::Term{C₂, O₂,T₂, N, M₂}) where {C₁, O₁,T₁, N, M₁, C₂, O₂,T₂, M₂}
-        return Form{N}((t₁, -t₂))
+function Base.:-(t₁::Term{C₁, O₁, T₁, N, M₁}, t₂::Term{C₂, O₂, T₂, N, M₂}) where {C₁, O₁, T₁, N, M₁, C₂, O₂, T₂, M₂}
+    return Form{N}((t₁, -t₂))
 end
 
-function Base.:+(form::Form{N},term::Term{C,O,T,N,M}) where {C,O,T,N,M}
-    return Form{N}((form.terms...,term))
+function Base.:+(form::Form{N}, term::Term{C, O, T, N, M}) where {C, O, T, N, M}
+    return Form{N}((form.terms..., term))
 end
-function Base.:+(term::Term{C,O,T,N,M},form::Form{N}) where {C,O,T,N,M}
-    return Form{N}((term,form.terms...))
+function Base.:+(term::Term{C, O, T, N, M}, form::Form{N}) where {C, O, T, N, M}
+    return Form{N}((term, form.terms...))
 end
-function Base.:-(form::Form{N},term::Term{C,O,T,N,M}) where {C,O,T,N,M}
-    return Form{N}((form.terms...,-term))
+function Base.:-(form::Form{N}, term::Term{C, O, T, N, M}) where {C, O, T, N, M}
+    return Form{N}((form.terms..., -term))
 end
-function Base.:-(term::Term{C,O,T,N,M},form::Form{N}) where {C,O,T,N,M}
-    return Form{N}((term,(-t for t in form.terms)...))
+function Base.:-(term::Term{C, O, T, N, M}, form::Form{N}) where {C, O, T, N, M}
+    return Form{N}((term, (-t for t in form.terms)...))
 end
