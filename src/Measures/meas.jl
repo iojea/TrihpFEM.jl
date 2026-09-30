@@ -40,4 +40,5 @@ function dof(t::Triangle,m::Measure)
     return gettokenvalue(m.mesh.dofs.by_tri,token)
 end
 
-elements(m::Measure) = elements(m.mesh)
+Meshes.elements(m::Measure) = elements(m.mesh)
+

@@ -13,10 +13,10 @@ end
 
 Integrates `p` in the reference triangle. The integration is performed exactly, with no quadratures.
 """
-function ref_integrate(p::BiPoly{F,X,Y}) where {F,X,Y}
-    (;px,py) = p
+function ref_integrate(p::ProductPoly{2,F}) where F
+    px,py = p.polys
     qy = Polynomials.integrate(py)
-    x = ImmutablePolynomial((zero(F),one(F)),X)
+    x = ImmutablePolynomial((zero(F),one(F)),:x)
     qx = px*(qy(x)-qy(-one(F)))
     q = Polynomials.integrate(qx)
     q(one(F))-q(-one(F))

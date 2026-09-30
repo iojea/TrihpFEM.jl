@@ -1,15 +1,15 @@
-function Base.show(io::IO, p::P) where {F, P <: BiPoly{F}}
-    return if p.px == zero(p.px) || p.py == zero(p.py)
+function Base.show(io::IO, p::P) where {F, P <: ProductPoly{F}}
+    return if any(pp==zero(pp) for pp in p.polys) 
         print(io, "($(zero(F)),)")
-    elseif p.px == one(p.px)
-        printpoly(io, p.py)
-    elseif p.py == one(p.py)
-        printpoly(io, p.px)
+    elseif p.polys[1] == one(p.polys[1])
+        printpoly(io, p.polys[2])
+    elseif p.polys[2] == one(p.polys[2])
+        printpoly(io, p.polys[1])
     else
         print(io, "(")
-        printpoly(io, p.px)
+        printpoly(io, p.polys[1])
         print(io, ")(")
-        printpoly(io, p.py)
+        printpoly(io, p.polys[2])
         print(io, ")")
     end
 end
@@ -20,6 +20,3 @@ function Base.show(io::IO, p::P) where {P <: PolySum}
     return print(io, p.right)
 end
 
-function Base.show(io::IO, p::P) where {P <: PolyTensorField}
-    return show(io, p.tensor)
-end

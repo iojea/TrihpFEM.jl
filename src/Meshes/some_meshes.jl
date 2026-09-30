@@ -43,7 +43,7 @@ function circmesh_graded_center(h, μ; maxiter = 4, rec = false)
         rec ? push!(mshs, copy(mesh)) : nothing
         if count(ismarked, mesh.trilist) > 0
             refine!(mesh)
-            correct_boundary_circular(mesh)
+            correct_boundary_circular!(mesh)
             k += 1
             rec ? push!(mshs, copy(mesh)) : nothing
         else

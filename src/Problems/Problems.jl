@@ -20,12 +20,12 @@ module Problems
 
     import ..Forms: ∫
 
-    include("solution.jl")
-    include("feproblem.jl")
-    include("error.jl")
-    include("plots.jl")
+    # include("solution.jl")
+    # include("feproblem.jl")
+    # include("error.jl")
+    # include("plots.jl")
 
-    export FEProblem, FESolution, solve, plotsol
-    export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
-    export error, estimate_order
+    # export FEProblem, FESolution, solve, plotsol
+    # export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
+    # export error, estimate_order
 end; #module

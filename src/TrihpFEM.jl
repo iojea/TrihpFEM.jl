@@ -13,15 +13,13 @@ TrihpFEM implements an hp-adaptive Finite Element Method based on triangular mes
 \$(isnothing(get(ENV, "CI", nothing)) ? ("\n" * "Package local path: " * pathof(TrihpFEM)) : "") 
 """
 
-
+using StyledStrings
 using CommonSolve
 using Dictionaries
 using DocStringExtensions
-using EllipsisNotation
 using ExactPredicates
 using FixedSizeArrays
 using LinearAlgebra
-using MacroTools
 using Makie
 using Markdown
 using Pkg
@@ -34,6 +32,7 @@ using Triangulate
 
 include("Meshes/Meshes.jl")
 include("DifferentialOperators/DifferentialOperators.jl")
+include("Tensors/Tensors.jl")
 include("PolyFields/PolyFields.jl")
 # include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
@@ -42,14 +41,17 @@ include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
-using ..Meshes: Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh, squaremesh
-export Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, rectmesh, squaremesh
+using ..Meshes: Point2D, Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, plothpmesh2, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
+export Point2D,Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, plothpmesh2, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
 
-using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
-export DiffOperator, Identity, Derivatex, Derivatey, Gradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ
+using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ,∂x,∂y
+export DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ, ∂x,∂y
 
-using ..PolyFields: BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
-export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, GeneralField, StandardBasis
+using ..Tensors: Tensor, otimes,⊗
+export Tensor,otimes,⊗
+
+using ..PolyFields: ProductPoly, AffineToRef, GeneralField, LegendreIterator, StandardBasis, degs
+export ProductPoly, AffineToRef, GeneralField, LegendreIterator, StandardBasis,degs
 
 # using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
 # export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis
@@ -58,15 +60,15 @@ export BiPoly, PolyTensorField, PolyVectorField, PolyMatrixField, AffineToRef, G
 using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature
 export Quadrature, gmquadrature, ref_integrate, quadrature
 
-using ..Forms: basis, Form, Term, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
-export basis, Term, Form, ShapeFunction, CoeffType, NoCoeff, ConstantCoeff, VariableCoeff, ∫
+using ..Forms: basis, Form, Term, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, ∫,Trial,Test
+export basis, Term, Form, Operation, ShapeFunction, CoeffType,  ConstantCoeff, VariableCoeff,Trial,Test, ∫
 
 using ..Measures: Measure
 export Measure
 
-using ..Assembly: ref_integrate, ref_tensors, assembly_matrix
-export ref_integrate, ref_tensors, assembly_matrix
+using ..Assembly: LocalTensor, _eval_operation, get_shape_functions
+export LocalTensor, _eval_operation, get_shape_functions
 
-using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
-export FEProblem, FESolution, solve, plotsol, error, estimate_order
+# using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
+# export FEProblem, FESolution, solve, plotsol, error, estimate_order
 end

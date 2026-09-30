@@ -1,40 +1,34 @@
-abstract type PolyField{F, X, Y} end
-
-indeterminate(::AbstractPolynomial{T, X}) where {T, X} = X
-"""
-
-    indeterminates(p::PolyField)
-    
-returns the indeterminates of `p`, for example `:x` and `:y`.
-"""
-indeterminates(::PolyField{F, X, Y}) where {F, X, Y} = (X, Y)
-
 ###########################################################################
 #################              SCALAR FIELDS              #################
 ###########################################################################
-#
-abstract type PolyScalarField{F, X, Y} <: PolyField{F, X, Y} end
-Base.length(::PolyScalarField) = 1
+abstract type PolyScalarField{D,F<:Number}  end
 
+coefficienttype(p::PolyScalarField{D,F}) where {D,F} = F
+# indeterminate(::AbstractPolynomial{T, X}) where {T, X} = X
+
+
+Base.length(::PolyScalarField) = 1
 Base.iterate(t::PolyScalarField) = (t, nothing)
 Base.iterate(::PolyScalarField, st) = nothing
-LinearAlgebra.:⋅(p::PolyScalarField, q::PolyScalarField) = p * q
-#
-# _zerofill(t::NTuple{K,T},N) where {K,T} = K>=N ? t : (t...,zeros(T,N-K)...)
 
-######################################
-####      BiPoly     ####
-######################################
+
+###########################################################################
+#################              ProductPoly                #################
+###########################################################################
+
 """
 
-    BiPoly{F,X,Y} <: PolySacalarField{F,X,Y}
+    ProductPoly{F,X,Y} <: PolySacalarField{F,X,Y}
+    function PolyTensorField{D}(polys...) where D
+        N = round(Int,log(length(polys)/))
+    end
 
 A bivariate polynomial with coefficients of type `F` defined by the product of two univariate polynomials, one on variable `X` and the other on variable `Y`.
 
 For construction it is preferred to pass two tuples of coefficients.
 # Examples
 ```
-    julia> ϕ = BiPoly((2,1.,3.),(3.,2.))
+    julia> ϕ = ProductPoly((2,1.,3.),(3.,2.))
         (2.0 + 1.0*x + 3.0*x^2)(3.0 + 2.0*y)
     julia> ϕ(1,-1)
         6.0
@@ -43,240 +37,87 @@ For construction it is preferred to pass two tuples of coefficients.
 ```
 If necessary, the indeterminates can be specified:
 ```
-    julia> ϕ = BiPoly((2,1.,3.),(3.,2.),:z,:ξ)
+    julia> ϕ = ProductPoly((2,1.,3.),(3.,2.),:z,:ξ)
         (2.0 + 1.0*z + 3.0*z^2)(3.0 + 2.0*ξ)
 ```
 """
-struct BiPoly{F, X, Y} <: PolyScalarField{F, X, Y}
-    px::ImmutablePolynomial{F, X, N} where {N}
-    py::ImmutablePolynomial{F, Y, M} where {M}
-    function BiPoly(
-            px::ImmutablePolynomial{F},
-            py::ImmutablePolynomial{F}, X, Y
-        ) where {F}
-        X == Y && throw(ArgumentError("Indeterminates must be different"))
-        if px == zero(px) || py == zero(py)
-            return new{F, X, Y}(zero(px), zero(py))
+_coeffs(p::AbstractPolynomial) = coeffs(p)
+_coeffs(p::Tuple) = p
+
+struct ProductPoly{D,F} <: PolyScalarField{D,F}
+    polys::NTuple{D,ImmutablePolynomial{F}}
+    function ProductPoly{F}(pols...) where F
+        D = length(pols)
+        data = tuple((ImmutablePolynomial{F,VARIABLE_NAMES[i]}(F.(_coeffs(pols[i]))) for i in 1:D)...)
+        if any(p==zero(p) for p in data)
+            ps = tuple((ImmutablePolynomial{F,x}(zero(F)) for x in VARIABLE_NAMES[1:D])...)
+            return new{D,F}(ps)
         else
-            return new{F, X, Y}(px, py)
+            return new{D,F}(data)
         end
     end
 end
-
-function BiPoly(t1::Tuple, t2::Tuple, X = :x, Y = :y)
-    t1 = promote(t1...)
-    t2 = promote(t2...)
-    F = promote_type(eltype(t1), eltype(t2))
-    N = length(t1)
-    M = length(t2)
-    if N == 0 || M == 0
-        return zero(BiPoly{F, X, Y})
-    else
-        p1 = ImmutablePolynomial(NTuple{N, F}(convert.(F, t1)), X)
-        p2 = ImmutablePolynomial(NTuple{M, F}(convert.(F, t2)), Y)
-        return BiPoly(p1, p2, X, Y)
-    end
+function ProductPoly(pols...)
+    pols = tuple((promote(p...) for p in pols)...)
+    F = promote_type((eltype(p) for p in pols)...)
+    ProductPoly{F}(pols...)
 end
 
-(s::BiPoly)(x, y) = s.px(x) * s.py(y)
-(s::BiPoly)(x::T) where {T <: AbstractVector} = s.px(x[1]) * s.py(x[2])
+ProductPoly{D,F}(p::ProductPoly{D}) where {D,F} = ProductPoly{F}(p.polys...)
+_apply(s,v) = s(v)
 
-degs(p::BiPoly) = (length(p.px) - 1, length(p.py) - 1)
+(s::ProductPoly)(x::AbstractVector) = mapreduce(_apply,*,s.polys,x)
 
-Base.promote(t::BiPoly{F, X, Y}, s::BiPoly{F, X, Y}) where {F, X, Y} = (t, s)
-Base.:*(a::Number, p::BiPoly) = BiPoly(a * p.px, p.py, indeterminates(p)...)
-Base.:*(p::BiPoly, a::Number) = a * p
+degs(p::ImmutablePolynomial) = tuple(length(p.coeffs)-1,)
+degs(p::ProductPoly) = tuple((length(r) - 1 for r in p.polys)...)
 
-
-function Base.:*(p::AbstractPolynomial, q::BiPoly)
-    return if indeterminate(p) === indeterminate(q.px)
-        BiPoly(p * q.px, q.py, indeterminates(q)...)
-    elseif indeterminate(p) === indeterminate(q.py)
-        BiPoly(q.px, p * q.py, indeterminates(q)...)
-    else
-        throw(ArgumentError("Indeterminates does not match."))
-    end
-end
-Base.:*(q::BiPoly, p::AbstractPolynomial) = p * q
-
-function Base.:*(p::BiPoly{F}, q::BiPoly{F}) where {F}
-    indeterminates(p) == indeterminates(q) || throw(ArgumentError("Indeterminates does not match."))
-    return BiPoly(p.px * q.px, p.py * q.py, indeterminates(p)...)
+function Base.promote(t::ProductPoly{D,F}, s::ProductPoly{D,T}) where {D,F,T}
+    R = promote_type(F,T)
+    ProductPoly{D,R}(t), ProductPoly{D,R}(s)
 end
 
-function Base.zero(p::BiPoly{F, X, Y}) where {F, X, Y}
-    return BiPoly(zero(p.px), zero(p.py), X, Y)
-end
-function Base.zero(::Type{BiPoly{F, X, Y}}) where {F, X, Y}
-    return BiPoly(zero(ImmutablePolynomial{F, X}), zero(ImmutablePolynomial{F, Y}), X, Y)
-end
-function Base.one(p::BiPoly{F, X, Y}) where {F, X, Y}
-    return BiPoly(one(p.px), one(p.py), X, Y)
-end
-function Base.one(::Type{BiPoly{F, X, Y}}) where {F, X, Y}
-    return BiPoly(one(ImmutablePolynomial{F, X}), one(ImmutablePolynomial{F, Y}), X, Y)
+Base.:*(a::Number, p::ProductPoly) = ProductPoly((a*q for q in p.polys)...)
+Base.:*(p::ProductPoly, a::Number) = a * p
+
+Tensors.otimes(n::Number,p::PolyScalarField) = n*p
+Tensors.otimes(p::PolyScalarField,n::Number) = n*p
+
+function Base.:*(p::AbstractPolynomial{T,X}, q::ProductPoly{F}) where {T,F,X}
+    i = findfirst(X.==VARIABLE_NAMES)
+    data = tuple((j==i ? qq*p : qq for (j,qq) in enumerate(q.polys)))
 end
 
-Base.convert(::Type{T}, x::N) where {F, X, Y, T <: PolyField{F, X, Y}, N <: Number} = x * one(T)
-###############################
-#       TENSOR FIELDS
-###############################
-"""
 
-     PolyTensorField{F,X,Y,T<:PolyScalarField{F,X,Y},N} <: PolyField{F,X,Y}
+Base.:*(p::ProductPoly{D}, q::ProductPoly{D}) where D = ProductPoly(map(*,p.polys,q.polys)...)
 
-  A struct for storing a tensor-field  of `N` dimensions formed by a `PolyScalarField` of type `T` with coeffitients of type `F` on the indeterminates `X` and `Y`.   There are useful aliases:
-  - `PolyVectorField`, for vector fields, with `N=1` and
-  - `PolyMatrixField`, for matrix fields, with `N=2`.
+Base.zero(p::ProductPoly{D,F}) where {D,F}= ProductPoly{F}((zero(pp) for pp in p.polys)...)
 
-# Examples
+Base.zero(::Type{ProductPoly{D,F}}) where {D,F} = ProductPoly((zero(F),) for _ in 1:D)
 
-```
-  julia> p = BiPoly((1,3.,4.),(1,2.))
-  julia> q = BiPoly((0,1.),(1.,))
-  julia> v = PolyTensorField([p,q])  
-```
+Base.one(p::ProductPoly{D,F}) where {D,F} = ProductPoly{F}((one(pp) for pp in p.polys)...)
 
-`v` is `PolyVectorField` with `T` given by `BiPoly(Float64,:x,:y)`.
+Base.one(::Type{ProductPoly{D,F}}) where {D,F} = ProductPoly{F}(((one(F),) for _ in VARIABLE_NAMES[1:D])...)
 
-If the type of the component fields is not uniform, they are promoted to a common type.
+Base.convert(::Type{T}, x::N) where {T <: PolyScalarField, N <: Number} = x * one(T)
 
-```
-  julia> p = BiPoly((1,3.,4.),(1,2.))
-  julia> q = BiPoly((0,1.),(1.))
-  julia> r = p+q # PolySum
-  julia> v = PolyTensorField([p,r])
-    2-element Vector{BiPoly{Float64, :x, :y}}:
-      (1.0 + 3.0*x + 4.0*x^2)(1.0 + 2.0*y)
-      (1.0*x)(1.0)
-
-  julia> v(1,-2)
-    2-element Vector{Float64}:
-      -24.0
-        1.0  
-```
-"""
-struct PolyTensorField{F, X, Y, T <: PolyScalarField{F, X, Y}, N} <: PolyField{F, X, Y}
-    tensor::FixedSizeArrayDefault{T, N}
-    function PolyTensorField(arr::AbstractArray{T, N}) where {F, X, Y, T <: PolyScalarField{F, X, Y}, N}
-        tensor = FixedSizeArrayDefault{T, N}(arr)
-        return new{F, X, Y, T, N}(tensor)
-    end
-end
-function PolyTensorField{T, N}() where {N, T <: PolyScalarField}
-    a = FixedSizeArrayDefault{T, N}(undef, [2 for _ in 1:N]...)
-    return PolyTensorField(a)
-end
-
-# PolyVectorField
-const PolyVectorField{F, X, Y, T} = PolyTensorField{F, X, Y, T, 1}
-PolyVectorField(x::AbstractArray{T, 1}) where {T} = PolyTensorField(x)
-
-#PolyMatrixField
-const PolyMatrixField{F, X, Y, T} = PolyTensorField{F, X, Y, T, 2}
-PolyMatrixField(x::AbstractArray{T, 2}) where {T} = PolyTensorField(x)
-function (v::PolyTensorField{F, X, Y, T, N})(x, y) where {F, X, Y, T, N}
-    z = FixedSizeArrayDefault{F, N}(undef, size(v.tensor)...)
-    for i in eachindex(v.tensor)
-        z[i] = v.tensor[i](x, y)
-    end
-    return z
-end
-
-function (v::PolyTensorField{F, X, Y, T, N})(x) where {F, X, Y, T, N}
-    return v(x[1], x[2])
-end
-
-Base.IteratorSize(::PolyTensorField{F, X, Y, T, N}) where {F, X, Y, T, N} = Base.HasShape{N}()
-Base.length(p::T) where {T <: PolyTensorField} = length(p.tensor)
-Base.size(p::T) where {T <: PolyTensorField} = size(p.tensor)
-function Base.iterate(p::T, st = nothing) where {T <: PolyTensorField}
-    return isnothing(st) ? iterate(p.tensor) : iterate(p.tensor, st)
-end
-Base.getindex(p::T, i...) where {T <: PolyTensorField} = getindex(p.tensor, i...)
-Base.zero(p::T) where {T <: PolyTensorField} = PolyTensorField(zero(p.tensor))
-
-Base.:*(a::N, p::T) where {N <: Number, T <: PolyTensorField} = PolyTensorField(a * p.tensor)
-Base.:*(p::T, a::N) where {N <: Number, T <: PolyTensorField} = a * p
-
-# This function needs improvements to avoid the type instability.
-function Base.:*(A::AbstractArray, p::PolyTensorField{F, X, Y, T, N}) where {F, X, Y, T, N}
-    sA = size(A); sp = size(p)
-    sA[end] == sp[1] || throw(DimensionMismatch())
-    M = A * p.tensor
-    if length(M) > 1
-        c = Array{PolyScalarField{F, X, Y}, length(size(M))}(undef, size(M)...)
-        c .= A * p.tensor
-        return PolyTensorField(c)
-    else
-        return M[1]
-    end
-end
-
-function Base.:*(p::PolyScalarField, v::T) where {T <: PolyTensorField}
-    issubset(indeterminates(p), indeterminates(v)) || throw(ArgumentError("Fields have different indeterminates"))
-    w = similar(v.tensor)
-    for i in eachindex(v.tensor)
-        w[i] = p * v.tensor[i]
-    end
-    return T(w)
-end
-Base.:*(v::T, p::PolyScalarField) where {T <: PolyTensorField} = p * v
-
-
-Base.promote_type(T::Type{<:Number}, P::Type{<:PolyField}) = P
-
-# """
-#    outerprod(v...)
-#    outerproduct(v::PolyField,w::PolyField)
-# Outer product of tensors. Can be used as a binary operator with ⊗.
-# """
-# function outerprod(v...)
-#     dims = tuple(Iterators.flatten(size.(v))...)
-#     T = promote_type(eltype.(v)...)
-#     z = FixedSizeArrayDefault{T, length(dims)}(undef, dims...)
-#     for (i, k) in enumerate(Iterators.product(v...))
-#         z[i] = prod(k)
-#     end
-#     return z
-# end
-# const ⊗ = outerprod
-
-# contract(x, y) = sum(x .* y)
-
-# outerprod(v::PolyTensorField, w::PolyTensorField) = PolyTensorField(v.tensor ⊗ w.tensor)
-# outerprod(v, w::PolyScalarField) = v * w
-# outerprod(v::AbstractArray, w::PolyTensorField) = PolyTensorField(v ⊗ w.tensor)
-
-
-# function _outer(p::PolyVectorField, q::PolyVectorField)
-#     @cast a[i, j] := p.tensor[i] * q.tensor[j]
-#     return PolyTensorField(a)
-# end
-
-LinearAlgebra.dot(p::PolyVectorField, q::PolyVectorField) = outerprod(p.tensor, q.tensor)
-
-
-###############################
-#           POLYSUM
-###############################
+###########################################################################
+#################                PolySum                  #################
+###########################################################################
 
 """
 ```
    PolySum{F,X,Y} <: PolyScalarField{F,X,Y}
 ```
-A struct for storing the sum of two `PolyScalarField`s. A typical application is the divergence of a `PolyVectorField`, usually formed by the sum of two `BiPoly`s. Note that the terms of the sum can be any type of `PolyScalarField`, including `PolySum`s.
+A struct for storing the sum of two `PolyScalarField`s. A typical application is the divergence of a `PolyVectorField`, usually formed by the sum of two `ProductPoly`s. Note that the terms of the sum can be any type of `PolyScalarField`, including `PolySum`s.
 """
-struct PolySum{F, X, Y} <: PolyScalarField{F, X, Y}
-    left::PolyScalarField{F, X, Y}
-    right::PolyScalarField{F, X, Y}
+struct PolySum{D,F} <: PolyScalarField{D,F}
+    left::PolyScalarField{D,F}
+    right::PolyScalarField{D,F}
 end
 
-(p::PolySum)(x, y) = p.left(x, y) + p.right(x, y)
-(p::PolySum)(x) = p.left(x) + p.right(x)
+(p::PolySum)(x...) = p.left(x)+p.right(x)
 
-
-function Base.:+(p::P, q::Q) where {F, X, Y, P <: PolyField{F, X, Y}, Q <: PolyField{F, X, Y}}
+function Base.:+(p::P, q::Q) where {D,F,P <: PolyScalarField{D,F}, Q <: PolyScalarField{D,F}}
     return if p == zero(p)
         q
     elseif q == zero(q)
@@ -286,113 +127,33 @@ function Base.:+(p::P, q::Q) where {F, X, Y, P <: PolyField{F, X, Y}, Q <: PolyF
     end
 end
 
-function Base.zero(::PolySum{F, X, Y}) where {F, X, Y}
-    return zero(BiPoly{F, X, Y})
-end
+Base.zero(::PolySum{D,F}) where {D,F} = zero(ProductPoly{D,F})
+
+
 #LinearAlgebra.dot(p::PolyVectorField{F,X,Y},q::PolyVectorField{F,X,Y})  where {F,X,Y} = p.s1*q.s1 + p.s2*q.s2
 
 Base.:*(n::Number, ps::PolySum) = n * ps.left + n * ps.right
 Base.:*(ps::PolySum, n::Number) = n * ps
-Base.:*(ps::PolySum, p::BiPoly) = ps.left * p + ps.right * p
-Base.:*(p::BiPoly, ps::PolySum) = ps * p
-Base.:*(ps::PolySum, p::PolyVectorField) = PolyVectorField([ps * p.s1, ps * p.s2])
-Base.:*(p::PolyVectorField, ps::PolySum) = ps * p
-Base.:*(ps::PolySum, qs::PolySum) = ps.left * qs.left + ps.right * qs.left + ps.right * qs.left + ps.right * qs.right
-
-Base.:+(p::PolyTensorField, q::PolyTensorField) = PolyTensorField(p .+ q)
-
-###########################################################################################
-#########################           AffineToRef        ###########################
-###########################################################################################
-"""
-
-    AffineToRef{F}
-
-A struct for defining and updating an affine transformation from the reference triangle to some other triangle. 
-"""
-struct AffineToRef{D,F <: Number}
-    A::Tensor{D, 2, F}
-    b::Tensor{1, 2, F}
-    function AffineToRef(vert)
-        F = eltype(promote(Tuple(v[i] for i in 1:2, v in vert)...))
-        D = length(vert)-1
-        D ∈ (1,2) || throw(ArgumentError("Two or three vertices are needed."))
-        A = affinetoref_matrix(Val(D),F,vert)
-        b = affinetoref_vec(F,vert)
-        return new{D,F}(A, b)
-    end
-end
-function affinetoref_matrix(::Val{2},::Type{F}, vert) where F
-    return Tensor{2, 2, F}((i, j) -> (vert[j+1][i] - vert[j][i])/2)
-end
-function affinetoref_matrix(::Val{1},::Type{F}, vert) where F
-    return Tensor{1, 2, F}(i -> (last(vert)[i] - first(vert)[i])/2)
-end
-
-function affinetoref_vec(::Type{F},vert) where F
-    return Tensor{1, 2, F}(i -> (first(vert)[i] + last(vert)[i]) / 2)
-end
-
-(aff::AffineToRef{F})(x) where {F} = aff.A * x + aff.b
+Base.:*(ps::PolySum, p::ProductPoly) = ps.left * p + ps.right * p
+Base.:*(p::ProductPoly, ps::PolySum) = ps * p
 
 
-jac(aff::AffineToRef{2,F}) where F = abs(det(aff.A))
-jac(aff::AffineToRef{1,F}) where F = norm(aff.A)
-# area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
-# area(v::Vector) = area(v...)
-area(t::AffineToRef{2,F}) where F = 2jac(t)
+Base.promote_rule(::Type{ProductPoly{D,F}},::Type{PolySum{D,F}}) where {D,F} = PolySum{D,F}
+Base.convert(::Type{PolySum{D,F}},t::ProductPoly{2,T}) where {D,F,T} = PolySum(t,zero(t))
 
 
-##########################################################################################
-###################                GENERALFIELD                 ##########################
-##########################################################################################
-"""
+### These functions are defined in order to broadcast properly. Essentially: a PolyScalarField shoul behave like a number under broadcasting: f.(p) when p isa PolyScalarField is equivalent to f(p)
+Broadcast.broadcastable(p::PolyScalarField) = p
+Base.ndims(::Type{T}) where T<:PolyScalarField = 0
+Base.ndims(::PolyScalarField) = 0
+Base.size(::PolyScalarField) = ()
+Base.getindex(p::PolyScalarField,::CartesianIndex{0}) = p
+#------VER ESTO
 
-    GeneralField
-    
-A `struct` for defining fields that mix user defined functions with `PolyField`s.
+# Base.:*(ps::PolySum, p::PolyVectorField) = PolyVectorField([ps * p.s1, ps * p.s2])
+# Base.:*(p::PolyVectorField, ps::PolySum) = ps * p
+# Base.:*(ps::PolySum, qs::PolySum) = ps.left * qs.left + ps.right * qs.left + ps.right * qs.left + ps.right * qs.right
 
-`GeneralField`s are necessary for properly distinguish the method of integration.
+# Base.:+(p::PolyTensorField, q::PolyTensorField) = PolyTensorField(p .+ q)
 
-Consider, for example, the form `a(u,v) = ∫(∇(u)⋅∇(v)*dΩ`. In order to assembly the associated matrix, local terms can be fully pre-computed on the reference triangle, and then just transformed into each mesh triangle. Note that only **one** local tensor is computed for each combination of degrees, so this precomputation is very fast when certain combination of degrees are repeated along the mesh. When applied to elements of a basis, `∇(u)⋅∇(v)` produces a `PolyScalarField` that can be directly integrated. 
-
-On the other hand, the precomputation cannot be carried out in the same way for `b(v) = ∫(f*v)*dΩ` with `f` a function, since `f` takes different values on each mesh triangle. Hence `f*v` produces a `GeneralField` which integrates differently. In particular, it evaluates differently for integration.
-
-"""
-struct GeneralField <: Function
-    op
-    args::Tuple
-end
-
-
-Base.:*(f::Function, p::PolyField) = GeneralField(*, (f, p))
-Base.:*(p::PolyField, f::Function) = f * p
-LinearAlgebra.dot(f::Function, p::PolyField) = GeneralField(dot, (f, p))
-LinearAlgebra.dot(p::PolyField, f::Function) = dot(f, p)
-
-function Base.:*(n::Number, g::GeneralField)
-    ind = findfirst(isa.(g.args, PolyField))
-    if !isnothing(ind)
-        newargs = (g.args[1:(ind - 1)]..., n * g.args[ind], g.args[(ind + 1):end]...)
-        return GeneralField(g.op, newargs)
-    else
-        return GeneralField(*, (n, g))
-    end
-end
-Base.:*(g::GeneralField, n::Number) = n * g
-
-# A trait for evaluation of Field
-abstract type EvalType end
-struct Eval <: EvalType end
-struct Compose <: EvalType end
-struct Pass <: EvalType end
-
-evaltype(_) = Pass()
-evaltype(::Function) = Compose()
-evaltype(::PolyField) = Eval()
-
-evaluate(::Eval, f, t::AffineToRef, x) = f(x)
-evaluate(::Compose, f, t::AffineToRef, x) = f(t(x))
-evaluate(::Pass, f, t, x) = f
-
-(o::GeneralField)(x, t::AffineToRef) = o.op((evaluate(evaltype(arg), arg, t, x) for arg in o.args)...)
+# (o::GeneralField)(x, t::AffineToRef) = o.op((evaluate(evaltype(arg), arg, t, x) for arg in o.args)...)

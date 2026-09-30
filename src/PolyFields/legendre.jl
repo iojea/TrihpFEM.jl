@@ -1,4 +1,5 @@
-abstract type AbstractBasis end
+abstract type AbstractBasis{D} end
+
 
 """
 ```
@@ -15,21 +16,23 @@ Builds an iterator over de Legendre polynomials.
     -1.5*x + 2.5*x^3
 ```
 """
-struct LegendreIterator{I <: Integer, F <: Number, X} <: AbstractBasis
-    N::I
-    LegendreIterator{I, F, X}(N) where {I, F, X} = new{I, F, X}(I(N))
+struct LegendreIterator{P <: Integer, F <: Number, X} <: AbstractBasis{1}
+    N::P
+    LegendreIterator{P, F, X}(N) where {P, F, X} = new{P, F, X}(P(N))
 end
-LegendreIterator(N::I) where {I <: Integer} = LegendreIterator{I, Float64, :x}(N)
-Base.IteratorSize(::Type{<:LegendreIterator}) = Base.HasLength()
-Base.length(l::LegendreIterator{I, F, X}) where {I, F, X} = l.N + 1
+LegendreIterator(N::P) where {P <: Integer} = LegendreIterator{P, Float64, :x}(N)
+LegendreIterator(t::NTuple{1,P}) where {P<:Integer} = LegendreIterator(t[1])
 
-function Base.iterate(::LegendreIterator{I, F, X}) where {I, F, X}
+Base.IteratorSize(::Type{<:LegendreIterator}) = Base.HasLength()
+Base.length(l::LegendreIterator{P, F, X}) where {P, F, X} = l.N + 1
+
+function Base.iterate(::LegendreIterator{P, F, X}) where {P, F, X}
     q = one(ImmutablePolynomial{F, X})
     z = zero(ImmutablePolynomial{F, X})
     return q, (0, q, z)
 end
 
-function Base.iterate(l::LegendreIterator{I, F, X}, state) where {I, F, X}
+function Base.iterate(l::LegendreIterator{P, F, X}, state) where {P, F, X}
     if state[1] == l.N
         return nothing
     else
@@ -37,7 +40,7 @@ function Base.iterate(l::LegendreIterator{I, F, X}, state) where {I, F, X}
     end
 end
 
-function _iterate(::LegendreIterator{I, F, X}, state) where {I, F, X}
+function _iterate(::LegendreIterator{P, F, X}, state) where {P, F, X}
     n, p, pm = state
     if n == 0
         q = ImmutablePolynomial((zero(F), one(F)), X)
@@ -53,31 +56,31 @@ end
 ###########################
 
 
-struct StandardBasis{P <: Integer, F <: Number, X, Y} <: AbstractBasis
+struct StandardBasis{P <: Integer, F <: Number} <: AbstractBasis{2}
     degs::NTuple{3, P}
-    Lx::LegendreIterator{P, F, X}
-    Ly::LegendreIterator{P, F, Y}
-    function StandardBasis{P, F, X, Y}(p) where {P, F, X, Y}
+    Lx::LegendreIterator{P, F, VARIABLE_NAMES[1]}
+    Ly::LegendreIterator{P, F, VARIABLE_NAMES[2]}
+    function StandardBasis{P, F}(p) where {P, F}
         p = P.(p)
         p[1] + p[2] >= p[3] || throw(ArgumentError("Degrees does not satisfy p conformity."))
-        Lx = LegendreIterator{P, F, X}(p[1])
-        Ly = LegendreIterator{P, F, Y}(p[2])
-        return new{P, F, X, Y}(p, Lx, Ly)
+        Lx = LegendreIterator{P, F, VARIABLE_NAMES[1]}(p[1])
+        Ly = LegendreIterator{P, F, VARIABLE_NAMES[2]}(p[2])
+        return new{P, F}(p, Lx, Ly)
     end
 end
-StandardBasis(p::NTuple{3, P}) where {P} = StandardBasis{P, Float64, :x, :y}(p)
-StandardBasis(p₁::P, p₂::P, p₃::P) where {P} = StandardBasis((p₁, p₂, p₃))
+StandardBasis(p::NTuple{3, P}) where P = StandardBasis{P, Float64}(p)
+StandardBasis(p₁::P, p₂::P, p₃::P) where P = StandardBasis((p₁, p₂, p₃))
 Base.IteratorSize(::Type{<:StandardBasis}) = Base.HasLength()
 Base.length(sb::StandardBasis) = sum(min(sb.degs[2], sb.degs[3] - j) for j in 0:sb.degs[1]) + sb.degs[1] + 1
 
-function Base.iterate(sb::StandardBasis{P, F, X, Y}) where {P, F, X, Y}
+function Base.iterate(sb::StandardBasis{P, F}) where {P, F}
     (; Lx, Ly) = sb
     px, stx = iterate(Lx)
     py, sty = iterate(Ly)
-    return BiPoly(px, py, X, Y), (stx, sty)
+    return ProductPoly(px, py), (stx, sty)
 end
 
-function Base.iterate(sb::StandardBasis{P, F, X, Y}, state) where {P, F, X, Y}
+function Base.iterate(sb::StandardBasis{P, F}, state) where {P, F}
     (; degs, Lx, Ly) = sb
     (p₁, p₂, p₃) = degs
     stx, sty = state
@@ -93,12 +96,10 @@ end
 function _iteratex(Lx, Ly, stx)
     py, stynew = iterate(Ly)
     px, stxnew = iterate(Lx, stx)
-    X = indeterminate(px); Y = indeterminate(py)
-    return BiPoly(px, py, X, Y), (stxnew, stynew)
+    return ProductPoly(px, py), (stxnew, stynew)
 end
 
 function _iteratey(Ly, sty, stx)
     py, stynew = iterate(Ly, sty)
-    X = indeterminate(stx[2]); Y = indeterminate(py)
-    return BiPoly(stx[2], py, X, Y), (stx, stynew)
+    return ProductPoly(stx[2], py), (stx, stynew)
 end

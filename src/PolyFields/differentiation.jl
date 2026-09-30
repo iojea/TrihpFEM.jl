@@ -1,34 +1,30 @@
+(::Identity)(p::PolyScalarField) = p
+
 """
 ```
-   derivative(p::PolyField,z)
+   derivative(p::AbstractField,z)
 ```
 
-Compute the derivative of a PolyField with respect to the variable `z`.
+Compute the derivative of a AbstractField with respect to the variable `z`.
 
 # Examples
 ```
-   julia> p = BiPoly((1.,2.,3),(0.,2))
+   julia> p = ProductPoly((1.,2.,3),(0.,2))
    (1.0 + 2.0*x + 3.0*x^2)(2.0*y)
    julia> pₓ = derivative(p,:x)
    (2.0 + 6.0*x)(2.0*y)
 ```
 """
-function Polynomials.derivative(p::BiPoly{F, X, Y}, z::Symbol) where {F, X, Y}
-    z == X && return BiPoly(derivative(p.px), p.py, X, Y)
-    z == Y && return BiPoly(p.px, derivative(p.py), X, Y)
-    throw(ArgumentError("$z is not an indeterminate of the polynomial"))
-end
+Polynomials.derivative(p::ProductPoly,::Val{:x}) = ProductPoly(derivative(p.polys[1]),p.polys[2:end]...)
+Polynomials.derivative(p::ProductPoly{2},::Val{:y}) = ProductPoly(p.polys[1],derivative(p.polys[2]))
+Polynomials.derivative(p::ProductPoly{3},::Val{:y}) = ProductPoly(p.polys[1],derivative(p.polys[2]),p.polys[3])
+Polynomials.derivative(p::ProductPoly{3},::Val{:z}) = ProductPoly(p.polys[1:2]...,derivative(p.polys[3]))
+Polynomials.derivative(p::ProductPoly,s::Symbol) = derivative(p,Val(s))
 
-function Polynomials.derivative(p::PolySum{F, X, Y}, z::Symbol) where {F, X, Y}
-    z == X && return derivative(p.left, X) + derivative(p.right, X)
-    z == Y && return derivative(p.left, Y) + derivative(p.right, Y)
-    throw(ArgumentError("$z is not an indeterminate of the polynomial"))
-end
+Polynomials.derivative(p::PolySum,s::Symbol) = derivative(p.left,s)+derivative(p.right,s)
 
-Polynomials.derivative(p::PolyTensorField, z::Symbol) = PolyTensorField(derivative.(p.tensor, z))
-
-(::Derivatex)(p::PolyField{F, X, Y}) where {F, X, Y} = derivative(p, X)
-(::Derivatey)(p::PolyField{F, X, Y}) where {F, X, Y} = derivative(p, Y)
+(::Derivatex)(p::PolyScalarField) = derivative(p, :x)
+(::Derivatey)(p::PolyScalarField) = derivative(p, :y)
 
 """
 ```
@@ -36,7 +32,7 @@ Polynomials.derivative(p::PolyTensorField, z::Symbol) = PolyTensorField(derivati
 ```
 Computes the gradient of a `PolyScalarField` and returns a `PolyVectorField`. 
 """
-(::Gradient)(p::PolyScalarField) = PolyVectorField([∂x(p), ∂y(p)])
+(::AbstractGradient)(p::PolyScalarField{2,F}) where {F} = Tensor{1,2}(∂x(p), ∂y(p))
 
 """
 ```
@@ -55,5 +51,12 @@ Computes the laplacian of a `PolyScalarField` and returns another `PolyScalarFie
 """
 (::Laplacian)(v::PolyScalarField) = divergence(gradient(v))
 
-# This method should be removed in the next Polynomials update
-Polynomials.derivative(p::ImmutablePolynomial{F, X, 1}) where {F, X} = zero(p)
+
+function (::DiffMatrix)(v::Tensor{1,2,T}) where {T<:PolyScalarField}
+   Tensor{2,2}(∂x(v[1]),∂x(v[2]),∂y(v[1]),∂y(v[2]))
+end
+
+(::DiffMatrix)(aff::AffineToRef) = inv(aff.A)
+(::AdjointDiffMatrix)(aff::AffineToRef) = inv(aff.A)'
+(::Identity)(::AffineToRef{D,F}) where {D,F} = one(F)
+

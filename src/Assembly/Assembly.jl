@@ -2,21 +2,24 @@ module Assembly
 
 using LinearAlgebra
 using FixedSizeArrays
-using EllipsisNotation
 using Dictionaries
 using SparseArrays
-using Tensors
 using Collects
 
 using ..DifferentialOperators
 using ..Meshes
+using ..Tensors
 using ..PolyFields
 using ..Integration
 using ..Forms
 using ..Measures
 
+
+DICT_OP = Dict([(*,⊗)])
+
+include("localtensor.jl")
 include("matrices.jl")
 
-export assembly_matrix, assembly_rhs
+export LocalTensor, _eval_operation, get_shape_functions, collapser
 
 end

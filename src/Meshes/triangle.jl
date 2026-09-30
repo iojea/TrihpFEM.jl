@@ -56,11 +56,11 @@ constructs an `Triangle` from a list of indices `t` and a list of points `p`. `p
 This is the preferred constructor for a `Triangle`.
 """
 function triangle(::Type{I}, t, p::Vector) where {I}
-    maxi = argmax(norm.(p[t[SVector(1, 2, 3)]] .- p[t[SVector(2, 3, 1)]]))
+    @views maxi = argmax(norm.(p[t[SVector(1,2,3)]]-p[t[SVector(2,3,1)]]))
     return Triangle(t[one(I) * mod1.(maxi:(maxi + 2), 3)])
 end
 function triangle(::Type{I}, t, p::AbstractMatrix) where {I}
-    maxi = argmax(sum(abs2, p[:, t[SVector(1, 2, 3)]] - p[:, t[SVector(2, 3, 1)]], dims = 1))[2]
+    @views maxi = argmax(sum(abs2, p[:, t[SVector(1, 2, 3)]] - p[:, t[SVector(2, 3, 1)]], dims = 1))[2]
     return Triangle(t[one(I) * mod1.(maxi:(maxi + 2), 3)])
 end
 triangle(t, p) = triangle(eltype(t), t, p)
@@ -68,7 +68,7 @@ triangle(t, p) = triangle(eltype(t), t, p)
 # Attributes
 
 """
-    TriangleAttributes{P,F}(refine,η,ηₚ) where {P<:Integer,F<:AbstractFloat}
+    TriangleAttributes{F,P}(refine,η,ηₚ) where {P<:Integer,F<:AbstractFloat}
 
 constructs a `struct` for storing attributes of a triangle. These attributes are:
 + `refine`: 
@@ -85,12 +85,12 @@ The types can be inferred from the data:
 If only the `refine` argument is passed, `η` and `ηₚ` are initialized as `0.`
 If no arguments are passed, `refine` is initialized as `Int8(0)`.
 """
-struct TriangleAttributes{P <: Integer, F <: AbstractFloat}
+struct TriangleAttributes{F <: AbstractFloat,P<: Integer}
     refine::Base.RefValue{P}
     η::Base.RefValue{F}
     ηₚ::Base.RefValue{F}
-    TriangleAttributes{P, F}(val, η, ηₚ) where {P, F} = new{P, F}(Ref(P(val)), Ref(F(η)), Ref(F(ηₚ)))
-    TriangleAttributes{P, F}() where {P, F} = new{P, F}(Ref(zero(P)), Ref(zero(F)), Ref(zero(F)))
+    TriangleAttributes{F,P}(val, η, ηₚ) where {F,P} = new{F,P}(Ref(P(val)), Ref(F(η)), Ref(F(ηₚ)))
+    TriangleAttributes{F,P}() where {F,P} = new{F,P}(Ref(zero(P)), Ref(zero(F)), Ref(zero(F)))
 end
 function TriangleAttributes(r, η, ηₚ)
     z = promote(η, ηₚ)

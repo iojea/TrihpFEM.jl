@@ -1,5 +1,15 @@
-const TriangleList{I, P, F} = Dictionary{Triangle{I}, TriangleAttributes{P, F}} where {I, P, F}
-const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{P}} where {I, P}
+const TriangleList{F,I, P} = Dictionary{Triangle{I}, TriangleAttributes{F,P}} where {F,I, P}
+const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{I,P}} where {I, P}
+
+"""
+   Point2D(x,y)
+
+creates a 2D point with coordinates `x` and `y`. They can be accessed with number indexing or by field. 
+"""
+struct Point2D{T<:Real} <: FieldVector{2,T}
+    x::T
+    y::T
+end
 
 """
     HPTriangulation
@@ -16,7 +26,7 @@ abstract type HPTriangulation end
     DOF{I<:Integer}
 an `struct` for storing the degrees of freedom of a mesh. It can be initialized as an empty structure with
 ```
-    julia> DOF(UInt8);
+    julia> DOF{Int64}();
 ```
 In practice, a `DOF` is created empty an then filled using `degrees_of_freedom!(mesh)`.
 """
@@ -24,12 +34,13 @@ struct DOF{I <: Integer}
     n::Base.RefValue{I}
     by_edge::Dictionary{Edge{I}, SArray{S, I, 1} where {S <: Tuple}}
     by_tri::Dictionary{Triangle{I}, MArray{S, I, 1} where {S <: Tuple}}
+    gen::Base.RefValue{I}
 end
 
 function DOF{I}() where {I <: Integer}
     by_edge = Dictionary{Edge{I}, SArray{S, I, 1} where {S <: Tuple}}()
     by_tri = Dictionary{Triangle{I}, MArray{S, I, 1} where {S <: Tuple}}()
-    return DOF{I}(Base.RefValue{I}(zero(I)), by_edge, by_tri)
+    return DOF{I}(Base.RefValue{I}(zero(I)), by_edge, by_tri,Ref{I}(zero(I)))
 end
 
 """
@@ -40,10 +51,19 @@ empty both dictionaries stored in `d` (degrees of freedom by edge and by triangl
 function Base.empty!(d::DOF{I}) where {I}
     empty!(d.by_edge)
     empty!(d.by_tri)
-    return d.n[] = zero(I)
+    d.n[] = zero(I)
+    d.gen[] = zero(I)
+    nothing
 end
 Base.isempty(d::DOF{I}) where {I} = d.n[] == zero(I)
 Base.length(d::DOF) = d.n[]
+Base.copy(dof::DOF{I}) where I = DOF{I}(Ref{I}(length(dof)),
+                                        deepcopy(dof.by_edge),
+                                        deepcopy(dof.by_tri),
+                                        Ref{I}(getgen(dof))
+                                    )
+getgen(dof::DOF{I}) where I = dof.gen[]
+setgen!(dof::DOF{I},g::I) where I = dof.gen[] = g 
 
 ############################################
 ####      Domain Mesh construction      ####
@@ -55,40 +75,65 @@ A mesh for `HP` finite element methods. Its fields are:
     + `points::Vector{SVector{2,F}}`: a vector of points
     + `trilist::TriangleList{I,P,F}`: set of trilist
     + `edgelist::EdgeList{I,P}`: set of edgelist
-    + `dofs::DOF{I}`: auxiliary data for integrating the 
+    + `dofs::DOF{I}`: degrees of freedom.
+    + `gen::RefValue{I}`: generation, keeps track of modifications to avoid inconsistencies.
+    + `lock::RefValue{Bool}`: lock to avoid direct usage of the mesh, once it is passed to a Problem.
 
-    HPMesh(tri::TriangulationIO)
+HPMesh(tri::TriangulationIO)
 builds an `HPMesh` from a `Triangulate.TriangulatioIO` struct.
 
     Meshes of type `HPMesh` can also be constructed using the helper functions such us `circmesh`, `rectmesh`, `squaremesh`. For a more general constructor, check the docs for `hpmesh`.
 """
 struct HPMesh{F <: Real, I <: Integer, P <: Integer} <: HPTriangulation
-    points::Vector{SVector{2, F}}
-    trilist::TriangleList{I, P, F}
+    points::Vector{Point2D{F}}
+    trilist::TriangleList{F,I, P}
     edgelist::EdgeList{I, P}
     dofs::DOF{I}
+    gen::Base.RefValue{I}
+    lock::Base.RefValue{Bool}
+    HPMesh{F,I,P}(v,t,e,d,g,l) where {F,I,P} = new{F,I,P}(v,t,e,d,Ref{I}(g),Ref{Bool}(l))
 end
 
 function HPMesh(
-        v::Vector{SVector{2, F}},
-        t::TriangleList{I, P, F},
+        v::Vector{Point2D{F}},
+        t::TriangleList{F,I,P},
         e::EdgeList{I, P}
-    ) where {I, P, F}
-    return HPMesh(v, t, e, DOF{I}())
+    ) where {F,I, P}
+    return HPMesh{F,I,P}(v, t, e, DOF{I}(),one(I),false)
 end
 
-function HPMesh(mat::AbstractMatrix, tris::TriangleList, edgs::EdgeList)
-    points = SVector{2, eltype(mat)}.(eachcol(mat))
+function HPMesh(mat::AbstractMatrix{F}, tris::TriangleList, edgs::EdgeList) where F
+    points = Point2D{F}.(eachcol(mat))
+    println(typeof(points))
     return HPMesh(points, tris, edgs)
 end
 
+
+
 function HPMesh{F, I, P}(tri::TriangulateIO) where {F, I, P}
     (; pointlist, trianglelist, edgelist, edgemarkerlist) = tri
-    points = SVector{2, F}.(eachcol(pointlist))
+    points = Point2D{F}.(eachcol(pointlist))
     edgelist = maybeconvert(I, edgelist)
-    triangles = dictionary([triangle(I, t, pointlist) => TriangleAttributes{P, F}() for t in eachcol(trianglelist)])
-    edges = dictionary([Edge(e) => EdgeAttributes(one(P), P(edgemarkerlist[i]), false) for (i, e) in enumerate(eachcol(edgelist))])
-    return HPMesh(points, triangles, edges)
+    trianglelist = maybeconvert(I,trianglelist)
+    triangles = dictionary([triangle(I, t, pointlist) => TriangleAttributes{F,P}() for t in eachcol(trianglelist)])
+    edges = dictionary([Edge{I}(e) => EdgeAttributes(I,one(P), P(edgemarkerlist[i]), false) for (i, e) in enumerate(eachcol(edgelist))])
+    computeneighbors!(edges,triangles)
+    HPMesh(points, triangles, edges)
+end
+
+
+"""
+   computeneighbors!(tri::TriangulateIO())
+computes neighboring  
+"""
+function computeneighbors!(edgelist::EdgeList,triangles::TriangleList)
+    for t in keys(triangles)
+        for (i,e) in enumerate(edges(t))
+            ep = edgelist[e]
+            j = 1+(ep.adjacent[1]>0)
+            setadjacent!(ep,j,_eval(t,i+2))
+        end
+    end
 end
 
 """
@@ -113,7 +158,7 @@ HPMesh{Float64, Int32, UInt8}
  [-1.0, 1.0]
  [0.0, 0.0]
 
-4-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+4-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
  Int32[6, 5, 1] │ :noref
  Int32[4, 2, 3] │ :noref
  Int32[2, 4, 6] │ :noref
@@ -156,7 +201,7 @@ HPMesh{Float64, Int32, UInt8}
  [0.5, 0.0]
  [0.5, 1.0]
 
-6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
  Int32[7, 6, 1] │ :noref
  Int32[3, 7, 2] │ :noref
  Int32[6, 3, 8] │ :noref
@@ -268,7 +313,7 @@ HPMesh{Float64, Int32, UInt8}
  [0.375, 0.75]
  [0.75, 0.6875]
 
-21-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
+21-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
     Int32[6, 1, 7] │ :noref
    Int32[1, 11, 7] │ :noref
   Int32[10, 12, 6] │ :noref
@@ -329,10 +374,12 @@ function hpmesh(
         vertices, h;
         segments = nothing,
         tags = nothing,
-        holes = nothing
+        holes = nothing,
+        I = isnothing(segments) ? Int64 : eltype(segments),
+        P = Int8,
+        F = eltype(vertices)
     )
-    F = eltype(vertices)
-    P = UInt8
+    typemax(I)<typemax(Int64) && @warn "You are using $I for indices. Take into account that this imposes hard limits on the mesh: a combination of a large number of triangles and  relatively large polynomial degrees, produced along the `hp`-refinement, can give indices exceding `typemax($I)==$(typemax(I))`."
     tri = TriangulateIO()
     tri.pointlist = F.(vertices)
     if isnothing(segments)
@@ -350,8 +397,7 @@ function hpmesh(
     end
     maxarea = Printf.@sprintf "%0.15f" h^2 / 2
     minangle = Printf.@sprintf "%0.15f" 30.0
-    (tri, _) = triangulate("pea$(maxarea)q$(minangle)Q", tri)
-    I = eltype(tri.edgelist)
+    (tri, _) = triangulate("pena$(maxarea)q$(minangle)Q", tri)
     return HPMesh{F, I, P}(tri)
 end
 
@@ -424,9 +470,36 @@ returns `F`
 """
 floattype(::HPMesh{F, I, P}) where {F, I, P} = F
 
+"""
+    getgen(m::HPMesh)
+returns the generation number of `m`. The generation number is bumped after every refinement process.     
+"""
+getgen(m::HPMesh) = m.gen[]
+"""
+    upgen!(m::HPMesh)
+Bumps the generation of a mesh. This is done after refinement.
+"""
+upgen!(m::HPMesh{F,I,P}) where {F,I,P} = m.gen[] += one(I)
 
-function Base.copy(mesh::HPMesh)
-    return HPMesh(deepcopy(mesh.points), deepcopy(mesh.trilist), deepcopy(mesh.edgelist))
+"""
+    islocked(m::HPMesh)
+Indicates if the mesh is locked to prevent direct modification.
+"""
+islocked(m::HPMesh) = m.lock[]
+"""
+    lock!(m::HPMesh)
+locks the mesh to prevent direct modification.
+"""
+lock!(m::HPMesh) = m.lock[]=true
+
+function Base.copy(mesh::HPMesh{F,I,P}) where {F,I,P}
+    HPMesh{F,I,P}(deepcopy(mesh.points),
+                  deepcopy(mesh.trilist),
+                  deepcopy(mesh.edgelist),
+                  copy(mesh.dofs),
+                  getgen(mesh),
+                  islocked(mesh)
+              )
 end
 
 """
@@ -553,7 +626,7 @@ psortednodes(e::Edge{I},mesh::HPMesh{F,I,P}) where {F,I,P} = degree(mesh.edgelis
     _boundary_segments(n)
 creates pairs of indices for building a sequence of segments from a list of points.  
 """
-_boundary_segments(n) = reduce(hcat, [i, mod1(i + 1, n)] for i in 1:n)
+_boundary_segments(n) = mapreduce(i->[i,mod1(i+1,n)],hcat, 1:n)
 
 
 """
@@ -604,28 +677,31 @@ If a dictionary of degrees of freedom by edge has already been computed, it is r
 function degrees_of_freedom!(mesh::HPMesh{F, I, P}) where {F, I, P}
     (; edgelist, trilist, dofs) = mesh
     (; n, by_edge, by_tri) = dofs
-    if isempty(by_edge)
+    if getgen(mesh) != getgen(dofs)
+        empty!(dofs)
         degrees_of_freedom_by_edge!(mesh)
-    end
-    k = maximum(maximum.(by_edge)) + 1 #first non-edge dof
-    for t in triangles(trilist)
-        p, t_edges = psortededges(t, mesh)
-        newdofs = @MVector zeros(I, compute_dimension(p))
-        set!(by_tri, t, newdofs)
-        j = 1 #counter of dof in current triangle
-        @inbounds for i in 1:3
-            newdof = by_edge[t_edges[i]]
-            if _same_order(t_edges[i], edgelist)
-                newdofs[j:(j + length(newdof) - 2)] .= newdof[1:(end - 1)]
-            else
-                newdofs[j:(j + length(newdof) - 2)] .= reverse(newdof[2:end])
+        k = maximum(maximum.(by_edge)) + 1 #first non-edge dof
+        for t in triangles(trilist)
+            p, t_edges = psortededges(t, mesh)
+            newdofs = @MVector zeros(I, compute_dimension(p))
+            j = 1 #counter of dof in current triangle
+            @inbounds for i in 1:3
+                newdof = by_edge[t_edges[i]]
+                if _same_order(t_edges[i], edgelist)
+                    newdofs[j:(j + length(newdof) - 2)] .= newdof[1:(end - 1)]
+                else
+                    newdofs[j:(j + length(newdof) - 2)] .= reverse(newdof[2:end])
+                end
+                j += length(newdof) - 1
             end
-            j += length(newdof) - 1
+            newdofs[j:end] = k:(k + (length(newdofs) - j))
+            set!(by_tri, t, newdofs)
+            k += length(newdofs) - j + 1
+            setgen!(dofs,getgen(mesh))
         end
-        newdofs[j:end] = k:(k + (length(newdofs) - j))
-        k += length(newdofs) - j + 1
+        n[] = k - 1
     end
-    return n[] = k - 1
+    return n[]
 end
 
 
