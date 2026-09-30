@@ -21,7 +21,7 @@ e₆ = Edge{Int32}([4, 3])
 @test isequal(e₅, Edge(e for e in e₅))
 @test isequal(e₆, Edge([4, 3]))
 
-ea₁ = EdgeAttributes{UInt8}(1, 0, false)
+ea₁ = EdgeAttributes{UInt8}(UInt8(1), UInt8(0), false, MVector{2,Int32}(0,0))
 @test repr(ea₁) == "(0x01, :Ω°, :noref)"
 de = Dictionary([e₁], [ea₁])
 @test e₁ in keys(de)
@@ -179,6 +179,10 @@ end
 Meshes._h_conformity!(cm)
 plt = plothpmesh(cm; annotate = true)
 @test plt isa Makie.FigureAxisPlot
+plt2b = plothpmesh2(cm; annotate = true)
+@test plt2b isa Makie.FigureAxisPlot
+plt2c = plothpmesh2(cm)
+@test plt2c isa Makie.FigureAxisPlot
 
 cm = circmesh(1, 0.1)
 for e in cm.edgelist
@@ -187,7 +191,7 @@ end
 p_conformity!(cm)
 @test check_p_conformity(cm)
 plt2 = degplot(cm)
-@test plt isa Makie.FigureAxisPlot
+@test plt2 isa Makie.FigureAxisPlot
 
 @test typeof(cm) == HPMesh{Float64, Int32, UInt8}
 @test contains(repr(cm), "HPMesh{Float64, Int32, UInt8}")
