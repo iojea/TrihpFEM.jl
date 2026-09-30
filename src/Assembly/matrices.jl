@@ -1,5 +1,4 @@
 """
-
     _initvectors(I,F,ℓ)
 
 creates two vectors of type `I` for indices, and a vector of type `F` for values, all of them with size `ℓ`.  
@@ -24,7 +23,6 @@ function _init_rhs(::HPMesh{F, I, P}, ℓ) where {F, I, P}
     fill!(vec, zero(F))
     return vec
 end
-
 
 
 """
