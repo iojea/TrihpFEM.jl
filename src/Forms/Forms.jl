@@ -8,8 +8,8 @@ module Forms
     using ..PolyFields
 
 
-    import ..DifferentialOperators: DiffOperator,Identity,Derivatex,Derivatey,Gradient,AdjointGradient, Divergence,Laplacian,DiffMatrix,AdjointDiffMatrix
-    import ..DifferentialOperators: ∂x,∂y,gradient,∇,divergence,laplacian,Δ
+    import ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, DiffMatrix, AdjointDiffMatrix
+    import ..DifferentialOperators: ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ
 
     # include("terms.jl")
     include("shapefunction.jl")
@@ -21,9 +21,10 @@ module Forms
     export ShapeFunction
     export Integrand
     export Operation
-    export Trial,Test
-    export Order,CoeffType, ConstantCoeff, VariableCoeff
-    export basis,order,coefftype,operator,chain_operator,dim
-    export ∂x,∂y,gradient,∇,divergence,laplacian,Δ,∫
+    export Trial, Test
+    export Order, CoeffType, ConstantCoeff, VariableCoeff
+    export basis, order, coefftype, operator, chain_operator, dim
+    export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
+    export unroll
 
 end; #module
