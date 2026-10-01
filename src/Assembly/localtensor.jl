@@ -44,31 +44,76 @@ _isconstant(::Any) = true
 _isconstant(::Function) = false
 _isconstant(::DiffOperator) = false
 
-function constant_part(t::Tuple)
-    parts = []
-    gap = false
-    ins = false
-    for i in 1:2:length(t)
-        @show i
-        if _isconstant(t[i])
-            push!(parts, t[i])
-            gap = false
-            ins = true
+_isvariable(::Any) = false
+_isvariable(::typeof(*)) = false
+_isvariable(::typeof(⋅)) = false
+_isvariable(::Function) = true
+_isvariable(::DiffOperator) = true
+
+
+function split_operation(op::Operation)
+    ind = findall(_isconstant, op.parts)
+    vconstant = Vector{Any}(undef, 2length(ind) - 1)
+    vvariable = Vector{Any}(undef, 2(length(op.parts) - length(ind)) - 1)
+    ic = 1
+    iv = 1
+    for i in 1:2:length(op.parts)
+        o = op[i]
+        if _isconstant(o)
+            vconstant[ic] = o
+            ic += 2
         else
-            gap = true
-            ins = false
+            vvariable[ic] = o
+            iv += 2
         end
-        if i > 1 and ins
-            if gap
-                push!(parts, DICT_OP[t[i - 1]])
-            else
-                push!(parts, t[i - 1])
-            end
-        end
-        @show parts
     end
-    return tuple(parts...)
+    return vconstant, vvariable
 end
+
+_isscalar(::Any, _, _) = false
+_isscalar(::Number, _, _) = true
+function _isscalar(f::Function, ::Type{F}, ::Val{D}) where {F, D}
+    return f(zeros(F, D)) isa Number
+end
+
+function _nums_out(op::Operation{C}, ::Type{F}, ::Val{D}) where {C <: CoeffType, F, D}
+    for i in 1:2:length(op)
+        if _isscalar(op[i], F, Val(D))
+            op = Operation{C}(op[i], *, op[1:(i - 2)]..., op[(i + 1):end]...)
+        end
+    end
+    return op
+end
+
+function constant_part(op::Operation)
+    ind = findall(_isconstant, op.parts)
+    vout = Vector{Any}(undef, 2length(ind) - 1)
+    vout[1:2:end] .= op[ind]
+    @inbounds for i in 2:length(ind)
+        if ind[i] == ind[i - 1] + 2
+            vout[2i - 2] = op[ind[i] - 1]
+        else
+            vout[2i - 2] = DICT_OP[op[ind[i] - 1]]
+        end
+    end
+    return tuple(vout...)
+end
+
+function variable_part(op::Operation)
+    ind = findall(_isvariable, op.parts)
+    vout = Vector{Any}(undef, 2length(ind) - 1)
+    vout[1:2:end] .= op[ind]
+    @inbounds for i in 2:length(ind)
+        if ind[i] == ind[i - 1] + 2
+            vout[2i - 2] = op[ind[i] - 1]
+        else
+            vout[2i - 2] = DICT_OP[op[ind[i] - 1]]
+        end
+    end
+    return tuple(vout...)
+end
+
+
 # get_shape_functions(sf::ShapeFunction, mesh::HPTriangulation) = _adjust_to_mesh(sf, mesh)
 # get_shape_functions(::Any, ::HPTriangulation) = ()
 # get_shape_functions(t::Tuple, ::HPTriangulation) = filter(Base.Fix2(isa, ShapeFunction), t)

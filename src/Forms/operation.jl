@@ -12,76 +12,53 @@ coefftype(::Function) = VariableCoeff
 Base.promote_type(::Type{ConstantCoeff}, ::Type{VariableCoeff}) = VariableCoeff
 
 
-struct Operation{C <: CoeffType, T <: Tuple, OP <: Function, U <: Tuple}
-    op::OP
+struct Operation{C <: CoeffType, U <: Tuple}
     parts::U
-    function Operation{C, T}(op, a, b) where {C <: CoeffType, T <: Tuple}
-        any(hasoperator.((a, b))) || error("A `ShapeFunction` must be present in an `Operation`")
-        return new{C, T, typeof(op), typeof((a, b))}(op, (a, b))
-    end
+    Operation{C}(t...) where {C <: CoeffType} = new{C, typeof(t)}(t)
 end
 
-hasoperator(::Any) = false
-hasoperator(::ShapeFunction) = true
-hasoperator(::Operation) = true
+Base.getindex(op::Operation, i) = getindex(op.parts, i)
+Base.length(op::Operation) = length(op.parts)
+Base.lastindex(op::Operation) = length(op)
+const NumArray = Union{Number, AbstractArray}
+
+function unroll(sf::ShapeFunction)
+    return isadjoint(sf) ? (sf, *, chain_operator(sf)) : (chain_operator(sf), *, sf)
+end
 
 
-function Base.:*(a::A, b::B) where {A <: Union{Number, AbstractArray}, O, B <: ShapeFunction{O}}
-    return Operation{ConstantCoeff, Tuple{O}}(*, a, b)
-end
-function Base.:*(a::A, b::B) where {O, A <: ShapeFunction{O}, B <: Union{Number, AbstractArray}}
-    return Operation{ConstantCoeff, Tuple{O}}(*, a, b)
-end
-function Base.:*(a::ShapeFunction{O1}, b::ShapeFunction{O2}) where {O1, O2}
-    return Operation{ConstantCoeff, Tuple{O1, O2}}(*, a, b)
-end
-function Base.:*(a::A, b::B) where {A <: Function, O, B <: ShapeFunction{O}}
-    return Operation{VariableCoeff, O}(*, a, b)
-end
-function Base.:*(a::A, b::B) where {O, A <: ShapeFunction{O}, B <: Function}
-    return Operation{VariableCoeff, O}(*, a, b)
-end
-function Base.:*(a::Operation{C, Tuple{O1}}, b::ShapeFunction{O2}) where {C, O1, O2}
-    return Operation{C, Tuple{O1, O2}}(*, a, b)
-end
-function Base.:*(a::ShapeFunction{O1}, b::Operation{C, Tuple{O2}}) where {C, O1, O2}
-    return Operation{C, Tuple{O1, O2}}(*, a, b)
-end
-function Base.:*(a::Union{Number, AbstractArray}, b::Operation{C, T}) where {C, T}
-    return Operation{C, T}(*, a, b)
-end
-function Base.:*(b::Operation{C, T}, a::Union{Number, AbstractArray}) where {C, T}
-    return Operation{C, T}(*, b, a)
-end
-function Base.:*(a::Operation{C₁, Tuple{T₁}}, b::Operation{C₂, Tuple{T₂}}) where {C₁, C₂, T₁, T₂}
+Base.:*(a::NumArray, b::ShapeFunction) = Operation{ConstantCoeff}(a, *, unroll(b)...)
+Base.:*(a::ShapeFunction, b::NumArray) = Operation{ConstantCoeff}(unroll(b)..., *, a)
+Base.:*(a::ShapeFunction, b::ShapeFunction) = Operation{ConstantCoeff}(unroll(a)..., *, unroll(b)...)
+Base.:*(a::Function, b::ShapeFunction) = Operation{VariableCoeff}(a, *, unroll(b)...)
+Base.:*(a::ShapeFunction, b::Function) = Operation{VariableCoeff}(unroll(a)..., *, b)
+Base.:*(a::Operation{C}, b::ShapeFunction) where {C <: CoeffType} = Operation{C}(a.parts..., *, unroll(b)...)
+Base.:*(a::ShapeFunction, b::Operation{C}) where {C <: CoeffType} = Operation{C}(unroll(a)..., *, b)
+Base.:*(a::NumArray, b::Operation{C}) where {C <: CoeffType} = Operation{C}(a, *, b.parts...)
+Base.:*(a::Operation{C}, b::NumArray) where {C <: CoeffType} = Operation{C}(a.parts..., *, b)
+function Base.:*(a::Operation{C₁}, b::Operation{C₂}) where {C₁ <: CoeffType, C₂ <: CoeffType}
     C = promote_type(C₁, C₂)
-    return Operation{C, Tuple{T₁, T₂}}(*, a, b)
+    return Operation{C}(a.parts..., *, b.parts...)
 end
 
 _adj(a::Any) = a'
 _adj(f::Function) = adjoint ∘ f
+_adj(::typeof(*)) = *
+_adj(::typeof(LinearAlgebra.dot)) = LinearAlgebra.dot
 
-Base.adjoint(op::Operation{C, T, typeof(*)}) where {C, T} = _adj(op.parts[2]) * _adj(op.parts[1])
+Base.adjoint(op::Operation{C}) where {C <: CoeffType} = Operation{C}(reverse(_adj.(op.parts))...)
 
-LinearAlgebra.dot(a::A, b::B) where {A <: Union{Number, AbstractArray}, B <: ShapeFunction} = a' * b
-LinearAlgebra.dot(a::A, b::B) where {A <: ShapeFunction, B <: Union{Number, AbstractArray}} = a' * b
+LinearAlgebra.dot(a::NumArray, b::ShapeFunction) = a' * b
+LinearAlgebra.dot(a::ShapeFunction, b::NumArray) = a' * b
 LinearAlgebra.dot(a::ShapeFunction, b::ShapeFunction) = a' * b
-LinearAlgebra.dot(a::A, b::B) where {A <: Function, B <: ShapeFunction} = (transpose ∘ a) * b
-LinearAlgebra.dot(a::A, b::B) where {A <: ShapeFunction, B <: Function} = a' * b
+LinearAlgebra.dot(a::Function, b::ShapeFunction) = (transpose ∘ a) * b
+LinearAlgebra.dot(a::ShapeFunction, b::Function) = a' * b
 LinearAlgebra.dot(a::Operation, b::ShapeFunction) = a' * b
 LinearAlgebra.dot(a::ShapeFunction, b::Operation) = a' * b
 LinearAlgebra.dot(a::Operation, b::Operation) = a' * b
 
 Base.:-(u::ShapeFunction) = (-1) * u
 
-
-unroll(a::Any) = a
-unroll(op::Operation{C, T}) where {C, T} = (unroll(op.parts[1])..., op.op, unroll(op.parts[2])...)
-function unroll(sf::ShapeFunction)
-    return isadjoint(sf) ? (sf, *, chain_operator(sf)) : (chain_operator(sf), *, sf)
-end
-unroll(::DiffOperator) = throw(ArgumentError("The `Operation` has already been unrolled."))
-unroll(a::AbstractArray) = (a,)
 
 """
    Integrand{C<:CoeffType,T<Tuple,N}
