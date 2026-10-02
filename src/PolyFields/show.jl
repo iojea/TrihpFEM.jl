@@ -1,6 +1,6 @@
 function Base.show(io::IO, p::P) where {F, P <: ProductPoly{F}}
-    return if any(pp==zero(pp) for pp in p.polys) 
-        print(io, "($(zero(F)),)")
+    return if any(pp == zero(pp) for pp in p.polys)
+        print(io, "$(zero(F))")
     elseif p.polys[1] == one(p.polys[1])
         printpoly(io, p.polys[2])
     elseif p.polys[2] == one(p.polys[2])
@@ -19,4 +19,3 @@ function Base.show(io::IO, p::P) where {P <: PolySum}
     print(io, " + ")
     return print(io, p.right)
 end
-

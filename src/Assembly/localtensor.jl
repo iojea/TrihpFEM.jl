@@ -12,7 +12,7 @@ function LocalTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, M <:
     (; operation) = integrand
     P = degtype(measure.mesh)
     const_part = constant_part(operation)
-    sfs = ((_adjust_to_mesh(s,measure.mesh) for s in get_shape_functions(operation))...)
+    sfs = ((_adjust_to_mesh(s, measure.mesh) for s in get_shape_functions(operation))...,)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
     bs = ((first(basis(s, ntuple(_ -> zero(P), 2dim(s) - 1))) for s in sfs)...,)
     key = degs.(bs)
@@ -108,11 +108,11 @@ end
 
 get_shape_functions(op::Operation) = filter(Base.Fix2(isa, ShapeFunction), op.parts)
 
-_eval_op(a::Any,_,_) = a
-_eval_op(sf::ShapeFunction{Trial},trial,_) = sf(trial)
-_eval_op(sf::ShapeFunction{Trial},_,test) = sf(test)
-_eval_op(t::NTuple{1}) = t[1]
-_eval_op(t::Tuple) = t[2](t[1],_eval_op(t[3:end]))
+_eval_op(a::Any, _, _) = a
+_eval_op(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
+_eval_op(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
+_eval_op(t::NTuple{1}, trial, test) = _eval_op(t[1], trial, test)
+_eval_op(t::Tuple, trial, test) = t[2](_eval_op(t[1], trial, test), _eval_op(t[3:end], trial, test))
 
 # _eval_operation(z::Any, _, _) = z
 # _eval_operation(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
