@@ -11,7 +11,8 @@ function LocalTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, M <:
     (; integrand, measure) = t
     (; operation) = integrand
     P = degtype(measure.mesh)
-    sfs = get_shape_functions(operation, measure.mesh)
+    const_part = constant_part(operation)
+    sfs = ((_adjust_to_mesh(s,measure.mesh) for s in get_shape_functions(operation))...)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
     bs = ((first(basis(s, ntuple(_ -> zero(P), 2dim(s) - 1))) for s in sfs)...,)
     key = degs.(bs)
@@ -51,32 +52,13 @@ _isvariable(::Function) = true
 _isvariable(::DiffOperator) = true
 
 
-function split_operation(op::Operation)
-    ind = findall(_isconstant, op.parts)
-    vconstant = Vector{Any}(undef, 2length(ind) - 1)
-    vvariable = Vector{Any}(undef, 2(length(op.parts) - length(ind)) - 1)
-    ic = 1
-    iv = 1
-    for i in 1:2:length(op.parts)
-        o = op[i]
-        if _isconstant(o)
-            vconstant[ic] = o
-            ic += 2
-        else
-            vvariable[ic] = o
-            iv += 2
-        end
-    end
-    return vconstant, vvariable
-end
-
 _isscalar(::Any, _, _) = false
 _isscalar(::Number, _, _) = true
 function _isscalar(f::Function, ::Type{F}, ::Val{D}) where {F, D}
     return f(zeros(F, D)) isa Number
 end
 
-function _nums_out(op::Operation{C}, ::Type{F}, ::Val{D}) where {C <: CoeffType, F, D}
+function _scalars_out(op::Operation{C}, ::Type{F}, ::Val{D}) where {C <: CoeffType, F, D}
     for i in 1:2:length(op)
         if _isscalar(op[i], F, Val(D))
             op = Operation{C}(op[i], *, op[1:(i - 2)]..., op[(i + 1):end]...)
@@ -123,23 +105,29 @@ end
 #     b = b isa ShapeFunction ? (b,) : get_shape_functions(b, m)
 #     return filter(Base.Fix2(isa, ShapeFunction), (a..., b...))
 # end
-get_shape_functions(t::Tuple) = filter(Base.Fix2(isa, ShapeFunction), t)
-get_shape_functions(op::Operation) = get_shape_functions(unroll(op))
 
-_eval_operation(z::Any, _, _) = z
-_eval_operation(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
-_eval_operation(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
-_eval_operation(z::Any, _) = z
-_eval_operation(sf::ShapeFunction, test) = operator(sf)(test)
+get_shape_functions(op::Operation) = filter(Base.Fix2(isa, ShapeFunction), op.parts)
 
-function _eval_operation(o::Operation{ConstantCoeff}, test)
-    efectiveop = DICT_OP[o.op]
-    return efectiveop(_eval_operation.(o.parts, test)...)
-end
-function _eval_operation(o::Operation{ConstantCoeff}, trial, test)
-    efectiveop = DICT_OP[o.op]
-    return efectiveop(_eval_operation.(o.parts, trial, test)...)
-end
+_eval_op(a::Any,_,_) = a
+_eval_op(sf::ShapeFunction{Trial},trial,_) = sf(trial)
+_eval_op(sf::ShapeFunction{Trial},_,test) = sf(test)
+_eval_op(t::NTuple{1}) = t[1]
+_eval_op(t::Tuple) = t[2](t[1],_eval_op(t[3:end]))
+
+# _eval_operation(z::Any, _, _) = z
+# _eval_operation(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
+# _eval_operation(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
+# _eval_operation(z::Any, _) = z
+# _eval_operation(sf::ShapeFunction, test) = operator(sf)(test)
+
+# function _eval_operation(o::Operation{ConstantCoeff}, test)
+#     efectiveop = DICT_OP[o.op]
+#     return efectiveop(_eval_operation.(o.parts, test)...)
+# end
+# function _eval_operation(o::Operation{ConstantCoeff}, trial, test)
+#     efectiveop = DICT_OP[o.op]
+#     return efectiveop(_eval_operation.(o.parts, trial, test)...)
+# end
 
 
 _adjust_to_mesh(sf::ShapeFunction{T, O, N, 2}, ::HPMesh) where {T, O, N} = sf
