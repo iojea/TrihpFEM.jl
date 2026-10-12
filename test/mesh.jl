@@ -22,7 +22,7 @@ e₆ = Edge{Int32}([4, 3])
 @test isequal(e₆, Edge([4, 3]))
 
 ea₁ = EdgeAttributes(Int32,UInt8(1), UInt8(0), false)
-@test repr(ea₁) == "(0x01, :Ω°, :noref)"
+@test repr(ea₁) == "1 Ω° ██"
 de = Dictionary([e₁], [ea₁])
 @test e₁ in keys(de)
 @test de[e₂] == ea₁
@@ -55,7 +55,7 @@ t₆ = Triangle{Int32}([1, 2, 3])
 @test isequal(t₅, Triangle(t for t in t₅))
 @test isequal(t₆, Triangle([1, 2, 3]))
 
-ta₁ = TriangleAttributes{UInt8, Float64}()
+ta₁ = TriangleAttributes{Float64,UInt8}()
 ta₂ = TriangleAttributes()
 @test all(getproperty(ta₁, prop)[] == getproperty(ta₂, prop)[] for prop in propertynames(ta₁))
 

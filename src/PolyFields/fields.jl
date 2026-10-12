@@ -76,7 +76,7 @@ function Base.promote(t::ProductPoly{D,F}, s::ProductPoly{D,T}) where {D,F,T}
     ProductPoly{D,R}(t), ProductPoly{D,R}(s)
 end
 
-Base.:*(a::Number, p::ProductPoly) = ProductPoly((a*q for q in p.polys)...)
+Base.:*(a::Number, p::ProductPoly) = ProductPoly(a*p.polys[1],p.polys[2:end]...)
 Base.:*(p::ProductPoly, a::Number) = a * p
 
 Tensors.otimes(n::Number,p::PolyScalarField) = n*p
