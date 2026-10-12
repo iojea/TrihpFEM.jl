@@ -21,7 +21,7 @@ e₆ = Edge{Int32}([4, 3])
 @test isequal(e₅, Edge(e for e in e₅))
 @test isequal(e₆, Edge([4, 3]))
 
-ea₁ = EdgeAttributes{UInt8}(Int32,UInt8(1), UInt8(0), false)
+ea₁ = EdgeAttributes(Int32,UInt8(1), UInt8(0), false)
 @test repr(ea₁) == "(0x01, :Ω°, :noref)"
 de = Dictionary([e₁], [ea₁])
 @test e₁ in keys(de)

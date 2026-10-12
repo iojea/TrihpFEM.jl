@@ -1,3 +1,4 @@
+using ..TrihpFEM.Meshes
 using ..TrihpFEM.Tensors
 using ..TrihpFEM.PolyFields
 using Test
@@ -8,19 +9,19 @@ using LinearAlgebra
 p = ProductPoly((1.0, 2, 5.0), (2.0, -1))
 a = rand()
 b = rand()
-x = SVector(a, b)
+x = Point2D(a, b)
 y = [a, b]
 @test p(x) == p(y)
-@test p(2, -1) ≈ 75
+@test p(Point2D(2, -1)) ≈ 75
 @test (b * p)(x) ≈ b * p(x)
 q = ProductPoly((1.0, 2.0), (-2, 0.0, 1.0))
 @test q([2, -1]) ≈ -5.0
 pq = p * q
 @test pq(x) ≈ p(x) * q(x)
-qxp = q.px * p
-@test qxp(y) ≈ q.px(a) * p(a, b)
-pyq = q * p.py
-@test pyq(x) ≈ p.py(b) * q(a, b)
+qxp = q.polys[1] * p
+@test qxp(y) ≈ q.px(a) * p(x)
+pyq = q * p.polys[2]
+@test pyq(x) ≈ p.py(b) * q(x)
 ζ = ProductPoly((0.0, 0.0, 1.0, 1.0), (1.0, 2.0), :x, :α)
 @test_throws ArgumentError("Indeterminates does not match.") ζ * p
 @test_throws ArgumentError("Indeterminates does not match.") p * ζ.py
@@ -32,8 +33,8 @@ v = Tensor{1,2}(p, q)
 @test v(x)[2] == q(x)
 @test length(v) == 2length(p)
 @test v(x) == [p(x), q(x)]
-@test (a * v)(a, b) ≈ a * (v(a, b)) ≈ (v * a)(a, b)
-@test v(a, b)[1] == v[1](a, b)
+@test (a * v)(a, b) ≈ a * v(x) ≈ (v * a)(x)
+@test v(x)[1] == v[1](x)
 A = rand(2, 2)
 w = A * v
 @test typeof(w) <: PolyVectorField
@@ -43,14 +44,14 @@ row = [3 -2]
 s = ProductPoly(Tuple(rand() for _ in 1:rand(1:8)), Tuple(rand() for _ in 1:rand(1:8)), :x, :y)
 @test_throws DimensionMismatch() row' * w
 sv = v * s
-@test sv(a, b) ≈ v(x) * s(x)
+@test sv(x) ≈ v(x) * s(x)
 
 r = p + q
 @test typeof(r) <: PolySum
 @test r(x) ≈ p(x) + q(x)
 @test zero(p) == zero(p)
 rs = r * s
-@test rs(a, b) ≈ r(x) * s(x)
+@test rs(x) ≈ r(x) * s(x)
 @test (r + s)(x) ≈ r(x) + s(x)
 @test (r + rs)(x) ≈ r(x) + rs(x)
 
