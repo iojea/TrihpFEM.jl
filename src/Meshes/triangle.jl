@@ -94,7 +94,7 @@ struct TriangleAttributes{F <: AbstractFloat,P<: Integer}
 end
 function TriangleAttributes(r, η, ηₚ)
     z = promote(η, ηₚ)
-    return TriangleAttributes{typeof(r), eltype(z)}(r, z...)
+    return TriangleAttributes{eltype(z),typeof(r)}(r, z...)
 end
 TriangleAttributes() = TriangleAttributes(zero(UInt8), 0.0, 0.0)
 

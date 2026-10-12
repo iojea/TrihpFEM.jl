@@ -50,8 +50,8 @@ export DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, 
 using ..Tensors: Tensor, otimes,⊗
 export Tensor,otimes,⊗
 
-using ..PolyFields: ProductPoly, AffineToRef,  LegendreIterator, StandardBasis, degs
-export ProductPoly, AffineToRef,  LegendreIterator, StandardBasis,degs
+using ..PolyFields: ProductPoly, AffineToRef,  LegendreIterator, StandardBasis, degs, PolyVectorField
+export ProductPoly, AffineToRef,  LegendreIterator, StandardBasis,degs,PolyVectorField
 
 # using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis, ∇, Δ
 # export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis

@@ -30,7 +30,7 @@ v = Tensor{1,2}(p, q)
 @test v(x)[2] == q(x)
 @test length(v) == 2length(p)
 @test v(x) == [p(x), q(x)]
-@test (a * v)(a, b) ≈ a * v(x) ≈ (v * a)(x)
+@test (a * v)(x) ≈ a * v(x) ≈ (v * a)(x)
 @test v(x)[1] == v[1](x)
 A = rand(2, 2)
 w = A * v
