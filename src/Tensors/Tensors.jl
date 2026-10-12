@@ -31,10 +31,11 @@ struct Tensor{N,D,T,L,S<:Tuple} <: StaticArray{S,T,N}
     end
 end
 
-function Tensor{N,D,T}(x...) where {N,D,T}
+function Tensor{N,D,T}(x::F,y...) where {N,D,T,F<:Real}
     L = _compute_L(Val(N),Val(D))
     S = _compute_S(Val(N),Val(D))
-    Tensor{N,D,T,L,S}(T.(x))
+    z = T.(x,y...)
+    Tensor{N,D,T,L,S}(z)
 end
 
 function Tensor{N,D}(x...) where {N,D}
@@ -50,12 +51,22 @@ function Tensor{N,D}(f::Function) where {N,D}
     #Tensor{N,D}(map(f,map(cartesian2idx(Val(N),Val(D)),1:_compute_L(Val(N),Val(D))))...)
 end
 
+function Tensor{N,D}(a::AbstractArray{T,N}) where {N,D,T}
+     L = length(a)
+     D2 = L%2==0 ? 2 : 3
+     D2 == D || throw(DimensionMismatch("length of array must be divisible by $D"))
+     M = (N==2 && L==D) ? 1 : N
+    Tensor{M,D,T}(ntuple(j->a[j], L)...)
+end
 
-# function Tensor(a::Array{T,N},::Val{L}) where {T,N,L}
-#     D = L%2==0 ? 2 : 3
-#     M = (N==2 && L==D) ? 1 : N
-#     Tensor{M,D,T}(ntuple(j->a[j], L)...)
-# end
+function Tensor{N,D}(a::Base.Generator) where {N,D}
+     L = length(a)
+     D2 = L%2==0 ? 2 : 3
+     D2 == D || throw(DimensionMismatch("length of array must be divisible by $D"))
+     M = (N==2 && L==D) ? 1 : N
+    Tensor{M,D}(ntuple(j->a[j], L)...)
+end
+
 
 # Tensor(a::Array{T,N}) where {T,N} = Tensor(a,Val(length(a)))
 
