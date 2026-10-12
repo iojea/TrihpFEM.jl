@@ -31,14 +31,14 @@ struct Tensor{N,D,T,L,S<:Tuple} <: StaticArray{S,T,N}
     end
 end
 
-function Tensor{N,D,T}(x::F,y...) where {N,D,T,F<:Real}
+function Tensor{N,D,T}(x,y...) where {N,D,T}
     L = _compute_L(Val(N),Val(D))
     S = _compute_S(Val(N),Val(D))
     z = T.(x,y...)
     Tensor{N,D,T,L,S}(z)
 end
 
-function Tensor{N,D}(x::F,y) where {N,D,F<:Real}
+function Tensor{N,D}(x,y) where {N,D}
     L = _compute_L(Val(N),Val(D))
     S = _compute_S(Val(N),Val(D))
     z = promote(x,y...)

@@ -17,7 +17,7 @@ l₃ = [p₀, p₁, p₂, p₃]
 k = 0
 for b in B
     (i, j) = degs(b)
-    @test l₂[i + 1](0.0) * l₃[j + 1](0.0) ≈ b(Point2D(0.0, 0.0)
+    @test l₂[i + 1](0.0) * l₃[j + 1](0.0) ≈ b(Point2D(0.0, 0.0))
     @test l₂[i + 1](0.23) * l₃[j + 1](0.77) ≈ b(Point2D(0.23, 0.77))
     global k = k + 1
 end

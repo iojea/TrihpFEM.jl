@@ -84,15 +84,16 @@ Tensors.otimes(p::PolyScalarField,n::Number) = n*p
 
 function Base.:*(p::AbstractPolynomial{T,X}, q::ProductPoly{F}) where {T,F,X}
     i = findfirst(X.==VARIABLE_NAMES)
-    data = tuple((j==i ? qq*p : qq for (j,qq) in enumerate(q.polys)))
+    L = length(q.polys)
+    data = ntuple(j -> j==i ? q.polys[j]*p : q.polys[j],Val(L))
+    ProductPoly(data...)
 end
-
+Base.:*(q::ProductPoly{F},p::AbstractPolynomial{T,X}) where {T,F,X} = p*q
 
 Base.:*(p::ProductPoly{D}, q::ProductPoly{D}) where D = ProductPoly(map(*,p.polys,q.polys)...)
 
 Base.zero(p::ProductPoly{D,F}) where {D,F}= ProductPoly{F}((zero(pp) for pp in p.polys)...)
-
-Base.zero(::Type{ProductPoly{D,F}}) where {D,F} = ProductPoly((zero(F),) for _ in 1:D)
+Base.zero(::Type{ProductPoly{D,F}}) where {D,F} = ProductPoly(((zero(F),) for _ in 1:D)...)
 
 Base.one(p::ProductPoly{D,F}) where {D,F} = ProductPoly{F}((one(pp) for pp in p.polys)...)
 
