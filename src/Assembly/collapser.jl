@@ -26,7 +26,7 @@ function local_part(op::Operation)
     return tuple(vout...)
 end
 
-# _totensor(diffop::DiffOperator,aff::AffineToRef) = diffop(aff)
+# _to_tensor(diffop::DiffOperator,aff::AffineToRef) = diffop(aff)
 
 
 struct Collapser{T<:Tuple,C<:CoeffType}
@@ -44,20 +44,20 @@ end
 
 
 
-(c::Collapser{T,ConstantCoeff})(aff::AffineToRef) where T = _totensor(c.lp,aff)
+(c::Collapser{T,ConstantCoeff})(aff::AffineToRef) where T = _to_tensor(c.lp,aff)
 
-_totensor(a::Any,::AffineToRef) = a
-_totensor(t::NTuple{1},aff::AffineToRef) = _totensor(t[1],aff)
-_totensor(diffop::DiffOperator,aff::AffineToRef) = diffop(aff)
-_totensor(t::Tuple,aff::AffineToRef) = t[2](_totensor(t[1],aff),_totensor(t[3:end],aff))
+_to_tensor(a::Any,::AffineToRef) = a
+_to_tensor(t::NTuple{1},aff::AffineToRef) = _to_tensor(t[1],aff)
+_to_tensor(diffop::DiffOperator,aff::AffineToRef) = diffop(aff)
+_to_tensor(t::Tuple,aff::AffineToRef) = t[2](_to_tensor(t[1],aff),_to_tensor(t[3:end],aff))
 
 
-_totensor(f::Function,aff::AffineToRef,sch::Quadrature) = (f(aff(x)) for x in sch.points)
-_totensor(diffop::DiffOperator,aff::AffineToRef,sch::Quadrature) = diffop(aff)
-_totensor(t::Tuple,aff::AffineToRef,sch::Quadrature) = t[2].(_totensor(t[1],aff,sch),_totensor(t[3:end],aff,sch))
-_totensor(t::NTuple{1},aff::AffineToRef,sch::Quadrature) = _totensor(t[1],aff,sch)
+_to_tensor(f::Function,aff::AffineToRef,sch::Quadrature) = (f(aff(x)) for x in sch.points)
+_to_tensor(diffop::DiffOperator,aff::AffineToRef,sch::Quadrature) = diffop(aff)
+_to_tensor(t::Tuple,aff::AffineToRef,sch::Quadrature) = t[2].(_to_tensor(t[1],aff,sch),_to_tensor(t[3:end],aff,sch))
+_to_tensor(t::NTuple{1},aff::AffineToRef,sch::Quadrature) = _to_tensor(t[1],aff,sch)
 
 function (c::Collapser{T,VariableCoeff})(aff::AffineToRef,sch::Quadrature) where {T}
-    collect_as(FixedSizeVectorDefault,_totensor(c.lp,aff,sch))
+    collect_as(FixedSizeVectorDefault,_to_tensor(c.lp,aff,sch))
 end
 
