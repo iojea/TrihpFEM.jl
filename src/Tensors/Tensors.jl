@@ -38,12 +38,12 @@ function Tensor{N,D,T}(x::F,y...) where {N,D,T,F<:Real}
     Tensor{N,D,T,L,S}(z)
 end
 
-function Tensor{N,D}(x...) where {N,D}
+function Tensor{N,D}(x::F,y) where {N,D,F<:Real}
     L = _compute_L(Val(N),Val(D))
     S = _compute_S(Val(N),Val(D))
-    x = promote(x...)
-    T = eltype(x)
-    Tensor{N,D,T,L,S}(x)
+    z = promote(x,y...)
+    T = eltype(z)
+    Tensor{N,D,T,L,S}(z)
 end
 
 function Tensor{N,D}(f::Function) where {N,D}
