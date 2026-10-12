@@ -19,12 +19,9 @@ q = ProductPoly((1.0, 2.0), (-2, 0.0, 1.0))
 pq = p * q
 @test pq(x) ≈ p(x) * q(x)
 qxp = q.polys[1] * p
-@test qxp(y) ≈ q.px(a) * p(x)
+@test qxp(y) ≈ q.polys[1](a) * p(x)
 pyq = q * p.polys[2]
-@test pyq(x) ≈ p.py(b) * q(x)
-ζ = ProductPoly((0.0, 0.0, 1.0, 1.0), (1.0, 2.0), :x, :α)
-@test_throws ArgumentError("Indeterminates does not match.") ζ * p
-@test_throws ArgumentError("Indeterminates does not match.") p * ζ.py
+@test pyq(x) ≈ p.polys[2](b) * q(x)
 @test zero(p) == zero(q) == zero(typeof(p))
 @test q ⋅ p == q * p
 
@@ -83,9 +80,9 @@ wf2(z, aff₂) ≈ 4 * w(z) * exp(√2 / 2)
 
 px = derivative(p, :x)
 gp = ∇(p)
-@test px(a, b) ≈ (2 + 10a) * p.py(b)
+@test px(x) ≈ (2 + 10a) * p.polys[2](b)
 @test gp[1](x) ≈ px(x)
-@test gp[2](x) ≈ -p.px(x[1])
+@test gp[2](x) ≈ -p.polys[1](x[1])
 @test typeof(gp) <: PolyVectorField
 @test_throws ArgumentError("z is not an indeterminate of the polynomial") derivative(p, :z)
 @test_throws ArgumentError("z is not an indeterminate of the polynomial") derivative(r, :z)
@@ -103,7 +100,7 @@ rsq = r * r
 
 Lp = Δ(p)
 @test typeof(Lp) == typeof(p)
-@test Lp(a, b) ≈ 10p.py(b)
+@test Lp(a, b) ≈ 10p.polys[2](b)
 
 Lq = Δ(q)
 Lr = Δ(r)
