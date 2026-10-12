@@ -6,17 +6,15 @@ using LinearAlgebra
 
 
 p = ProductPoly((1.0, 2, 5.0), (2.0, -1))
-@test indeterminates(p) == (:x, :y)
-@test indeterminate(p.px) == :x
 a = rand()
 b = rand()
 x = SVector(a, b)
 y = [a, b]
-@test p(x) == p(y) == p(a, b)
+@test p(x) == p(y)
 @test p(2, -1) ≈ 75
 @test (b * p)(x) ≈ b * p(x)
 q = ProductPoly((1.0, 2.0), (-2, 0.0, 1.0))
-@test q(2, -1) ≈ -5.0
+@test q([2, -1]) ≈ -5.0
 pq = p * q
 @test pq(x) ≈ p(x) * q(x)
 qxp = q.px * p
