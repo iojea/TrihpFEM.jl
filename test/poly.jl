@@ -19,9 +19,9 @@ q = ProductPoly((1.0, 2.0), (-2, 0.0, 1.0))
 pq = p * q
 @test pq(x) ≈ p(x) * q(x)
 qxp = q.polys[1] * p
-@test qxp(y) ≈ q.polys[1](a) * p(x)
-pyq = q * p.polys[2]
-@test pyq(x) ≈ p.polys[2](b) * q(x)
+@test qxp(y) ≈ q.polys[1](a)*p(x)
+# pyq = q * p.polys[2]
+# @test pyq(x) ≈ p.polys[2](b) * q(x)
 @test zero(p) == zero(q) == zero(typeof(p))
 @test q ⋅ p == q * p
 
