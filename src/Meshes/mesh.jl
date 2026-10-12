@@ -1,12 +1,14 @@
 const TriangleList{F,I, P} = Dictionary{Triangle{I}, TriangleAttributes{F,P}} where {F,I, P}
 const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{I,P}} where {I, P}
 
+abstract type Point{D,T} <: FieldVector{D,T} end
+
 """
    Point2D(x,y)
 
 creates a 2D point with coordinates `x` and `y`. They can be accessed with number indexing or by field. 
 """
-struct Point2D{T<:Real} <: FieldVector{2,T}
+struct Point2D{T<:Real} <: Point{2,T}
     x::T
     y::T
 end
@@ -598,7 +600,7 @@ function psortednodes(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
     pind = psortperm(p)
     return p[pind], first.(eds[pind])
 end
-psortednodes(e::Edge{I},mesh::HPMesh{F,I,P}) where {F,I,P} = degree(mesh.edgelist[e])
+psortednodes(e::Edge{I},mesh::HPMesh{F,I,P}) where {F,I,P} = degree(mesh.edgelist[e]),e
 # """
 #     $(SIGNATURES)
 

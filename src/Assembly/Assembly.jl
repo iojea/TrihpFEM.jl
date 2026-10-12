@@ -17,9 +17,11 @@ using ..Measures
 
 DICT_OP = Dict([(*,⊗)])
 
-include("localtensor.jl")
+include("reftensor.jl")
+include("collapser.jl")
 include("matrices.jl")
 
-export LocalTensor, _eval_operation, get_shape_functions, collapser
+export RefTensor, Collapser
+export assembly_matrix, assembly_rhs
 
 end

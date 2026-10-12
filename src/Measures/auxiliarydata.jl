@@ -16,18 +16,18 @@ function boundary_nodes(::Type{F},p) where F
     seg₂   = range(start=-one(F),stop=one(F),length=p[2]+1)
     seg₃   = range(start=one(F),stop=-one(F),length=p[3]+1)
     L = sum(p)
-    nodes  = FixedSizeVector{SVector{2,F}}(undef,L)
+    nodes  = FixedSizeVector{Point2D{F}}(undef,L)
     i = 1
     for x in seg₁[1:end-1]
-        nodes[i] = @SVector[x,-one(F)]
+        nodes[i] = Point2D{F}(x,-one(F))
         i += 1
     end
     for y in seg₂[1:end-1]
-        nodes[i] = @SVector[one(F),y]
+        nodes[i] = Point2D{F}(one(F),y)
         i += 1
     end
     for z in seg₃[1:end-1]
-        nodes[i] = @SVector[z,z]
+        nodes[i] = Point2D{F}(z,z)
         i += 1
     end
     nodes

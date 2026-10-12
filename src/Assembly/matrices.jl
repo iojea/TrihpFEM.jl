@@ -30,56 +30,117 @@ end
     assembly_matrix(form::Form{2}) 
 assembles the matrix corresponding to the bilinear form  `form`.
 """
-# function assembly_matrix(term::Term{C, O, T, 2, M}) where {C, O, T, M}
-#     return assembly_matrix(Form{2}((term,)))
-# end
-# function assembly_matrix(form::Form{2})
-#     (; terms) = form
-#     mesh = domainmesh(first(terms))
-#     ℓ = degrees_of_freedom!(mesh)
-#     N = sum(map(length, mesh.dofs.by_tri) .^ 2)
-#     ivec, jvec, vals = _initvectors(mesh, N)
-#     for t in terms
-#         add_to_matrix!(ivec, jvec, vals, t)
-#     end
-#     return sparse(ivec, jvec, vals, ℓ, ℓ)
-# end
+function assembly_matrix(term::Term{2})
+    return assembly_matrix(Form{2}((term,)))
+end
+function assembly_matrix(form::Form{2})
+    (; terms) = form
+    mesh = domainmesh(first(terms))
+    ℓ = degrees_of_freedom!(mesh)
+    N = sum(map(length, mesh.dofs.by_tri) .^ 2)
+    ivec, jvec, vals = _initvectors(mesh, N)
+    for t in terms
+        add_to_matrix!(ivec, jvec, vals, t)
+    end
+    return sparse(ivec, jvec, vals, ℓ, ℓ)
+end
 
-#### Constant Coefficients
+
 """
-   add_to_matrix!(ivec,jvec,vals,lt::LocalTensor) 
-# """
-# function add_to_matrix!(ivec,jvec,vals,lt::LocalTensor{K,T}) where {K,T<:Tensor}
-#     for el in elements(measure)
-#         B = collapser(el,lt)
-#     end
-# end
-
-# function build_loc_tensor(lt::LocalTensor,element)
-# end
-
-
-
-function collapser(aff::AffineToRef,lt::LocalTensor{K,T}) where {K,T}
-    sfs = get_shape_functions(lt.term.integrand.operation,lt.term.measure.mesh)
-    ops = chain_operator.(sfs)
-    mats = (o(aff) for o in ops)
-    target_dims = ndims(T)
-    _collapser(Val(target_dims),mats...)
+   add_to_matrix!(ivec,jvec,vals,t::Term{2}) 
+"""
+function add_to_matrix!(ivec,jvec,vals,t::Term{2})
+    mesh = getmesh(t)
+    reftensor = RefTensor(t)
+    collapser = Collapser(t)
+    nmax = maximum(length.(mesh.dofs.by_tri))
+    v = zeros(floattype(mesh), nmax, nmax)
+    r = 1
+    for el in elements(mesh)
+        b₁ = basis(el,mesh)
+        b₂ = basis(el,mesh)
+        aff = AffineToRef(el,mesh)
+        for (j,ψ) in enumerate(b₂)
+            for (i,φ) in enumerate(b₁)
+                v[i,j] = _collapse(reftensor,collapser,aff,t,φ,ψ)
+            end
+        end
+        degs,_ = psortednodes(el,mesh)
+        C = changetostd(t,degs)
+        locdof = dof(el, mesh)
+        dim = length(locdof)
+        @views v[1:dim, 1:dim] .= jac(aff) * C' * v[1:dim,1:dim] * C
+        ivec[r:(r + dim^2 - 1)] .= repeat(locdof, dim)
+        jvec[r:(r + dim^2 - 1)] .= repeat(locdof, inner = dim)
+        @views vals[r:(r + dim^2 - 1)] .+= v[1:dim, 1:dim][:]
+        r += dim^2
+    end
 end
 
 
-function _collapser(::Val{L},mat) where L
-    ndims(mat) == L || throw(ArgumentError("Collapser has `ndims` $(ndims(mat)), but $L are expected"))
-    return mat
+function _collapse(rt::RefTensor,
+                   c::Collapser,
+                   aff::AffineToRef,
+                   ::Term{N,ConstantCoeff},
+                   bs...) where N
+    rt(bs...)⋅c(aff)
 end
 
-function _collapser(::Val{L},mat1,mat2) where L
-    l1 = ndims(mat1)
-    l2 = ndims(mat2)
-    __collapser(Val(L),Val(l1),Val(l1+l2),mat1,mat2)
+function _collapse(rt::RefTensor,
+                   c::Collapser,
+                   aff::AffineToRef,
+                   t::Term{N,VariableCoeff},
+                   bs...) where N
+    rt(bs...)⋅c(aff,t.measure.sch)
 end
 
-__collapser(::Val{L},::Val,::Val{L},m₁,m₂) where {L} = m₁⊗m₂
-__collapser(::Val{L},::Val{L},::Val,m₁,m₂) where {L} = m₁*m₂ 
-__collapser(::Val{L},::Val{L},::Val{L},m₁,m₂) where {L} = m₁*m₂
+_dot(a::Number,b::Number) = a*b
+_dot(a,b) = dot(a,b)
+
+"""
+
+    assembly_rhs(form::Form{1})
+assembles the rhs corresponding to the bilinear form  `form`.
+"""
+function assembly_rhs(term::Term{1})
+    return assembly_rhs(Form{1}((term,)))
+end
+function assembly_rhs(form::Form{1})
+    (; terms) = form
+    mesh = domainmesh(first(terms))
+    ℓ = ndof(mesh)
+    vals = _init_rhs(mesh, ℓ)
+    for t in terms
+        add_to_rhs!(vals, t)
+    end
+    return vals
+end
+
+# ConstantCoeff version
+"""
+
+    add_to_rhs!(vals,t::Term)
+integrates `t` adding the results to `vals`.
+"""
+function add_to_rhs!(vals, t::Term{1})
+    mesh = getmesh(t)
+    reftensor = RefTensor(t)
+    collapser = Collapser(t)
+    nmax = maximum(length.(mesh.dofs.by_tri))
+    v = zeros(floattype(mesh), nmax)
+    r = 1
+    for el in elements(mesh)
+        b = basis(el,mesh)
+        aff = AffineToRef(el,mesh)
+        for (i,ψ) in enumerate(b)
+                v[i] = _collapse(reftensor,collapser,aff,t,ψ)
+        end
+        degs,_ = psortednodes(el,mesh)
+        C = changetostd(t,degs)
+        locdof = dof(el, mesh)
+        dim = length(locdof)
+        @views vals[locdof] .+= jac(aff) * C' * v[1:dim]
+    end
+end
+
+

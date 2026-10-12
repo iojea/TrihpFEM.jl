@@ -13,7 +13,7 @@ Defines a Finite Element Problem (no refinement) of the form `a(u,v)=b(v)` over 
 """
 
 _toform(a::Form) = a
-_toform(a::Term{C, O, T, N, M}) where {C, O, T, N, M} = Form{N}((a,))
+_toform(a::Term{N}) where N = Form{N}((a,))
 mutable struct FEProblem{F₁, F₂} <: AbstractProblem
     a::F₁
     b::F₂
@@ -43,7 +43,6 @@ function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
             i1 = first(locdof)
             i2 = last(locdof)
             x1 = points[i1]
-            x2 = points[i2]
             n = length(locdof)
             for (i, k) in enumerate(locdof)
                 vals[k] = prob.g(((n - i) * x1 + (i - 1) * x1) / (n - 1))

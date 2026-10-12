@@ -56,7 +56,7 @@ function (::DiffMatrix)(v::Tensor{1,2,T}) where {T<:PolyScalarField}
    Tensor{2,2}(∂x(v[1]),∂x(v[2]),∂y(v[1]),∂y(v[2]))
 end
 
-(::DiffMatrix)(aff::AffineToRef) = inv(aff.A)
-(::AdjointDiffMatrix)(aff::AffineToRef) = inv(aff.A)'
+(::DiffMatrix)(aff::AffineToRef) = inv(aff.A)'
+(::AdjointDiffMatrix)(aff::AffineToRef) = inv(aff.A)
 (::Identity)(::AffineToRef{D,F}) where {D,F} = one(F)
 

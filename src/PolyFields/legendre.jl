@@ -51,6 +51,8 @@ function _iterate(::LegendreIterator{P, F, X}, state) where {P, F, X}
     end
 end
 
+dim(::LegendreIterator) = 1
+dim(::Type{LegendreIterator}) = 1
 ###########################
 #     STANDARD BASIS
 ###########################
@@ -103,3 +105,6 @@ function _iteratey(Ly, sty, stx)
     py, stynew = iterate(Ly, sty)
     return ProductPoly(stx[2], py), (stx, stynew)
 end
+
+dim(::StandardBasis) = 2
+dim(::Type{StandardBasis}) = 2

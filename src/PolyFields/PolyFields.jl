@@ -25,7 +25,7 @@ module PolyFields
     export ProductPoly
     export PolyScalarField, PolyTensorField, PolyVectorField, PolyMatrixField
     export PolySum
-    export indeterminate, indeterminates, degs
+    export indeterminate, indeterminates, degs,dim
     export LegendreIterator, StandardBasis
     export dot
     export AffineToRef

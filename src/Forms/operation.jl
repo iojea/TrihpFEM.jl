@@ -59,6 +59,7 @@ LinearAlgebra.dot(a::Operation, b::Operation) = a' * b
 
 Base.:-(u::ShapeFunction) = (-1) * u
 
+get_shape_functions(op::Operation) = filter(Base.Fix2(isa, ShapeFunction), op.parts)
 
 """
    Integrand{C<:CoeffType,T<Tuple,N}
@@ -66,7 +67,8 @@ An expression for integration, depending on at least one ShapeFunction. `N` is t
 struct Integrand{C <: CoeffType, T <: Tuple, N}
     operation::Operation{C, T}
     function Integrand(operation::Operation{C, T}) where {C <: CoeffType, T <: Tuple}
-        return new{C, T, length(T.parameters)}(operation)
+        N = length(get_shape_functions(operation))
+        return new{C, T, N}(operation)
     end
 end
 coefftype(::Integrand{C}) where {C} = C()

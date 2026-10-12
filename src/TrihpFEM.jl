@@ -66,9 +66,9 @@ export basis, Term, Form, Operation, ShapeFunction, CoeffType,  ConstantCoeff, V
 using ..Measures: Measure
 export Measure
 
-using ..Assembly: LocalTensor, _eval_operation, get_shape_functions
-export LocalTensor, _eval_operation, get_shape_functions
+using ..Assembly: RefTensor, _eval_operation, get_shape_functions
+export RefTensor, _eval_operation, get_shape_functions
 
-# using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
-# export FEProblem, FESolution, solve, plotsol, error, estimate_order
+ using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
+ export FEProblem, FESolution, solve, plotsol, error, estimate_order
 end

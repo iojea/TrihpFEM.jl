@@ -23,8 +23,8 @@ module Forms
     export Operation
     export Trial, Test
     export Order, CoeffType, ConstantCoeff, VariableCoeff
-    export basis, order, coefftype, operator, chain_operator, dim
+    export basis, order, coefftype, operator, chain_operator
     export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
-    export unroll
+    export unroll, get_shape_functions, getmesh,changetostd
 
 end; #module

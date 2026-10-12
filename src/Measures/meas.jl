@@ -6,7 +6,7 @@ struct Measure{T<:HPTriangulation,A<:AuxMeshData,Q<:Quadrature}
     sch::Q
 end
 
-function Measure(mesh::HPMesh{F,I,P},degsch) where {F,I,P}
+function Measure(mesh::HPMesh{F,I,P},degsch) where {F<:Real,I<:Integer,P<:Integer}
     aux = AuxMeshData{P,F}()
     for t in triangles(mesh)
         d = degrees(t,mesh)

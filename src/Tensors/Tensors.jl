@@ -50,11 +50,16 @@ function Tensor{N,D}(f::Function) where {N,D}
     #Tensor{N,D}(map(f,map(cartesian2idx(Val(N),Val(D)),1:_compute_L(Val(N),Val(D))))...)
 end
 
-function Tensor(a::Array{T,N}) where {T,N}
-    D = length(a)%2==0 ? 2 : 3
-    M = (N==2 && length(a)==D) ? 1 : N
-    Tensor{M,D,T}(a...)
-end
+
+# function Tensor(a::Array{T,N},::Val{L}) where {T,N,L}
+#     D = L%2==0 ? 2 : 3
+#     M = (N==2 && L==D) ? 1 : N
+#     Tensor{M,D,T}(ntuple(j->a[j], L)...)
+# end
+
+# Tensor(a::Array{T,N}) where {T,N} = Tensor(a,Val(length(a)))
+
+
 
 function Tensor(a::StaticArray{S,T,N}) where {S<:Tuple,T,N}
     allequal(size(a)) || error(ArgumentError("Dimensions must have equal length for constructing a `Tensor`."))
@@ -112,6 +117,7 @@ StaticArrays.similar_type(::Type{A},::Type{F},s::Size{E}) where {N,D,T,L,S<:Tupl
 
 # No-op for adjoint
 Base.adjoint(t::Tensor{1,D}) where D = t
+
 
 
 """
