@@ -51,7 +51,7 @@ function Tensor{N,D}(f::Function) where {N,D}
     #Tensor{N,D}(map(f,map(cartesian2idx(Val(N),Val(D)),1:_compute_L(Val(N),Val(D))))...)
 end
 
-function Tensor{N,D}(a::Union{AbstractArray{T,N}) where {N,D,T}
+function Tensor{N,D}(a::AbstractArray{T,N}) where {N,D,T}
      L = length(a)
      D2 = L%2==0 ? 2 : 3
      D2 == D || throw(DimensionMismatch("length of array must be divisible by $D"))
