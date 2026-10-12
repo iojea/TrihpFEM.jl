@@ -55,7 +55,7 @@ t₆ = Triangle{Int32}([1, 2, 3])
 @test isequal(t₅, Triangle(t for t in t₅))
 @test isequal(t₆, Triangle([1, 2, 3]))
 
-ta₁ = TriangleAttributes{Float64,UInt8}()
+ta₁ = TriangleAttributes{float64,uint8}()
 ta₂ = TriangleAttributes()
 @test all(getproperty(ta₁, prop)[] == getproperty(ta₂, prop)[] for prop in propertynames(ta₁))
 
