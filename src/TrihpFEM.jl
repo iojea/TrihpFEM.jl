@@ -66,8 +66,8 @@ export basis, Term, Form, Operation, ShapeFunction, CoeffType,  ConstantCoeff, V
 using ..Measures: Measure
 export Measure
 
-using ..Assembly: RefTensor,  get_shape_functions
-export RefTensor, et_shape_functions
+using ..Assembly: RefTensor,  Collapser
+export RefTensor, Collapser
 
  using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
  export FEProblem, FESolution, solve, plotsol, error, estimate_order
