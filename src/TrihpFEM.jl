@@ -41,8 +41,8 @@ include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
-using ..Meshes: Point2D, Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, plothpmesh2, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
-export Point2D,Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, plothpmesh2, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
+using ..Meshes: Point2D, Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh,  dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
+export Point2D,Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh,  dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
 
 using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ,∂x,∂y
 export DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ, ∂x,∂y
@@ -50,11 +50,11 @@ export DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, 
 using ..Tensors: Tensor, otimes,⊗
 export Tensor,otimes,⊗
 
-using ..PolyFields: ProductPoly, AffineToRef, GeneralField, LegendreIterator, StandardBasis, degs
-export ProductPoly, AffineToRef, GeneralField, LegendreIterator, StandardBasis,degs
+using ..PolyFields: ProductPoly, AffineToRef,  LegendreIterator, StandardBasis, degs
+export ProductPoly, AffineToRef,  LegendreIterator, StandardBasis,degs
 
-# using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis, ∇, Δ
-# export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType, Order, Eval, Pass, combine, basis
+# using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis, ∇, Δ
+# export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis
 
 
 using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature
@@ -66,8 +66,8 @@ export basis, Term, Form, Operation, ShapeFunction, CoeffType,  ConstantCoeff, V
 using ..Measures: Measure
 export Measure
 
-using ..Assembly: RefTensor, _eval_operation, get_shape_functions
-export RefTensor, _eval_operation, get_shape_functions
+using ..Assembly: RefTensor,  get_shape_functions
+export RefTensor, et_shape_functions
 
  using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
  export FEProblem, FESolution, solve, plotsol, error, estimate_order

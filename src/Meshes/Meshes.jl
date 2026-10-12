@@ -24,7 +24,7 @@ module Meshes
     export BoundaryHPMesh, dirichletboundary, neumannboundary, domainmesh
     export mark!, refine!, p_conformity!, check_p_conformity, setdegrees!
     export circmesh, circmesh_graded_center, rectmesh, squaremesh
-    export plothpmesh, plothpmesh2, degplot
+    export plothpmesh, degplot
     export details
 
 

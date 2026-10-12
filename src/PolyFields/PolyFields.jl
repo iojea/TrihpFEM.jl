@@ -21,19 +21,17 @@ module PolyFields
     include("legendre.jl")
     include("show.jl")
 
-    export AbstractField
     export ProductPoly
     export PolyScalarField, PolyTensorField, PolyVectorField, PolyMatrixField
     export PolySum
-    export indeterminate, indeterminates, degs,dim
+    export  degs,dim
     export LegendreIterator, StandardBasis
     export dot
     export AffineToRef
     # export affine!
     export jac
     export area
-    export EvalType, Eval, Compose, Pass
-    export evaluate
+    # export EvalType, Eval, Compose, Pass
     export otimes
 
 end; #module

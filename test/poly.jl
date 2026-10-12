@@ -1,10 +1,11 @@
-using ..TrihpFEM.Poly
+using ..TrihpFEM.Tensors
+using ..TrihpFEM.PolyFields
 using Test
 using StaticArrays
 using LinearAlgebra
 
 
-p = BiPoly((1.0, 2, 5.0), (2.0, -1))
+p = ProductPoly((1.0, 2, 5.0), (2.0, -1))
 @test indeterminates(p) == (:x, :y)
 @test indeterminate(p.px) == :x
 a = rand()
@@ -14,7 +15,7 @@ y = [a, b]
 @test p(x) == p(y) == p(a, b)
 @test p(2, -1) ≈ 75
 @test (b * p)(x) ≈ b * p(x)
-q = BiPoly((1.0, 2.0), (-2, 0.0, 1.0))
+q = ProductPoly((1.0, 2.0), (-2, 0.0, 1.0))
 @test q(2, -1) ≈ -5.0
 pq = p * q
 @test pq(x) ≈ p(x) * q(x)
@@ -22,13 +23,13 @@ qxp = q.px * p
 @test qxp(y) ≈ q.px(a) * p(a, b)
 pyq = q * p.py
 @test pyq(x) ≈ p.py(b) * q(a, b)
-ζ = BiPoly((0.0, 0.0, 1.0, 1.0), (1.0, 2.0), :x, :α)
+ζ = ProductPoly((0.0, 0.0, 1.0, 1.0), (1.0, 2.0), :x, :α)
 @test_throws ArgumentError("Indeterminates does not match.") ζ * p
 @test_throws ArgumentError("Indeterminates does not match.") p * ζ.py
 @test zero(p) == zero(q) == zero(typeof(p))
 @test q ⋅ p == q * p
 
-v = PolyVectorField([p, q])
+v = Tensor{1,2}(p, q)
 @test v(x)[1] == p(x)
 @test v(x)[2] == q(x)
 @test length(v) == 2length(p)
@@ -41,7 +42,7 @@ w = A * v
 @test size(w) == (2,)
 row = [3 -2]
 @test typeof(row * w) <: PolyScalarField
-s = BiPoly(Tuple(rand() for _ in 1:rand(1:8)), Tuple(rand() for _ in 1:rand(1:8)), :x, :y)
+s = ProductPoly(Tuple(rand() for _ in 1:rand(1:8)), Tuple(rand() for _ in 1:rand(1:8)), :x, :y)
 @test_throws DimensionMismatch() row' * w
 sv = v * s
 @test sv(a, b) ≈ v(x) * s(x)
@@ -99,7 +100,7 @@ rsq = r * r
 @test gpgp(x) ≈ gp2(x)
 @test pv[1](x) ≈ p(x)^2
 @test rsq(x) ≈ p(x)^2 + 2p(x) * q(x) + q(x)^2
-@test repr(gp) == "BiPoly{Float64, :x, :y}[(2.0 + 10.0*x)(2.0 - 1.0*y), (1.0 + 2.0*x + 5.0*x^2)(-1.0)]"
+@test repr(gp) == "ProductPoly{Float64, :x, :y}[(2.0 + 10.0*x)(2.0 - 1.0*y), (1.0 + 2.0*x + 5.0*x^2)(-1.0)]"
 
 Lp = Δ(p)
 @test typeof(Lp) == typeof(p)
