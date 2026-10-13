@@ -58,13 +58,14 @@ function Tensor{N,D}(a::AbstractArray{T,N}) where {N,D,T}
      M = (N==2 && L==D) ? 1 : N
     Tensor{M,D,T}(ntuple(j->a[j], L)...)
 end
-function Tensor{N,D}(a::StaticArraysCore.StaticArray{S,T,N}) where {N,D,T,S<:Tuple}
+function Tensor{N,D,R}(a::StaticArraysCore.StaticArray{S,T,N}) where {N,D,R,T,S<:Tuple}
      L = length(a)
      D2 = L%2==0 ? 2 : 3
      D2 == D || throw(DimensionMismatch("length of array must be divisible by $D"))
      M = (N==2 && L==D) ? 1 : N
-    Tensor{M,D,T}(ntuple(j->a[j], L)...)
+    Tensor{M,D,T}(ntuple(j->R(a[j]), L)...)
 end
+Tensor{N,D}(a::StaticArraysCore.StaticArray{S,T,N}) where {N,D,T,S<:Tuple} = Tensor{N,D,T}(a)
 
 Tensor{N,D,T}(a::Base.Generator) where {N,D,T} = Tensor{N,D,T}(a...)
 Tensor{N,D}(a::Base.Generator) where {N,D} = Tensor{N,D}(a...)

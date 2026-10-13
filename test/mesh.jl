@@ -74,20 +74,20 @@ mark!(dt[t₂], 3)
 vert = [0.0 0.0;1.0 0.0;1.0 1.0;0.0 1.0]'
 m0 = hpmesh(vert, sqrt(2) / 2)
 @test repr(m0.edgelist) == "EdgeList{Int64,UInt8} with 8 elements"
-@test repr(m0.trilist) == "TriangleList{Int64,UInt8,Float64} with 4 elements"
+@test repr(m0.trilist) == "TriangleList{Float64,Int64,Int8} with 4 elements"
 @test length(m0.points) == 5
 @test length(m0.edgelist) == 8
 @test length(m0.trilist) == 4
 @test floattype(m0) == Float64
 @test inttype(m0) == Int64
-@test degtype(m0) == UInt8
+@test degtype(m0) == Int8
 ∂m0 = BoundaryHPMesh(m0, 1)
 @test ∂m0 == BoundaryHPMesh(m0, :dirichlet)
 @test length(edges(∂m0)) == 4
 @test domainmesh(∂m0) === m0
 @test domainmesh(domainmesh(∂m0)) === m0
 vert1 = Float32.(vert)
-m1 = hpmesh(vert1, sqrt(2) / 2,I=UInt32,F=Float32)
+m1 = hpmesh(vert1, sqrt(2) / 2,I=UInt32,F=Float32,P=UInt8)
 @test length(m1.points) == 5
 @test length(m1.edgelist) == 8
 @test length(m1.trilist) == 4

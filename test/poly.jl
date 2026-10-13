@@ -32,7 +32,7 @@ v = Tensor{1,2}(p, q)
 @test v(x) == [p(x), q(x)]
 @test (a * v)(x) ≈ a * v(x) ≈ (v * a)(x)
 @test v(x)[1] == v[1](x)
-A = rand(2, 2)
+A = Tensor{2,2}(rand(2,2))
 w = A * v
 @test typeof(w) <: PolyVectorField
 @test size(w) == (2,)
