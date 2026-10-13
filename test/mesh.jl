@@ -73,13 +73,13 @@ mark!(dt[t₂], 3)
 # Mesh creation and basic properties.
 vert = [0.0 0.0;1.0 0.0;1.0 1.0;0.0 1.0]'
 m0 = hpmesh(vert, sqrt(2) / 2)
-@test repr(m0.edgelist) == "EdgeList{Int32,UInt8} with 8 elements"
-@test repr(m0.trilist) == "TriangleList{Int32,UInt8,Float64} with 4 elements"
+@test repr(m0.edgelist) == "EdgeList{Int64,UInt8} with 8 elements"
+@test repr(m0.trilist) == "TriangleList{Int64,UInt8,Float64} with 4 elements"
 @test length(m0.points) == 5
 @test length(m0.edgelist) == 8
 @test length(m0.trilist) == 4
 @test floattype(m0) == Float64
-@test inttype(m0) == Int32
+@test inttype(m0) == Int64
 @test degtype(m0) == UInt8
 ∂m0 = BoundaryHPMesh(m0, 1)
 @test ∂m0 == BoundaryHPMesh(m0, :dirichlet)
@@ -87,12 +87,12 @@ m0 = hpmesh(vert, sqrt(2) / 2)
 @test domainmesh(∂m0) === m0
 @test domainmesh(domainmesh(∂m0)) === m0
 vert1 = Float32.(vert)
-m1 = hpmesh(vert1, sqrt(2) / 2)
+m1 = hpmesh(vert1, sqrt(2) / 2,I=UInt32,F=Float32)
 @test length(m1.points) == 5
 @test length(m1.edgelist) == 8
 @test length(m1.trilist) == 4
 @test floattype(m1) == Float32
-@test inttype(m1) == Int32
+@test inttype(m1) == UInt32
 @test degtype(m1) == UInt8
 setneumann!(x -> x[1] * x[2] == 0, m1)
 ∂Dm1 = dirichletboundary(m1)
@@ -121,17 +121,17 @@ eds₂ = tuple(edges(T₂)...)
 @test isequal(eds₂[2], Edge{Int16}(2, 3))
 @test isequal(eds₂[3], Edge{Int16}(3, 4))
 mmtris = Dictionary([T₁, T₂], [TriangleAttributes{Float32,UInt8}(0, 0, 0) for _ in 1:2])
-mmedges = Dictionary{Edge{Int16}, EdgeAttributes{UInt8}}()
+mmedges = Dictionary{Edge{Int16}, EdgeAttributes{Int16,UInt8}}()
 for ed in edges(T₁)
-    set!(mmedges, ed, EdgeAttributes{UInt8}(1, 1, false))
+    set!(mmedges, ed, EdgeAttributes(Int16,1, 1, false))
 end
 for ed in edges(T₂)
-    set!(mmedges, ed, EdgeAttributes{UInt8}(1, 1, false))
+    set!(mmedges, ed, EdgeAttributes(Int16,1, 1, false))
 end
 mm = HPMesh(pts, mmtris, mmedges)
 @test typeof(mm) == HPMesh{Float32, Int16, UInt8}
 
-pts₂ = SVector{2, Float64}.([(0, 0), (1, 0), (0, 1), (1, 1)])
+pts₂ = Point2D.([(0., 0.), (1., 0.), (0., 1.), (1., 1.)])
 T₃ = triangle(Int32[1, 2, 3], pts₂)
 T₄ = triangle(Int32[2, 3, 4], pts₂)
 @test isequal(T₁, T₃)
