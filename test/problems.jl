@@ -1,4 +1,5 @@
 using ..TrihpFEM.Meshes
+using ..TrihpFEM.Tensors
 using ..TrihpFEM.Forms
 using ..TrihpFEM.Problems
 
@@ -12,10 +13,10 @@ dΩ = Measure(Ω)
 @test typeof(dΩ)<:Measure
 @test dΩ.sch.degree == 3
 
-DΩ = Measure(Ω,13)
+DΩ = Measure(Ω,17)
 @test typeof(DΩ)<:Measure
-@test DΩ.sch.degree == 13
-@test typeof(DΩ.sch.degree) == UInt8
+@test DΩ.sch.degree == 17
+@test typeof(DΩ.sch.degree) == Int8
 
 A = Tensor{2,2}(rand(),rand(),rand(),rand())
 g(x) = x[1]*x[2]

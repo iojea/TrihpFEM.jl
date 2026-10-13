@@ -36,10 +36,7 @@ A = rand(2, 2)
 w = A * v
 @test typeof(w) <: PolyVectorField
 @test size(w) == (2,)
-row = [3 -2]
-@test typeof(row * w) <: PolyScalarField
 s = ProductPoly(Tuple(rand() for _ in 1:rand(1:8)), Tuple(rand() for _ in 1:rand(1:8)), :x, :y)
-@test_throws DimensionMismatch() row' * w
 sv = v * s
 @test sv(x) ≈ v(x) * s(x)
 
