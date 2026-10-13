@@ -73,7 +73,7 @@ mark!(dt[t₂], 3)
 # Mesh creation and basic properties.
 vert = [0.0 0.0;1.0 0.0;1.0 1.0;0.0 1.0]'
 m0 = hpmesh(vert, sqrt(2) / 2)
-@test repr(m0.edgelist) == "EdgeList{Int64,UInt8} with 8 elements"
+@test repr(m0.edgelist) == "EdgeList{Int64,Int8} with 8 elements"
 @test repr(m0.trilist) == "TriangleList{Float64,Int64,Int8} with 4 elements"
 @test length(m0.points) == 5
 @test length(m0.edgelist) == 8
