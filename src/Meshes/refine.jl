@@ -42,17 +42,21 @@ end
 checks if a point `p` belongs to the triangle with vertices `a`,`b` and `c`. 
 """
 function intriangle(p::T, a::V, b::V, c::V) where {T <: AbstractArray, V <: AbstractArray}
-    x = orient(a, b, p)
+    x = orient(a, b, p) 
     y = orient(b, c, p)
     z = orient(c, a, p)
     if abs(x+y+z) == 3
-        return 1
-    elseif x*y*z == 0
-        return 0
+        return true
+    elseif x==0
+        return sameside(p,a,b)<=0
+    elseif y==0
+        return sameside(p,b,c)<=0
+    elseif z==0
+        return sameside(p,c,a)<=0
     else
-        return -1
+        return false
     end
-end 
+end
 intriangle(p::T, vert::M) where {T <: AbstractArray, M <: AbstractArray} = intriangle(p, eachcol(vert)...)
 
 
@@ -400,10 +404,10 @@ This function should be passed to `mark!` for marking the triangles.
 
 Note that `estim_origin(vert)` is a slightly more efficient version of this function when `pp` is the origin. 
 """
-function estim_point(vert; h = 0.2, μ = 1, α = 1.5, center)
+function estim_point(vert; h = 0.2, μ = 1, α = 1.5, center = Point2D(0.,0.))
     ℓ = minimum(sum(abs2, vert[:, SVector(1, 2)] - vert[:, SVector(3, 3)], dims = 1)) |> sqrt
     d = maximum(sum(abs2, vert .- center, dims = 1)) |> sqrt
-    if intriangle(center, vert) >= 0
+    if intriangle(center, vert)
         return ℓ > h^(1 / μ)
     else
         return ℓ > α * h * d^(1 - μ)
@@ -415,6 +419,6 @@ end
 
 `estim` function for grading a mesh towards the origin. See the docs for `estim_point`.
 """
-estim_origin(vert; args...) = estim_point(vert; center = SVector(0.0, 0.0), args...)
+estim_origin(vert; args...) = estim_point(vert; center = Point2D(0.0, 0.0), args...)
 
 

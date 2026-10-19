@@ -38,7 +38,7 @@ function Tensor{N,D,T}(x,y...) where {N,D,T}
     Tensor{N,D,T,L,S}(z)
 end
 
-function Tensor{N,D}(x,y) where {N,D}
+function Tensor{N,D}(x,y...) where {N,D}
     L = _compute_L(Val(N),Val(D))
     S = _compute_S(Val(N),Val(D))
     z = promote(x,y...)

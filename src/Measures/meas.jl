@@ -1,22 +1,13 @@
-const AuxMeshData{P,F} = Dictionary{NTuple{3,P},AuxDegData{F}} where {P,F}
+abstract type AbstractMeasure{F<:Real,I<:Integer,P<:Integer} end
 
-struct Measure{T<:HPTriangulation,A<:AuxMeshData,Q<:Quadrature}
-    mesh::T
-    aux::A
+struct Measure{F<:Real,I<:Integer,P<:Integer,Q<:Quadrature{2}} <: AbstractMeasure{F,I,P}
+    mesh::HPMesh{F,I,P}
     sch::Q
 end
 
 function Measure(mesh::HPMesh{F,I,P},degsch) where {F<:Real,I<:Integer,P<:Integer}
-    aux = AuxMeshData{P,F}()
-    for t in triangles(mesh)
-        d = degrees(t,mesh)
-        isin,(_,_) = gettoken(aux,d)
-        if !isin
-            set!(aux,d,AuxDegData(F,d))
-        end
-    end
     sch = quadrature(F,P,Val(2),Val(degsch))
-    Measure(mesh,aux,sch)
+    Measure{typeof(mesh),typeof(sch)}(mesh,sch)
 end
 
 function Measure(mesh::HPMesh{F,I,P}) where {F,I,P}
@@ -25,8 +16,40 @@ function Measure(mesh::HPMesh{F,I,P}) where {F,I,P}
     Measure(mesh,2maxdeg+1)
 end
 
-mesh(m::Measure) = m.mesh
-Meshes.domainmesh(m::Measure) = domainmesh(m.mesh)
+
+struct BoundaryMeasure{F<:Real,I<:Integer,P<:Integer,Q<:Quadrature{1}} <:AbstractMeasure{F,I,P}
+    kind::P
+    mesh::HPMesh{F,I,P}
+    sch::Q
+end
+
+function BoundaryMeasure(mesh::HPMesh{F,I,P},kind=Integer) where{F,I,P}
+    (;edgelist) = mesh
+    maxdeg = maximum(Meshes.degree.(edgelist))
+    BoundaryMeasure(kind,mesh,2maxdeg+1)
+end
+
+
+mesh(m::AbstractMeasure) = m.mesh
+
+elements(m::Measure) = m.mesh.trilist
+elements(bm::BoundaryMeasure) = filter(e->tag(e)==bm.kind,bm.mesh.edgelist)
+
+dim(::Measure) = 2
+dim(::BoundaryMeasure) = 1
+
+basis(t::Triangle,m::AbstractMeasure) = StandardBasis(first(psortednodes(t,m.mesh)))
+function basis(e::Edge,m::BoundaryMeasure)
+    els = elements(m)
+    isin, tok = gettoken(els,e)
+    isin || throw(ArgumentError("The `Edge` does not belong to the given `BoundaryMeasure`."))
+    att = gettokenvalue(els,tok)
+    adj = adjacents(att)
+    last(adj)==0 || throw(ArgumentError("`Edge` seems to be interior to the domain."))
+    t = Triangle(e[1],e[2],adj[1])
+    p = first(psortednodes(t,m.mesh))
+    StandardBasis(p)
+end
 
 function dof(ed::Edge,m::Measure)
     indofs,token = gettoken(m.mesh.dofs.by_edge,ed)

@@ -30,10 +30,10 @@ using StaticArrays
 using Test
 using Triangulate
 
-include("Meshes/Meshes.jl")
 include("DifferentialOperators/DifferentialOperators.jl")
 include("Tensors/Tensors.jl")
 include("PolyFields/PolyFields.jl")
+include("Meshes/Meshes.jl")
 # include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
 include("Measures/Measures.jl")
@@ -57,8 +57,8 @@ export ProductPoly, AffineToRef,  LegendreIterator, StandardBasis,degs,PolyVecto
 # export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis
 
 
-using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature
-export Quadrature, gmquadrature, ref_integrate, quadrature
+using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁,edge_integrate₂,edge_integrate₃
+export Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁,edge_integrate₂,edge_integrate₃
 
 using ..Forms: basis, Form, Term, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, ∫,Trial,Test
 export basis, Term, Form, Operation, ShapeFunction, CoeffType,  ConstantCoeff, VariableCoeff,Trial,Test, ∫

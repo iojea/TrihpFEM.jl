@@ -43,7 +43,7 @@ end
 function plothpmesh end
 
 @recipe PlotHPMesh (mesh,) begin
-    linewidth = 0.5
+    linewidth = 0.75
     annotate = false
     title = ""
 end
@@ -52,7 +52,6 @@ function Makie.plot!(p::PlotHPMesh)
     msh = p[1][]
     (; points, trilist, edgelist) = msh
     T = eltype(points)
-
     # ---- Triangle faces: one poly! call, closed polygons + per-face color ----
     ntri = length(trilist)
     polys = Vector{Vector{T}}(undef, ntri)

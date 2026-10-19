@@ -39,34 +39,13 @@ function affinetoref_vec(::Val{D},v) where D
 end
 
 
-AffineToRef(tri::Triangle,mesh::HPMesh) = AffineToRef(mesh.points[tri])
+# AffineToRef(tri::Triangle,mesh::HPMesh) = AffineToRef(mesh.points[tri])
 
 (aff::AffineToRef)(x)  = aff.A * x + aff.b
 
 
 jac(aff::AffineToRef{2,F}) where F = abs(det(aff.A))
 jac(aff::AffineToRef{1,F}) where F = norm(aff.A)
-# area(x,y,z) = 0.5abs(x[1]*(y[2]-z[2])+y[1]*(z[2]-x[2])+z[1]*(x[2]-y[2]))
-# area(v::Vector) = area(v...)
 area(t::AffineToRef{2,F}) where F = 2jac(t)
 
 
-# A trait for evaluation of Field
-# abstract type EvalType end
-# struct Eval <: EvalType end
-# struct Compose <: EvalType end
-# struct Pass <: EvalType end
-
-# evaltype(_) = Pass()
-# evaltype(::Function) = Compose()
-# evaltype(::PolyScalarField) = Eval()
-
-# evaluate(::Eval, f, ::AffineToRef, x) = f(x)
-# evaluate(::Compose, f, t::AffineToRef, x) = f(t(x))
-# evaluate(::Pass, f, ::AffineToRef, _) = f
-
-# @inline function LinearAlgebra.inv(t::Tensor{2,2})
-#     id = 1/det(t)
-#     @inbounds tup = promote(t[4]*id,-t[2]*id,-t[3]*id,t[1]*id)
-#     Tensor{2,2,eltype(tup),4,Tuple{2,2}}(tup)
-# end

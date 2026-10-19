@@ -9,9 +9,11 @@ module Meshes
     using Printf
     using Triangulate
     using StaticArrays
+    using FixedSizeArrays
     using DocStringExtensions
 
-
+    using ..PolyFields
+    
     export Point2D,Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation, HPMesh,BoundaryHPMesh, DOF
     export triangle, hpmesh, data, elements
     export tag, degree, dof, ndof, longestedge, tagged_dof
@@ -19,7 +21,7 @@ module Meshes
     export inttype, floattype, degtype
     export degrees_of_freedom!, isempty, empty!
     export settag!, setdegree!, setboundary!, setdirichlet!, setneumann!
-    export degrees, psortperm, edges, triangles, psortednodes, psortededges
+    export degrees, psortperm, edges, triangles, psortednodes, psortededges,adjacent
     export plothpmesh
     export BoundaryHPMesh, dirichletboundary, neumannboundary, domainmesh
     export mark!, refine!, p_conformity!, check_p_conformity, setdegrees!
@@ -29,7 +31,8 @@ module Meshes
 
 
     const BOUNDARY_DICT = Dict(:dirichlet => 1, :neumann => 2)
-    const COLOR_DICT = Dict(0=>:lightgrey,1=>:forestgreen,2=>:cornflowerblue,3=>:brown3)
+    const COLOR_DICT = Dict(0=>:grey,1=>:forestgreen,2=>:cornflowerblue,3=>:brown3)
+
     const FACE_DICT = Dict(
                 0=>StyledStrings.Face(foreground=StyledStrings.SimpleColor(212,212,212)),
                 1=>StyledStrings.Face(foreground=StyledStrings.SimpleColor(33,140,33)),
@@ -44,6 +47,7 @@ module Meshes
     include("settuple.jl")
     include("edge.jl")
     include("triangle.jl")
+    include("cmatrix.jl")
     include("mesh.jl")
     include("boundary_mesh.jl")
     include("refine.jl")

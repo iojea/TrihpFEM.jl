@@ -78,6 +78,7 @@ A mesh for `HP` finite element methods. Its fields are:
     + `trilist::TriangleList{I,P,F}`: set of trilist
     + `edgelist::EdgeList{I,P}`: set of edgelist
     + `dofs::DOF{I}`: degrees of freedom.
+    + `cmatrix::CMatrix{P,F}`: memoization for C matrix (change from std to mixed basis).
     + `gen::RefValue{I}`: generation, keeps track of modifications to avoid inconsistencies.
     + `lock::RefValue{Bool}`: lock to avoid direct usage of the mesh, once it is passed to a Problem.
 
@@ -91,9 +92,10 @@ struct HPMesh{F <: Real, I <: Integer, P <: Integer} <: HPTriangulation
     trilist::TriangleList{F,I, P}
     edgelist::EdgeList{I, P}
     dofs::DOF{I}
+    cmatrix::CMatrix{F,P}
     gen::Base.RefValue{I}
     lock::Base.RefValue{Bool}
-    HPMesh{F,I,P}(v,t,e,d,g,l) where {F,I,P} = new{F,I,P}(v,t,e,d,Ref{I}(g),Ref{Bool}(l))
+    HPMesh{F,I,P}(v,t,e,d,c,g,l) where {F,I,P} = new{F,I,P}(v,t,e,d,c,Ref{I}(g),Ref{Bool}(l))
 end
 
 function HPMesh(
@@ -101,7 +103,7 @@ function HPMesh(
         t::TriangleList{F,I,P},
         e::EdgeList{I, P}
     ) where {F,I, P}
-    return HPMesh{F,I,P}(v, t, e, DOF{I}(),one(I),false)
+    return HPMesh{F,I,P}(v, t, e, DOF{I}(),CMatrix{F,P}(),one(I),false)
 end
 
 function HPMesh(mat::AbstractMatrix{F}, tris::TriangleList, edgs::EdgeList) where F

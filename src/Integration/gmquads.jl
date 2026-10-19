@@ -36,13 +36,14 @@ Builds a `Quadrature` for dimension `D` over the simplex `Tref`. If the last arg
 - `D`: dimension
 - `degree`: desired polynomial degree of accuracy (must be odd)
 - `Tref` (optional): simplex where the quadrature is located. A matrix of `D⨱(D+1)` with the vertices.
-
+:o 
 # Output
 - A `Quadrature` of the desired degree.
 """
-function tref(::Type{F}) where {F}
-    return SMatrix{2,3,F}([-1 1 1;-1 -1 1])
-end
+
+tref(::Val{2},::Type{F}) where {F} = SMatrix{2,3,F,6}([-1 1 1;-1 -1 1])
+tref(::Val{1},::Type{F}) where {F} = SMatrix{1,2,F,2}(-1,1)
+
 
 function gmquadrature(::Val{D},degree::P,Tref) where {D,P<:Integer}
     T = eltype(Tref)
@@ -50,7 +51,7 @@ function gmquadrature(::Val{D},degree::P,Tref) where {D,P<:Integer}
     _gmquadrature(T,Val(D),Val(L),degree,Tref)
 end
 function gmquadrature(::Type{F},d::Val{D},degree::P) where{F,D,P}
-    Tref = tref(F)
+    Tref = tref(Val(D),F)
     gmquadrature(d,degree,Tref)
 end
 gmquadrature(d::Val{D},degree::P) where {D,P} = gmquadrature(Float64,d,degree)
@@ -118,6 +119,12 @@ function Base.length(::DegCombination{L,D}) where {L,D}
     (D==0 || L==1) ? 1 : sum(length(DegCombination{L-1,i}()) for i in 0:D)
 end
 
+
+function _prod(a,b)
+    z = a*b
+    length(z) == 1 ? z[1] : z
+end
+
 function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D,L,P}
     D::Int
     @assert degree ≥ 0
@@ -125,6 +132,7 @@ function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D
     order = (degree - 1) ÷ 2
     weights = FixedSizeVector{Float64}(undef,L)
     points = _sszero(Val(D),Val(L),T)
+    println(length(points))
     j = 1
     for i in 0:order
         exponents = DegCombination{D+1,order-i}()
@@ -133,13 +141,13 @@ function _gmquadrature(::Type{T}, ::Val{D}, ::Val{L}, degree::P,Tref) where {T,D
              factorial(big(degree + D - i)))
         weights[j:j+length(exponents)-1] .= w
         for part in exponents
-            points[j] .= Tref*(map(p -> T(2 * p + 1) / (degree + D - 2 * i), part))
+            points[j] = _prod(Tref,(map(p -> T(2 * p + 1) / (degree + D - 2 * i), part)))
             j += 1
         end
     end
     weights /= sum(weights)
     rw = RepVec(weights)
-    F = eltype(first(points))
+    # F = eltype(first(points))
     return Quadrature{D,typeof(rw),typeof(points),P}(rw, points, degree)
 end
 

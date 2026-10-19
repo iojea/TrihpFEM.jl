@@ -1,9 +1,3 @@
-basis(t::Triangle,m::HPMesh) = StandardBasis(first(psortednodes(t,m)))
-basis(e::Edge,m::BoundaryHPMesh) = LegendreIterator(degree(m.mesh.edgelist[e]))
-
-basistype(::HPMesh) = StandardBasis
-basistype(::BoundaryHPMesh) = LegendreIterator
-
 """
    RefTensor{D}
    A memoisation struct for computing the local tensor corresponding to a certain basis.
@@ -14,17 +8,15 @@ struct RefTensor{K, T,R<:Union{Nothing,Quadrature}}
     dict::Dict{K, T}
 end
 
-function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, M <: Measure}
+function RefTensor(t::Term{N, ConstantCoeff, T, Measure{F,I,P}}) where {N,T<: Tuple,F,I,P}
     (; integrand, measure) = t
     (; operation) = integrand
-    P = degtype(measure.mesh)
-    F = floattype(measure.mesh)
-    B = basistype(measure.mesh)
-    op = _scalars_out(operation,F,Val(PolyFields.dim(B)))
+    D = dim(measure)
+    op = _scalars_out(operation,F,Val(D))
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(B(zeros(P,2PolyFields.dim(B)-1)...)) for _ in sfs)...,)
+    bs = ((first(StandardBasis(zeros(P,2D-1)...)) for _ in sfs)...,)
     key = degs.(bs)
     poly_tensor = _totensor(globpart, bs...)
     tensor = ref_integrate.(poly_tensor)
@@ -33,21 +25,22 @@ function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, M <: M
     d = Dict{K, U}(key => tensor)
     return RefTensor{K, U,Nothing}(globpart,nothing, d)
 end
-function RefTensor(t::Term{N, VariableCoeff, T, M}) where {N, T <: Tuple, M <: Measure}
+
+function RefTensor(t::Term{N, VariableCoeff, T, Measure{F,I,P}}) where {N, T <: Tuple,F,I,P}
     (; integrand, measure) = t
     (; operation) = integrand
     (;mesh,sch) = measure
-    P = degtype(mesh)
-    F = floattype(mesh)
+    D = dim(measure)
     B = basistype(mesh)
-    op = _scalars_out(operation,F,Val(PolyFields.dim(B)))
+    op = _scalars_out(operation,F,Val(D))
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(B(zeros(P,2PolyFields.dim(B)-1)...)) for _ in sfs)...,)
+    bs = ((first(B(zeros(P,2D-1)...)) for _ in sfs)...,)
     key = degs.(bs)
     poly_tensor = _totensor(globpart, bs...)
-    tensor = collect_as(FixedSizeArrayDefault,(w*poly_tensor(x) for (x,w) in zip(sch.points,sch.weights)))
+    # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
+    tensor = collect_as(FixedSizeArrayDefault,(2w*poly_tensor(x) for (x,w) in zip(sch.points,sch.weights)))
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
@@ -70,7 +63,8 @@ function (lt::RefTensor{K,T,R})(bs...) where {K,T,R<:Quadrature}
     (;points,weights) = lt.sch
     haskey(lt.dict, key) && return lt.dict[key]
     poly_tensor = _totensor(lt.t, bs...)
-    tensor = collect_as(FixedSizeVectorDefault,w*poly_tensor(x) for (x,w) in zip(points,weights))
+    # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
+    tensor = collect_as(FixedSizeVectorDefault,2w*poly_tensor(x) for (x,w) in zip(points,weights))
     lt.dict[key] = tensor
     return tensor
 end
@@ -182,12 +176,5 @@ _totensor(t::Tuple,test) = t[2](_totensor(t[1],test),_totensor(t[3:end],test))
 #     efectiveop = DICT_OP[o.op]
 #     return efectiveop(_eval_operation.(o.parts, trial, test)...)
 # end
-
-"""
-   _adjust_to_mesh(sf::ShapeFunction,::HPMesh)
-returns a `ShapeFunction` that is essentially `sf` but reduced to the dimension of the mesh. Meaning: a 2D `ShapeFunction` is reduced to a 1D `ShapeFuntion` when the mesh is a `BoundaryHPMesh`. This is done because the basis of a 1D `ShapeFunction` is a `LegendreIterator`, and not a `StandardBasis`.
-"""
-_adjust_to_mesh(sf::ShapeFunction{T, O, N, 2}, ::HPMesh) where {T, O, N} = sf
-_adjust_to_mesh(::ShapeFunction{T, O, N, 2}, ::BoundaryHPMesh) where {T, O, N} = ShapeFunction{T, O, N, 1}()
 
 

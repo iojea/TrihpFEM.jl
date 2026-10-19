@@ -43,9 +43,10 @@ function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
             i1 = first(locdof)
             i2 = last(locdof)
             x1 = points[i1]
+            x2 = points[i2]
             n = length(locdof)
             for (i, k) in enumerate(locdof)
-                vals[k] = prob.g(((n - i) * x1 + (i - 1) * x1) / (n - 1))
+                vals[k] = prob.g(((n - i) * x1 + (i - 1) * x2) / (n - 1))
             end
             push!(dirichlet, locdof...)
         end

@@ -19,8 +19,9 @@ struct Form{N} <: AbstractForm
     terms::Tuple{Vararg{Term{N}}}
 end
 
-changetostd(t::Term,degs) =  t.measure.aux[degs].C
+changetostd(t::Term,degs) =  t.measure.mesh.cmatrix(degs)
 getmesh(t::Term) = t.measure.mesh
+getmeasure(t.measure)
 Meshes.domainmesh(t::Term) = domainmesh(t.measure)
 function Base.:*(inte::Integrand, meas::Measure)
     return Term(inte, meas)

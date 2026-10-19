@@ -46,17 +46,19 @@ function assembly_matrix(form::Form{2})
 end
 
 
+PolyFields.AffineToRef(t::Triangle,m::HPMesh) = AffineToRef(m.points[t])
 """
    add_to_matrix!(ivec,jvec,vals,t::Term{2}) 
 """
 function add_to_matrix!(ivec,jvec,vals,t::Term{2})
+    meas = getmeasure(t)
     mesh = getmesh(t)
     reftensor = RefTensor(t)
     collapser = Collapser(t)
     nmax = maximum(length.(mesh.dofs.by_tri))
     v = zeros(floattype(mesh), nmax, nmax)
     r = 1
-    for el in elements(mesh)
+    for el in elements(meas)
         b₁ = basis(el,mesh)
         b₂ = basis(el,mesh)
         aff = AffineToRef(el,mesh)
@@ -139,7 +141,9 @@ function add_to_rhs!(vals, t::Term{1})
         C = changetostd(t,degs)
         locdof = dof(el, mesh)
         dim = length(locdof)
-        @views vals[locdof] .+= jac(aff) * C' * v[1:dim]
+        mul!(view(vals,locdof),C',view(v,1:dim))
+        vals[locdof] .*= jac(aff)
+        # @views vals[locdof] .+= jac(aff) * C' * v[1:dim]
     end
 end
 
