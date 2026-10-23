@@ -2,55 +2,67 @@
    RefTensor{D}
    A memoisation struct for computing the local tensor corresponding to a certain basis.
 """
-struct RefTensor{K, T,R<:Union{Nothing,Quadrature}}
+struct RefTensor{K, T, R <: Union{Nothing, Quadrature}}
     t::Tuple
     sch::R
     dict::Dict{K, T}
 end
 
-function RefTensor(t::Term{N, ConstantCoeff, T, Measure{F,I,P}}) where {N,T<: Tuple,F,I,P}
+function RefTensor(t::Term{N, ConstantCoeff, T, Measure{F, I, P}}) where {N, T <: Tuple, F, I, P}
     (; integrand, measure) = t
     (; operation) = integrand
     D = dim(measure)
-    op = _scalars_out(operation,F,Val(D))
+    op = _scalars_out(operation, F, Val(D))
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(StandardBasis(zeros(P,2D-1)...)) for _ in sfs)...,)
-    key = degs.(bs)
+    bs = ((first(StandardBasis(zeros(P, 2D - 1)...)) for _ in sfs)...,)
+    key = obtainkey(elementtype(measure), bs)
     poly_tensor = _totensor(globpart, bs...)
-    tensor = ref_integrate.(poly_tensor)
+    tensor = integrate.(poly_tensor, _val())
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U,Nothing}(globpart,nothing, d)
+    return RefTensor{K, U, Nothing}(globpart, nothing, d)
 end
 
-function RefTensor(t::Term{N, VariableCoeff, T, Measure{F,I,P}}) where {N, T <: Tuple,F,I,P}
+function RefTensor(t::Term{N, VariableCoeff, T, Measure{F, I, P}}) where {N, T <: Tuple, F, I, P}
     (; integrand, measure) = t
     (; operation) = integrand
-    (;mesh,sch) = measure
+    (; mesh, sch) = measure
     D = dim(measure)
-    B = basistype(mesh)
-    op = _scalars_out(operation,F,Val(D))
+    op = _scalars_out(operation, F, Val(D))
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(B(zeros(P,2D-1)...)) for _ in sfs)...,)
-    key = degs.(bs)
+    bs = ((first(B(zeros(P, 2D - 1)...)) for _ in sfs)...,)
+    key = obtainkey(elementtype(measure), bs)
     poly_tensor = _totensor(globpart, bs...)
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeArrayDefault,(2w*poly_tensor(x) for (x,w) in zip(sch.points,sch.weights)))
+    tensor = collect_as(FixedSizeArrayDefault, (2w * poly_tensor(x) for (x, w) in zip(sch.points, sch.weights)))
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U, typeof(sch)}(globpart, sch,d)
+    return RefTensor{K, U, typeof(sch)}(globpart, sch, d)
 end
 
+_val(::Triangle, ::Measure) = Val(0)
+function _val(e::Edge, meas::Measure)
+    elementtype(meas)::Edge
+    m = mesh(meas)
+    eds = elements(meas)
+    adj = adjacents(eds[e])
+    t = Triangle(adj[1], eds...)
+    _, t_eds = psortededges(t, m)
+    j = findfirst(isequal.(e, t_eds))
+    return Val(j)
+end
+
+obtainkey(::Type{T}, bs) where {T <: Triangle} = degs.(bs)
+obtainkey(::Type{T}, bs) where {T <: Edge} = (1, degs.(bs)...)
 
 
-
-function (lt::RefTensor{K,T,Nothing})(bs...) where {K,T}
+function (lt::RefTensor{K, T, Nothing})(bs...) where {K, T}
     key = degs.(bs)
     haskey(lt.dict, key) && return lt.dict[key]
     poly_tensor = _totensor(lt.t, bs...)
@@ -58,13 +70,13 @@ function (lt::RefTensor{K,T,Nothing})(bs...) where {K,T}
     lt.dict[key] = tensor
     return tensor
 end
-function (lt::RefTensor{K,T,R})(bs...) where {K,T,R<:Quadrature}
+function (lt::RefTensor{K, T, R})(bs...) where {K, T, R <: Quadrature}
     key = degs.(bs)
-    (;points,weights) = lt.sch
+    (; points, weights) = lt.sch
     haskey(lt.dict, key) && return lt.dict[key]
     poly_tensor = _totensor(lt.t, bs...)
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeVectorDefault,2w*poly_tensor(x) for (x,w) in zip(points,weights))
+    tensor = collect_as(FixedSizeVectorDefault, 2w * poly_tensor(x) for (x, w) in zip(points, weights))
     lt.dict[key] = tensor
     return tensor
 end
@@ -77,7 +89,6 @@ Decides if a factor `a` in an `Operation` belongs to its global part (`ShapeFunc
 _isglobal(::Any) = true
 _isglobal(::Function) = false
 _isglobal(::DiffOperator) = false
-
 
 
 """
@@ -117,9 +128,6 @@ function global_part(op::Operation)
 end
 
 
-
-
-
 # get_shape_functions(sf::ShapeFunction, mesh::HPTriangulation) = _adjust_to_mesh(sf, mesh)
 # get_shape_functions(::Any, ::HPTriangulation) = ()
 # get_shape_functions(t::Tuple, ::HPTriangulation) = filter(Base.Fix2(isa, ShapeFunction), t)
@@ -141,17 +149,15 @@ Evaluates `t` recursively to produce a `Tensor`. `t` must be the global or local
     _totensor(t::Tuple,test,sch::Quadrature)
     _totensor(t::Tuple,)
 """
-_totensor(a::Any,_,_) = a
-_totensor(a::Any,_) = a
+_totensor(a::Any, _, _) = a
+_totensor(a::Any, _) = a
 _totensor(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
 _totensor(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
 _totensor(t::NTuple{1}, trial, test) = _totensor(t[1], trial, test)
 _totensor(t::Tuple, trial, test) = t[2](_totensor(t[1], trial, test), _totensor(t[3:end], trial, test))
-_totensor(sf::ShapeFunction{Test},test) = operator(sf)(test)
-_totensor(t::NTuple{1},test) = _totensor(t[1],test)
-_totensor(t::Tuple,test) = t[2](_totensor(t[1],test),_totensor(t[3:end],test))
-
-
+_totensor(sf::ShapeFunction{Test}, test) = operator(sf)(test)
+_totensor(t::NTuple{1}, test) = _totensor(t[1], test)
+_totensor(t::Tuple, test) = t[2](_totensor(t[1], test), _totensor(t[3:end], test))
 
 
 # constantcollapser(t::Tuple) = aff::AffineToRef -> _totensor(t,aff)
@@ -176,5 +182,3 @@ _totensor(t::Tuple,test) = t[2](_totensor(t[1],test),_totensor(t[3:end],test))
 #     efectiveop = DICT_OP[o.op]
 #     return efectiveop(_eval_operation.(o.parts, trial, test)...)
 # end
-
-

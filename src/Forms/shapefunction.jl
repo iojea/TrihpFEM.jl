@@ -57,9 +57,5 @@ isadjoint(::DiffOperator) = false
 isadjoint(::AdjointGradient) = true
 isadjoint(::AdjointDiffMatrix) = true
 
-PolyFields.dim(::ShapeFunction{T, O, N, D}) where {T, O, N, D} = D
-basis(::ShapeFunction{T, O, 1, 2}, degs) where {T, O} = StandardBasis(degs)
-basis(::ShapeFunction{T, O, 1, 1}, deg) where {T, O} = LegendreIterator(deg)
 
 Base.adjoint(::ShapeFunction{T, O, N, D}) where {T, O, N, D} = ShapeFunction{T, adjoint(O), N, D}()
-
