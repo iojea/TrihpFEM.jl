@@ -23,6 +23,10 @@ struct AffineToRef{D,F <: Real,L}
         return new{D,F,L}(A,b)
     end
 end
+
+
+#### HAY QUE DEFINIR AFFINETOREF(e::EDGE,m::MEASURE) o algo así
+
 function affinetoref_matrix(::Val{2},v)
     v1,v2,v3 = v
     tup = ((v2[1]-v1[1])/2,(v2[2]-v1[2])/2,(v3[1]-v2[1])/2,(v3[2]-v2[2])/2)

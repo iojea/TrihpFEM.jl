@@ -1,3 +1,4 @@
+
 """
     Edge{I} <: SetTuple
 a struct for storing an edge of a triangulation. It contains an `NTuple{2,I}` that stores the indices of the two vertices. 

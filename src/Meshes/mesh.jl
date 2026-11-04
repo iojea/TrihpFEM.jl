@@ -419,7 +419,7 @@ function setboundary!(
     (; points, edgelist) = m
     for ea in pairs(edgelist)
         e = first(ea)
-        if condition(points[e[1]]) && condition(points[e[2]])
+        if tag(last(ea))>0 && condition(points[e[1]]) && condition(points[e[2]])
             settag!(last(ea), P(i))
         end
     end

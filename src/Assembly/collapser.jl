@@ -34,9 +34,8 @@ struct Collapser{T<:Tuple,C<:CoeffType}
     function Collapser(t::Term{N,C}) where {N,C<:CoeffType} 
         (; integrand, measure) = t
         (; operation) = integrand
-        B = basistype(measure.mesh)
         F = floattype(measure.mesh)
-        op = _scalars_out(operation,F,Val(PolyFields.dim(B)))
+        op = _scalars_out(operation,F)
         locpart = local_part(op)
         new{typeof(locpart),C}(locpart)
     end

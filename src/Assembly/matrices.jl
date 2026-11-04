@@ -35,7 +35,7 @@ function assembly_matrix(term::Term{2})
 end
 function assembly_matrix(form::Form{2})
     (; terms) = form
-    mesh = domainmesh(first(terms))
+    mesh = getmesh(first(terms))
     ℓ = degrees_of_freedom!(mesh)
     N = sum(map(length, mesh.dofs.by_tri) .^ 2)
     ivec, jvec, vals = _initvectors(mesh, N)
@@ -46,7 +46,16 @@ function assembly_matrix(form::Form{2})
 end
 
 
-PolyFields.AffineToRef(t::Triangle,m::HPMesh) = AffineToRef(m.points[t])
+PolyFields.AffineToRef(tri::Triangle,m::HPMesh) = AffineToRef(m.points[tri])
+
+function PolyFields.AffineToRef(e::Edge,m::HPMesh)
+    adj = adjacents(m.edgelist[e])
+    adj[2]==0 || throw(ArgumentError("Is not possible to create an `AffineToRef` transformation from an interior edge."))
+    tri = Triangle(e[1],e[2],adj[1])
+    AffineToRef(tri,m)
+end
+
+
 """
    add_to_matrix!(ivec,jvec,vals,t::Term{2}) 
 """
@@ -58,16 +67,15 @@ function add_to_matrix!(ivec,jvec,vals,t::Term{2})
     nmax = maximum(length.(mesh.dofs.by_tri))
     v = zeros(floattype(mesh), nmax, nmax)
     r = 1
-    for el in elements(meas)
-        b₁ = basis(el,mesh)
-        b₂ = basis(el,mesh)
-        aff = AffineToRef(el,mesh)
+    for (el,_) in elements(meas)
+        aff = AffineToRef(el,getmesh(t))
+        degs,b₁ = _extract(el,meas)
+        b₂ = StandardBasis(degs[2:end])
         for (j,ψ) in enumerate(b₂)
             for (i,φ) in enumerate(b₁)
-                v[i,j] = _collapse(reftensor,collapser,aff,t,φ,ψ)
+                v[i,j] = _collapse(reftensor,collapser,el,aff,φ,ψ)
             end
         end
-        degs,_ = psortednodes(el,mesh)
         C = changetostd(t,degs)
         locdof = dof(el, mesh)
         dim = length(locdof)
@@ -80,20 +88,20 @@ function add_to_matrix!(ivec,jvec,vals,t::Term{2})
 end
 
 
-function _collapse(rt::RefTensor,
+function _collapse(rt::RefTensor{K,T,Nothing},
                    c::Collapser,
+                   el::MeshElement,
                    aff::AffineToRef,
-                   ::Term{N,ConstantCoeff},
-                   bs...) where N
-    rt(bs...)⋅c(aff)
+                   bs...) where {K,T}
+    rt(el,bs...)⋅c(aff)
 end
 
-function _collapse(rt::RefTensor,
+function _collapse(rt::RefTensor{K,T,R},
                    c::Collapser,
+                   el::MeshElement,
                    aff::AffineToRef,
-                   t::Term{N,VariableCoeff},
-                   bs...) where N
-    rt(bs...)⋅c(aff,t.measure.sch)
+                   bs...) where {K,T,R<:Quadrature}
+    rt(el,bs...)⋅c(aff,rt.sch)
 end
 
 _dot(a::Number,b::Number) = a*b
@@ -109,7 +117,7 @@ function assembly_rhs(term::Term{1})
 end
 function assembly_rhs(form::Form{1})
     (; terms) = form
-    mesh = domainmesh(first(terms))
+    mesh = getmesh(first(terms))
     ℓ = ndof(mesh)
     vals = _init_rhs(mesh, ℓ)
     for t in terms
@@ -126,19 +134,20 @@ integrates `t` adding the results to `vals`.
 """
 function add_to_rhs!(vals, t::Term{1})
     mesh = getmesh(t)
+    meas = getmeasure(t)
     reftensor = RefTensor(t)
     collapser = Collapser(t)
     nmax = maximum(length.(mesh.dofs.by_tri))
     v = zeros(floattype(mesh), nmax)
     r = 1
-    for el in elements(mesh)
-        b = basis(el,mesh)
+    for (el,_) in elements(meas)
+        degs,b = _extract(el,meas)
         aff = AffineToRef(el,mesh)
         for (i,ψ) in enumerate(b)
-                v[i] = _collapse(reftensor,collapser,aff,t,ψ)
+                v[i] = _collapse(reftensor,collapser,el,aff,ψ)
         end
-        degs,_ = psortednodes(el,mesh)
         C = changetostd(t,degs)
+        
         locdof = dof(el, mesh)
         dim = length(locdof)
         mul!(view(vals,locdof),C',view(v,1:dim))

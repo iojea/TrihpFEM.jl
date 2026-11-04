@@ -6,7 +6,7 @@ abstract type AbstractForm end
 """
    Term 
 """
-struct Term{N, C <: CoeffType, T <: Tuple, M <: Measure} <: AbstractForm
+struct Term{N, C <: CoeffType, T <: Tuple, M <: AbstractMeasure} <: AbstractForm
     integrand::Integrand{C, T, N}
     measure::M
     Term(i::Integrand{C, T, N}, m::M) where {C, T, N, M} = new{N, C, T, M}(i, m)
@@ -19,11 +19,28 @@ struct Form{N} <: AbstractForm
     terms::Tuple{Vararg{Term{N}}}
 end
 
-changetostd(t::Term, degs) = t.measure.mesh.cmatrix(degs)
+function changetostd(t::Term, degs::NTuple{4,P}) where P<:Integer
+    _changetostd(t,Val(Int(degs[1])),degs[2:end])
+end
+
+_changetostd(t::Term,::Val{0},degs) = t.measure.mesh.cmatrix(degs)
+function _changetostd(t::Term,v::Val{N},degs) where N
+    C = t.measure.mesh.cmatrix(degs)
+    inds = _indices(Val(Int(N)),degs)
+    view(C,inds,inds)
+end
+
+_indices(::Val{0},degs::NTuple{3,P}) where P<:Integer = 1:length(StandardBasis(degs))
+_indices(::Val{1},degs::NTuple{3,P}) where P<:Integer = 1:(degs[1]+1)
+_indices(::Val{2},degs::NTuple{3,P}) where P<:Integer = (degs[1]+1):(degs[1]+degs[2]+1)
+_indices(::Val{3},degs::NTuple{3,P}) where P<:Integer = mod1.((degs[1]+degs[2]+1):(sum(degs)+1),sum(degs))
+
+
+
 getmesh(t::Term) = t.measure.mesh
 getmeasure(t::Term) = t.measure
 
-function Base.:*(inte::Integrand, meas::Measure)
+function Base.:*(inte::Integrand, meas::AbstractMeasure)
     return Term(inte, meas)
 end
 function Base.:-(term::Term)

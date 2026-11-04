@@ -1,87 +1,102 @@
+const MeshElement = Union{Edge,Triangle}
+
+
 """
    RefTensor{D}
    A memoisation struct for computing the local tensor corresponding to a certain basis.
 """
 struct RefTensor{K, T, R <: Union{Nothing, Quadrature}}
+    meas::AbstractMeasure
     t::Tuple
     sch::R
     dict::Dict{K, T}
 end
 
-function RefTensor(t::Term{N, ConstantCoeff, T, Measure{F, I, P}}) where {N, T <: Tuple, F, I, P}
+function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, F, I, P,M<:AbstractMeasure{F, I, P}}
     (; integrand, measure) = t
     (; operation) = integrand
     D = dim(measure)
-    op = _scalars_out(operation, F, Val(D))
+    op = _scalars_out(operation, F)
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(StandardBasis(zeros(P, 2D - 1)...)) for _ in sfs)...,)
-    key = obtainkey(elementtype(measure), bs)
-    poly_tensor = _totensor(globpart, bs...)
-    tensor = integrate.(poly_tensor, _val())
+    bs = ((first(StandardBasis(zeros(P, 3)...)) for _ in sfs)...,)
+    key = obtainkey(measure, bs)
+    poly_tensor = _topolytensor(globpart, bs...)
+    tensor = integrate.(poly_tensor, _val(measure)) 
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U, Nothing}(globpart, nothing, d)
+    return RefTensor{K, U, Nothing}(measure,globpart, nothing, d)
 end
 
-function RefTensor(t::Term{N, VariableCoeff, T, Measure{F, I, P}}) where {N, T <: Tuple, F, I, P}
+function RefTensor(t::Term{N, VariableCoeff, T, M}) where {N, T <: Tuple, F, I, P,M<:AbstractMeasure{F, I, P}}
     (; integrand, measure) = t
     (; operation) = integrand
     (; mesh, sch) = measure
+    (;points,weights) = sch
     D = dim(measure)
-    op = _scalars_out(operation, F, Val(D))
+    v = _val(measure)
+    J = _jac(v)
+    pts = _schpoints(points,v)
+    op = _scalars_out(operation, F)
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(B(zeros(P, 2D - 1)...)) for _ in sfs)...,)
-    key = obtainkey(elementtype(measure), bs)
-    poly_tensor = _totensor(globpart, bs...)
+    bs = ((first(StandardBasis(zeros(P, 3)...)) for _ in sfs)...,)
+    key = obtainkey(measure, bs)
+    poly_tensor = _topolytensor(globpart, bs...)
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeArrayDefault, (2w * poly_tensor(x) for (x, w) in zip(sch.points, sch.weights)))
+    tensor = collect_as(FixedSizeArrayDefault, (J*w * poly_tensor(x) for (x, w) in zip(pts,weights)))
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U, typeof(sch)}(globpart, sch, d)
+    return RefTensor{K, U, typeof(sch)}(measure,globpart, sch, d)
 end
 
-_val(::Triangle, ::Measure) = Val(0)
-function _val(e::Edge, meas::Measure)
-    elementtype(meas)::Edge
+_val(::Measure) = Val(0)
+_val(::BoundaryMeasure) = Val(1)
+_val(::Triangle,::Measure) = Val(0)
+function _val(e::Edge{I},meas::BoundaryMeasure) where I
     m = mesh(meas)
     eds = elements(meas)
-    adj = adjacents(eds[e])
-    t = Triangle(adj[1], eds...)
+    adj = adjacents(last(eds[e]))
+    t = Triangle{I}(e[1],e[2],adj[1])
     _, t_eds = psortededges(t, m)
-    j = findfirst(isequal.(e, t_eds))
+    j = findfirst(isequal(e), t_eds)
     return Val(j)
 end
 
-obtainkey(::Type{T}, bs) where {T <: Triangle} = degs.(bs)
-obtainkey(::Type{T}, bs) where {T <: Edge} = (1, degs.(bs)...)
+obtainkey(::Measure, bs) = (0,degs.(bs)...)
+obtainkey(::BoundaryMeasure, bs) = (1, degs.(bs)...)
 
-
-function (lt::RefTensor{K, T, Nothing})(bs...) where {K, T}
-    key = degs.(bs)
-    haskey(lt.dict, key) && return lt.dict[key]
-    poly_tensor = _totensor(lt.t, bs...)
-    tensor = ref_integrate.(poly_tensor)
-    lt.dict[key] = tensor
+function (lt::RefTensor{K, T, Nothing})(el::MeshElement,bs...) where {K, T}
+    (;meas,t,dict) = lt
+    v = _val(el,meas)
+    key = _tokey(v,degs.(bs)...)
+    haskey(dict, key) && return dict[key]
+    poly_tensor = _topolytensor(t, bs...)
+    tensor = integrate.(poly_tensor,v)
+    dict[key] = tensor
     return tensor
 end
-function (lt::RefTensor{K, T, R})(bs...) where {K, T, R <: Quadrature}
-    key = degs.(bs)
-    (; points, weights) = lt.sch
-    haskey(lt.dict, key) && return lt.dict[key]
-    poly_tensor = _totensor(lt.t, bs...)
+function (lt::RefTensor{K, T, R})(el::MeshElement,bs...) where {K, T, R <: Quadrature}
+    (;meas,t,sch,dict) = lt
+    v = _val(el,meas)
+    J = _jac(v)
+    key = _tokey(v,degs.(bs)...)
+    (; points, weights) = sch
+    pts = _schpoints(points,v)
+    haskey(lt.dict, key) && return dict[key]
+    poly_tensor = _topolytensor(t, bs...)
+    
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeVectorDefault, 2w * poly_tensor(x) for (x, w) in zip(points, weights))
-    lt.dict[key] = tensor
+    tensor = collect_as(FixedSizeVectorDefault, J* poly_tensor(x) for (x, w) in zip(pts, weights))
+    dict[key] = tensor
     return tensor
 end
 
-
+_tokey(::Val{N},a...) where N = (N,a...)
 """
    _isglobal(a)
 Decides if a factor `a` in an `Operation` belongs to its global part (`ShapeFunction`s and constants).
@@ -92,21 +107,21 @@ _isglobal(::DiffOperator) = false
 
 
 """
-   _scalars_out(op::Operation,::Type{F},::Val{D})
-takes `Operation` `op` and moves scalars (numbers of scalar functions) to the left, returning a reorderd `Operation`. This is done because it is the easiest way to ensure that scalars operate against other factors with a simple product (*) and not an outer product (⊗). The product itself will always reduce to a simple product (because ⊗ applied to scalars is just *), but other adjacent products will produce unnessesary large tensors. E.g.: if `B` is a matrix from an `AffineToRef` and `z isa Number` the product `∇(u)'*B'*z*B*∇(v)` would be  converted into a global term `∇(u)'⊗z⊗∇(v)` and a local term `B'⊗B`. However, is the scalar `z` is extracted, the new `Operation` is `z*∇(u)'*B'*B*∇(v)` which results in the global term `z*∇u'⊗∇(v)` and the local term `B'*B`.
+   _scalars_out(op::Operation,::Type{F})
+takes `Operation` `op` and moves scalars (numbers or scalar functions) to the left, returning a reorderd `Operation`. This is done because it is the easiest way to ensure that scalars operate against other factors with a simple product (*) and not an outer product (⊗). The product itself will always reduce to a simple product (because ⊗ applied to scalars is just *), but other adjacent products will produce unnessesary large tensors. E.g.: if `B` is a matrix from an `AffineToRef` and `z isa Number` the product `∇(u)'*B'*z*B*∇(v)` would be  converted into a global term `∇(u)'⊗z⊗∇(v)` and a local term `B'⊗B`. However, is the scalar `z` is extracted, the new `Operation` is `z*∇(u)'*B'*B*∇(v)` which results in the global term `z*∇u'⊗∇(v)` and the local term `B'*B`.
 """
-function _scalars_out(op::Operation{C}, ::Type{F}, ::Val{D}) where {C <: CoeffType, F, D}
+function _scalars_out(op::Operation{C}, ::Type{F}) where {C <: CoeffType, F}
     for i in 3:2:length(op)
-        if _isscalar(op[i], F, Val(D))
+        if _isscalar(op[i], F)
             op = Operation{C}(op[i], *, op[1:(i - 2)]..., op[(i + 1):end]...)
         end
     end
     return op
 end
-_isscalar(::Any, _, _) = false
-_isscalar(::Number, _, _) = true
-function _isscalar(f::Function, ::Type{F}, ::Val{D}) where {F, D}
-    return f(zeros(F, D)) isa Number
+_isscalar(::Any, _) = false
+_isscalar(::Number, _) = true
+function _isscalar(f::Function, ::Type{F}) where {F}
+    return f(zeros(F,2)) isa Number
 end
 
 """
@@ -140,32 +155,40 @@ end
 
 
 """
-    _totensor(t::Tuple,trial,test)
-    _totensor(t::Tuple,test)
-    _totensor(t::Tuple,aff::AffineToRef)
+    _topolytensor(t::Tuple,trial,test)
+    _topolytensor(t::Tuple,test)
+    _topolytensor(t::Tuple,aff::AffineToRef)
 Evaluates `t` recursively to produce a `Tensor`. `t` must be the global or local part of an `Operation`.
 
-    _totensor(t::Tuple,trial,test,sch::Quadrature)
-    _totensor(t::Tuple,test,sch::Quadrature)
-    _totensor(t::Tuple,)
+    _topolytensor(t::Tuple,trial,test,sch::Quadrature)
+    _topolytensor(t::Tuple,test,sch::Quadrature)
+    _topolytensor(t::Tuple,)
 """
-_totensor(a::Any, _, _) = a
-_totensor(a::Any, _) = a
-_totensor(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
-_totensor(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
-_totensor(t::NTuple{1}, trial, test) = _totensor(t[1], trial, test)
-_totensor(t::Tuple, trial, test) = t[2](_totensor(t[1], trial, test), _totensor(t[3:end], trial, test))
-_totensor(sf::ShapeFunction{Test}, test) = operator(sf)(test)
-_totensor(t::NTuple{1}, test) = _totensor(t[1], test)
-_totensor(t::Tuple, test) = t[2](_totensor(t[1], test), _totensor(t[3:end], test))
+_topolytensor(a::Any, _, _) = a
+_topolytensor(a::Any, _) = a
+_topolytensor(sf::ShapeFunction{Trial}, trial, _) = operator(sf)(trial)
+_topolytensor(sf::ShapeFunction{Test}, _, test) = operator(sf)(test)
+_topolytensor(t::NTuple{1}, trial, test) = _topolytensor(t[1], trial, test)
+_topolytensor(t::Tuple, trial, test) = t[2](_topolytensor(t[1], trial, test), _topolytensor(t[3:end], trial, test))
+_topolytensor(sf::ShapeFunction{Test}, test) = operator(sf)(test)
+_topolytensor(t::NTuple{1}, test) = _topolytensor(t[1], test)
+_topolytensor(t::Tuple, test) = t[2](_topolytensor(t[1], test), _topolytensor(t[3:end], test))
 
 
-# constantcollapser(t::Tuple) = aff::AffineToRef -> _totensor(t,aff)
+_schpoints(points,::Val{0}) = points
+_schpoints(points,::Val{1}) = collect_as(FixedSizeVectorDefault,(Point2D(x,-one(x)) for x in points))
+_schpoints(points,::Val{2}) = collect_as(FixedSizeVectorDefault,(Point2D(one(x),x) for x in points))
+_schpoints(points,::Val{3}) = collect_as(FixedSizeVectorDefault,(Point2D(x,x) for x in points))
+
+_jac(::Val{N}) where N = 2
+_jac(::Val{3}) = 2sqrt(2)
+
+# constantcollapser(t::Tuple) = aff::AffineToRef -> _topolytensor(t,aff)
 
 
-# _totensor(a::Function,aff::AffineToRef) = a∘aff
-# _totensor(t::NTuple{1},aff::AffineToRef) = _totensor(t[1],aff,trial,test)
-# _totensor(t::Tuple,aff::AffineToRef) = x->t[2](_totensor(t[1],aff)(x),_totensor(t[3:end],aff))(x)
+# _topolytensor(a::Function,aff::AffineToRef) = a∘aff
+# _topolytensor(t::NTuple{1},aff::AffineToRef) = _topolytensor(t[1],aff,trial,test)
+# _topolytensor(t::Tuple,aff::AffineToRef) = x->t[2](_topolytensor(t[1],aff)(x),_topolytensor(t[3:end],aff))(x)
 
 
 # _eval_operation(z::Any, _, _) = z

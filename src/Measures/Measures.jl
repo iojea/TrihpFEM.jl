@@ -18,7 +18,7 @@ import ..Meshes: elements
 
 include("meas.jl")
 
-export Measure, BoundaryMeasure
-export elements, mesh, basis, dim
+export AbstractMeasure,Measure, BoundaryMeasure
+export elementtype,elements, mesh, basis, dim, _extract
 
 end; #module

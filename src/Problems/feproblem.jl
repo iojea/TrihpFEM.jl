@@ -30,10 +30,10 @@ mutable struct FEProblem{F₁, F₂} <: AbstractProblem
 end
 FEProblem(a, b) = FEProblem(a, b, x -> zero(eltype(x)))
 
-Meshes.domainmesh(p::AbstractProblem) = domainmesh(first(p.a.terms))
+mesh(p::AbstractProblem) = getmesh(first(p.a.terms))
 
 function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
-    mesh = domainmesh(first(prob.a.terms).measure)
+    mesh = getmesh(first(prob.a.terms))
     (; points, edgelist, dofs) = mesh
     vals = FixedSizeVector{floattype(mesh)}(undef, ndof(mesh))
     dirichlet = Vector{inttype(mesh)}(undef, 0)
@@ -58,7 +58,7 @@ function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
 end
 
 function update!(prob::FEProblem)
-    Meshes.empty!(domainmesh(prob).dofs)
+    Meshes.empty!(mesh(first(prob.terms)).dofs)
     prob.K = assembly_matrix(prob.a)
     prob.rhs = assembly_rhs(prob.b)
     return nothing

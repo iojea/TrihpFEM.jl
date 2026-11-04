@@ -17,7 +17,7 @@ module Meshes
     export Point2D,Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation, HPMesh,BoundaryHPMesh, DOF
     export triangle, hpmesh, data, elements
     export tag, degree, dof, ndof, longestedge, tagged_dof
-    export ismarked, isgreen, isblue, isred, istagged, isinterior, isboundary
+    export ismarked, isgreen, isblue, isred, istagged, isinterior, isboundary,adjacents
     export inttype, floattype, degtype
     export degrees_of_freedom!, isempty, empty!
     export settag!, setdegree!, setboundary!, setdirichlet!, setneumann!
