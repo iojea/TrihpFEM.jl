@@ -14,7 +14,7 @@ module Meshes
 
     using ..PolyFields
     
-    export Point2D,Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation, HPMesh,BoundaryHPMesh, DOF
+    export Point2D,Edge, EdgeAttributes, Triangle, TriangleAttributes, HPTriangulation, HPMesh, BoundaryHPMesh, DOF
     export triangle, hpmesh, data, elements
     export tag, degree, dof, ndof, longestedge, tagged_dof
     export ismarked, isgreen, isblue, isred, istagged, isinterior, isboundary,adjacents
