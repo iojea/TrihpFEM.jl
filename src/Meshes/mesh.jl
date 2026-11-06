@@ -26,7 +26,7 @@ abstract type HPTriangulation end
 """
 
     DOF{I<:Integer}
-an `struct` for storing the degrees of freedom of a mesh. It can be initialized as an empty structure with
+a struct for storing the degrees of freedom of a mesh. It can be initialized as an empty structure with
 ```
     julia> DOF{Int64}();
 ```
@@ -64,7 +64,7 @@ Base.copy(dof::DOF{I}) where I = DOF{I}(Ref{I}(length(dof)),
                                         deepcopy(dof.by_tri),
                                         Ref{I}(getgen(dof))
                                     )
-getgen(dof::DOF{I}) where I = dof.gen[]
+gen(dof::DOF{I}) where I = dof.gen[]
 setgen!(dof::DOF{I},g::I) where I = dof.gen[] = g 
 
 ############################################
@@ -478,7 +478,7 @@ floattype(::HPMesh{F, I, P}) where {F, I, P} = F
     getgen(m::HPMesh)
 returns the generation number of `m`. The generation number is bumped after every refinement process.     
 """
-getgen(m::HPMesh) = m.gen[]
+gen(m::HPMesh) = m.gen[]
 """
     upgen!(m::HPMesh)
 Bumps the generation of a mesh. This is done after refinement.
@@ -525,21 +525,6 @@ retuns the degrees of freedom of the mesh `m`.
 """
 @inline dof(mesh) = mesh.dofs
 
-# """
-#     isgreen(t::Triangle,m::HPMesh
-# retuns `true` if triangle `t` in `m` is marked green.
-# """
-# @inline isgreen(t::Triangle,m::HPMesh) = m.trilist[t].refine[] == 1
-# """
-#     isblue(t::Triangle,m::HPMesh
-# retuns `true` if triangle `t` in `m` is marked blue.
-# """
-# @inline isblue(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 2
-# """
-#     isred(t::Triangle,m::HPMesh
-# retuns `true` if triangle `t` in `m` is marked red.
-# """
-# @inline isred(t::Triangle,m::HPMesh)  = m.trilist[t].refine[] == 3
 
 """
     $(SIGNATURES)

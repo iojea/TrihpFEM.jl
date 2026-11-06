@@ -90,7 +90,7 @@ sets the degree of `e`.
     isinterior(e::EdgeAttributes)
 returns `true` if the edge is an interior one.  
 """
-@inline isinterior(e::EdgeAttributes) = e.tag[] == 0
+@inline isinterior(e::EdgeAttributes) = e.tag[] <= 0
 
 """
     isboundary(e::EdgeAttributes)

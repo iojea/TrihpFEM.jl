@@ -34,7 +34,6 @@ include("DifferentialOperators/DifferentialOperators.jl")
 include("Tensors/Tensors.jl")
 include("PolyFields/PolyFields.jl")
 include("Meshes/Meshes.jl")
-# include("Spaces/Spaces.jl")
 include("Integration/Integration.jl")
 include("Measures/Measures.jl")
 include("Forms/Forms.jl")
@@ -52,9 +51,6 @@ export Tensor, otimes, ⊗
 
 using ..PolyFields: ProductPoly, AffineToRef, LegendreIterator, StandardBasis, degs, PolyVectorField
 export ProductPoly, AffineToRef, LegendreIterator, StandardBasis, degs, PolyVectorField
-
-# using ..Spaces: StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis, ∇, Δ
-# export StdScalarSpace, StdVectorSpace, OperatorSpace, order, EvalType,   Pass, combine, basis
 
 
 using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁, edge_integrate₂, edge_integrate₃
