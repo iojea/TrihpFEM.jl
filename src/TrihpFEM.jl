@@ -40,8 +40,8 @@ include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
 
-using ..Meshes: Point2D, Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
-export Point2D, Edge, Triangle, HPMesh, BoundaryHPMesh, hpmesh, plothpmesh, dirichletboundary, neumannboundary, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
+using ..Meshes: Point2D, Edge, Triangle, HPMesh, hpmesh, plothpmesh, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
+export Point2D, Edge, Triangle, HPMesh, hpmesh, plothpmesh, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
 
 using ..DifferentialOperators: DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ, ∂x, ∂y
 export DiffOperator, Identity, Derivatex, Derivatey, Gradient, AdjointGradient, Divergence, Laplacian, gradient, divergence, laplacian, ∇, Δ, ∂x, ∂y
@@ -56,8 +56,8 @@ export ProductPoly, AffineToRef, LegendreIterator, StandardBasis, degs, PolyVect
 using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁, edge_integrate₂, edge_integrate₃
 export Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁, edge_integrate₂, edge_integrate₃
 
-using ..Forms: basis, Form, Term, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, ∫, Trial, Test
-export basis, Term, Form, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, Trial, Test, ∫
+using ..Forms: Form, Term, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, ∫, Trial, Test
+export Term, Form, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, Trial, Test, ∫
 
 using ..Measures: Measure, BoundaryMeasure, elements
 export Measure, BoundaryMeasure, elements

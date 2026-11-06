@@ -10,5 +10,10 @@ function (::Gradient)(s::FESolution{Identity, M, V}) where {M, V}
     return FESolution{Gradient, M, V}(s.mesh, s.vals)
 end
 
-underlyingmesh(s::FESolution) = s.mesh
+function (::Laplacian)(s::FESolution{Identity, M, V}) where {M, V}
+    return FESolution{Laplacian, M, V}(s.mesh, s.vals)
+end
+
+
+Meshes.mesh(s::FESolution) = s.mesh
 values(s::FESolution) = s.vals

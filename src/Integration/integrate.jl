@@ -1,19 +1,19 @@
 """
-   ref_integrate(p::ImmutablePolynomial)
+   tri_integrate(p::ImmutablePolynomial)
 
 Integrates `p` in the interval [-1,1]. The integration is performed exactly, with no quadratures.
 """
-function ref_integrate(p::ImmutablePolynomial{F, X, N}) where {F, X, N}
+function tri_integrate(p::ImmutablePolynomial{F, X, N}) where {F, X, N}
     ip = Polynomials.integrate(p)
     return ip(one(F)) - ip(-one(F))
 end
 """
 
-    ref_integrate(p::PolyScalarField)
+    tri_integrate(p::PolyScalarField)
 
 Integrates `p` in the reference triangle. The integration is performed exactly, with no quadratures.
 """
-function ref_integrate(p::ProductPoly{2, F}) where {F}
+function tri_integrate(p::ProductPoly{2, F}) where {F}
     px, py = p.polys
     qy = Polynomials.integrate(py)
     x = ImmutablePolynomial((zero(F), one(F)), :x)
@@ -21,16 +21,16 @@ function ref_integrate(p::ProductPoly{2, F}) where {F}
     q = Polynomials.integrate(qx)
     return q(one(F)) - q(-one(F))
 end
-ref_integrate(p::PolySum) = ref_integrate(p.left) + ref_integrate(p.right)
+tri_integrate(p::PolySum) = tri_integrate(p.left) + tri_integrate(p.right)
 
 
 """
 
-#     ref_integrate(fun,sch)
+#     tri_integrate(fun,sch)
 
 # Integrates `fun` in the reference triangle using the `Quadrature` `sch.  
 # """
-# function ref_integrate(fun,sch::Quadrature{D,R,V,P}) where {D,R,V,P}
+# function tri_integrate(fun,sch::Quadrature{D,R,V,P}) where {D,R,V,P}
 #     (;weights,points)= sch
 #      #measure of the element. Weights for 1D quadratures are already scaled to [-1,1], so we multiply by 1. The reference triangle has area 2.
 #     D*sum(w*fun(p) for (w,p) in zip(weights,points))
@@ -68,5 +68,5 @@ edge_integrate(p::ProductPoly{2}, ::Val{3}) = edge_integrate₃(p)
 edge_integrate(p::PolySum, ::Val{E}) where {E} = edge_integrate(p.left, Val(E)) + edge_integrate(p.right, Val(E))
 
 
-integrate(p::PolyScalarField, ::Val{0}) = ref_integrate(p)
-integrate(p::PolyScalarField, ::Val{N}) where {N} = edge_integrate(p, Val(N))
+ref_integrate(p::PolyScalarField, ::Val{0}) = tri_integrate(p)
+ref_integrate(p::PolyScalarField, ::Val{N}) where {N} = edge_integrate(p, Val(N))

@@ -1,14 +1,14 @@
-const TriangleList{F,I, P} = Dictionary{Triangle{I}, TriangleAttributes{F,P}} where {F,I, P}
-const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{I,P}} where {I, P}
+const TriangleList{F, I, P} = Dictionary{Triangle{I}, TriangleAttributes{F, P}} where {F, I, P}
+const EdgeList{I, P} = Dictionary{Edge{I}, EdgeAttributes{I, P}} where {I, P}
 
-abstract type Point{D,T} <: FieldVector{D,T} end
+abstract type Point{D, T} <: FieldVector{D, T} end
 
 """
    Point2D(x,y)
 
 creates a 2D point with coordinates `x` and `y`. They can be accessed with number indexing or by field. 
 """
-struct Point2D{T<:Real} <: Point{2,T}
+struct Point2D{T <: Real} <: Point{2, T}
     x::T
     y::T
 end
@@ -42,7 +42,7 @@ end
 function DOF{I}() where {I <: Integer}
     by_edge = Dictionary{Edge{I}, SArray{S, I, 1} where {S <: Tuple}}()
     by_tri = Dictionary{Triangle{I}, MArray{S, I, 1} where {S <: Tuple}}()
-    return DOF{I}(Base.RefValue{I}(zero(I)), by_edge, by_tri,Ref{I}(zero(I)))
+    return DOF{I}(Base.RefValue{I}(zero(I)), by_edge, by_tri, Ref{I}(zero(I)))
 end
 
 """
@@ -55,17 +55,18 @@ function Base.empty!(d::DOF{I}) where {I}
     empty!(d.by_tri)
     d.n[] = zero(I)
     d.gen[] = zero(I)
-    nothing
+    return nothing
 end
 Base.isempty(d::DOF{I}) where {I} = d.n[] == zero(I)
 Base.length(d::DOF) = d.n[]
-Base.copy(dof::DOF{I}) where I = DOF{I}(Ref{I}(length(dof)),
-                                        deepcopy(dof.by_edge),
-                                        deepcopy(dof.by_tri),
-                                        Ref{I}(getgen(dof))
-                                    )
-gen(dof::DOF{I}) where I = dof.gen[]
-setgen!(dof::DOF{I},g::I) where I = dof.gen[] = g 
+Base.copy(dof::DOF{I}) where {I} = DOF{I}(
+    Ref{I}(length(dof)),
+    deepcopy(dof.by_edge),
+    deepcopy(dof.by_tri),
+    Ref{I}(gen(dof))
+)
+gen(dof::DOF{I}) where {I} = dof.gen[]
+setgen!(dof::DOF{I}, g::I) where {I} = dof.gen[] = g
 
 ############################################
 ####      Domain Mesh construction      ####
@@ -89,40 +90,39 @@ builds an `HPMesh` from a `Triangulate.TriangulatioIO` struct.
 """
 struct HPMesh{F <: Real, I <: Integer, P <: Integer} <: HPTriangulation
     points::Vector{Point2D{F}}
-    trilist::TriangleList{F,I, P}
+    trilist::TriangleList{F, I, P}
     edgelist::EdgeList{I, P}
     dofs::DOF{I}
-    cmatrix::CMatrix{F,P}
+    cmatrix::CMatrix{F, P}
     gen::Base.RefValue{I}
     lock::Base.RefValue{Bool}
-    HPMesh{F,I,P}(v,t,e,d,c,g,l) where {F,I,P} = new{F,I,P}(v,t,e,d,c,Ref{I}(g),Ref{Bool}(l))
+    HPMesh{F, I, P}(v, t, e, d, c, g, l) where {F, I, P} = new{F, I, P}(v, t, e, d, c, Ref{I}(g), Ref{Bool}(l))
 end
 
 function HPMesh(
         v::Vector{Point2D{F}},
-        t::TriangleList{F,I,P},
+        t::TriangleList{F, I, P},
         e::EdgeList{I, P}
-    ) where {F,I, P}
-    return HPMesh{F,I,P}(v, t, e, DOF{I}(),CMatrix{F,P}(),one(I),false)
+    ) where {F, I, P}
+    return HPMesh{F, I, P}(v, t, e, DOF{I}(), CMatrix{F, P}(), one(I), false)
 end
 
-function HPMesh(mat::AbstractMatrix{F}, tris::TriangleList, edgs::EdgeList) where F
+function HPMesh(mat::AbstractMatrix{F}, tris::TriangleList, edgs::EdgeList) where {F}
     points = Point2D{F}.(eachcol(mat))
     println(typeof(points))
     return HPMesh(points, tris, edgs)
 end
 
 
-
 function HPMesh{F, I, P}(tri::TriangulateIO) where {F, I, P}
     (; pointlist, trianglelist, edgelist, edgemarkerlist) = tri
     points = Point2D{F}.(eachcol(pointlist))
     edgelist = maybeconvert(I, edgelist)
-    trianglelist = maybeconvert(I,trianglelist)
-    triangles = dictionary([triangle(I, t, pointlist) => TriangleAttributes{F,P}() for t in eachcol(trianglelist)])
-    edges = dictionary([Edge{I}(e) => EdgeAttributes(I,one(P), P(edgemarkerlist[i]), false) for (i, e) in enumerate(eachcol(edgelist))])
-    computeneighbors!(edges,triangles)
-    HPMesh(points, triangles, edges)
+    trianglelist = maybeconvert(I, trianglelist)
+    triangles = dictionary([triangle(I, t, pointlist) => TriangleAttributes{F, P}() for t in eachcol(trianglelist)])
+    edges = dictionary([Edge{I}(e) => EdgeAttributes(I, one(P), P(edgemarkerlist[i]), false) for (i, e) in enumerate(eachcol(edgelist))])
+    computeneighbors!(edges, triangles)
+    return HPMesh(points, triangles, edges)
 end
 
 
@@ -130,17 +130,19 @@ end
    computeneighbors!(tri::TriangulateIO())
 computes neighboring  
 """
-function computeneighbors!(edgelist::EdgeList,triangles::TriangleList)
+function computeneighbors!(edgelist::EdgeList, triangles::TriangleList)
     for t in keys(triangles)
-        for (i,e) in enumerate(edges(t))
+        for (i, e) in enumerate(edges(t))
             ep = edgelist[e]
-            j = 1+(ep.adjacent[1]>0)
-            setadjacent!(ep,j,_eval(t,i+2))
+            j = 1 + (ep.adjacent[1] > 0)
+            setadjacent!(ep, j, _eval(t, i + 2))
         end
     end
+    return
 end
 
-"""
+"""jldoctest
+
     $(SIGNATURES)
 
 A helper function for creating `hp`-meshes from boundary data.
@@ -150,35 +152,11 @@ For a simple polygonal mesh, it is enough to provide a matrix of `2×N` with the
 julia> vertices = [-1. 0.;1. 0.;1.5 1.;0. 1.5;-1. 1.]';
 
 julia> m = hpmesh(vertices,1.5)
-HPMesh{Float64, Int32, UInt8}
+julia> m = hpmesh(vertices,1.5)
+HPMesh{Float64, Int64, Int8}
   + 6 nodes.
   + 4 triangles.
   + 9 edges.
-6-element Vector{StaticArraysCore.SVector{2, Float64}}:
- [-1.0, 0.0]
- [1.0, 0.0]
- [1.5, 1.0]
- [0.0, 1.5]
- [-1.0, 1.0]
- [0.0, 0.0]
-
-4-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
- Int32[6, 5, 1] │ :noref
- Int32[4, 2, 3] │ :noref
- Int32[2, 4, 6] │ :noref
- Int32[6, 4, 5] │ :noref
-
-
-9-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
- Int32[1, 6] │ (0x01, :∂𝔇, :noref)
- Int32[6, 5] │ (0x01, :Ω°, :noref)
- Int32[5, 1] │ (0x01, :∂𝔇, :noref)
- Int32[4, 2] │ (0x01, :Ω°, :noref)
- Int32[2, 3] │ (0x01, :∂𝔇, :noref)
- Int32[3, 4] │ (0x01, :∂𝔇, :noref)
- Int32[4, 6] │ (0x01, :Ω°, :noref)
- Int32[6, 2] │ (0x01, :∂𝔇, :noref)
- Int32[4, 5] │ (0x01, :∂𝔇, :noref)
 ```
 
 For more complex meshes, a matrix of `segments` and a vector of `tags` can be passed. `segments` is a matrix of integers with size `2×S` indicating how vertices should be joined. `tags` is a vector of integers that impose a tag on each segment. The primary goal of tags is to indicate if a piece of boundary will hold Dirichlet (`tag==1`) or Neumann (`tag==2`) conditions. If ommited, Dirichlet conditions will be assumed. In the following example we create a mesh of a square where Neumann conditions are imposed on the upper half.
@@ -195,39 +173,6 @@ HPMesh{Float64, Int32, UInt8}
   + 8 nodes.
   + 6 triangles.
   + 13 edges.
-8-element Vector{StaticArraysCore.SVector{2, Float64}}:
- [0.0, 0.0]
- [1.0, 0.0]
- [1.0, 0.5]
- [1.0, 1.0]
- [0.0, 1.0]
- [0.0, 0.5]
- [0.5, 0.0]
- [0.5, 1.0]
-
-6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
- Int32[7, 6, 1] │ :noref
- Int32[3, 7, 2] │ :noref
- Int32[6, 3, 8] │ :noref
- Int32[8, 3, 4] │ :noref
- Int32[3, 6, 7] │ :noref
- Int32[6, 8, 5] │ :noref
-
-
-13-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
- Int32[6, 1] │ (0x01, :∂𝔇, :noref)
- Int32[1, 7] │ (0x01, :∂𝔇, :noref)
- Int32[7, 6] │ (0x01, :Ω°, :noref)
- Int32[7, 2] │ (0x01, :∂𝔇, :noref)
- Int32[2, 3] │ (0x01, :∂𝔇, :noref)
- Int32[3, 7] │ (0x01, :Ω°, :noref)
- Int32[6, 3] │ (0x01, :Ω°, :noref)
- Int32[3, 8] │ (0x01, :Ω°, :noref)
- Int32[8, 6] │ (0x01, :Ω°, :noref)
- Int32[3, 4] │ (0x01, :∂𝔑, :noref)
- Int32[4, 8] │ (0x01, :∂𝔑, :noref)
- Int32[8, 5] │ (0x01, :∂𝔑, :noref)
- Int32[5, 6] │ (0x01, :∂𝔑, :noref)
 ```
 Notice that some edges are marked as `∂𝔑`, i.e.: Neumann boundary.
 
@@ -245,39 +190,6 @@ HPMesh{Float64, Int32, UInt8}
   + 8 nodes.
   + 6 triangles.
   + 13 edges.
-8-element Vector{StaticArraysCore.SVector{2, Float64}}:
- [0.0, 0.0]
- [1.0, 0.0]
- [1.0, 0.5]
- [1.0, 1.0]
- [0.0, 1.0]
- [0.0, 0.5]
- [0.5, 0.0]
- [0.5, 1.0]
-
-6-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{UInt8, Float64}}
- Int32[7, 6, 1] │ :noref
- Int32[3, 7, 2] │ :noref
- Int32[6, 3, 8] │ :noref
- Int32[8, 3, 4] │ :noref
- Int32[3, 6, 7] │ :noref
- Int32[6, 8, 5] │ :noref
-
-
-13-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
- Int32[6, 1] │ (0x01, :∂𝔇, :noref)
- Int32[1, 7] │ (0x01, :∂𝔇, :noref)
- Int32[7, 6] │ (0x01, :Ω°, :noref)
- Int32[7, 2] │ (0x01, :∂𝔇, :noref)
- Int32[2, 3] │ (0x01, :∂𝔇, :noref)
- Int32[3, 7] │ (0x01, :Ω°, :noref)
- Int32[6, 3] │ (0x01, :Ω°, :noref)
- Int32[3, 8] │ (0x01, :Ω°, :noref)
- Int32[8, 6] │ (0x01, :Ω°, :noref)
- Int32[3, 4] │ (0x01, :∂𝔑, :noref)
- Int32[4, 8] │ (0x01, :∂𝔑, :noref)
- Int32[8, 5] │ (0x01, :∂𝔑, :noref)
- Int32[5, 6] │ (0x01, :∂𝔑, :noref)
 ```
 
 
@@ -293,86 +205,17 @@ julia> tags = [1,1,2,2,2,1,1,1,2,2];
 julia> hole = [0.3 0.3]';
 
 julia> m = hpmesh(vert,0.1;segments=segs,tags=tags,holes=hole)
-HPMesh{Float64, Int32, UInt8}
-  + 18 nodes.
-  + 21 triangles.
-  + 39 edges.
-18-element Vector{StaticArraysCore.SVector{2, Float64}}:
- [0.0, 0.0]
- [1.0, 0.0]
- [1.0, 0.5]
- [1.0, 1.0]
- [0.0, 1.0]
- [0.0, 0.5]
- [0.25, 0.25]
- [0.5, 0.25]
- [0.5, 0.5]
- [0.25, 0.5]
- [0.5, 0.0]
- [0.0, 0.75]
- [0.5, 1.0]
- [0.75, 0.0]
- [0.75, 0.375]
- [0.25, 1.0]
- [0.375, 0.75]
- [0.75, 0.6875]
-
-21-element Dictionaries.Dictionary{Triangle{Int32}, TrihpFEM.Meshes.TriangleAttributes{Float64,UInt8}}
-    Int32[6, 1, 7] │ :noref
-   Int32[1, 11, 7] │ :noref
-  Int32[10, 12, 6] │ :noref
-   Int32[6, 7, 10] │ :noref
-  Int32[9, 17, 10] │ :noref
- Int32[18, 13, 17] │ :noref
- Int32[12, 17, 16] │ :noref
-  Int32[14, 8, 11] │ :noref
-  Int32[2, 15, 14] │ :noref
-   Int32[2, 3, 15] │ :noref
-  Int32[15, 18, 9] │ :noref
-  Int32[18, 15, 3] │ :noref
-   Int32[8, 15, 9] │ :noref
-  Int32[12, 16, 5] │ :noref
- Int32[17, 12, 10] │ :noref
-   Int32[7, 11, 8] │ :noref
- Int32[16, 17, 13] │ :noref
-  Int32[14, 15, 8] │ :noref
-  Int32[18, 17, 9] │ :noref
-   Int32[3, 4, 18] │ :noref
-  Int32[4, 13, 18] │ :noref
-
-
-39-element Dictionaries.Dictionary{Edge{Int32}, TrihpFEM.Meshes.EdgeAttributes{UInt8}}
-   Int32[1, 7] │ (0x01, :Ω°, :noref)
-   Int32[7, 6] │ (0x01, :Ω°, :noref)
-   Int32[6, 1] │ (0x01, :∂𝔇, :noref)
-  Int32[1, 11] │ (0x01, :∂𝔇, :noref)
-  Int32[11, 7] │ (0x01, :Ω°, :noref)
-  Int32[6, 10] │ (0x01, :Ω°, :noref)
- Int32[10, 12] │ (0x01, :Ω°, :noref)
-  Int32[12, 6] │ (0x01, :∂𝔑, :noref)
-  Int32[7, 10] │ (0x01, :∂𝔑, :noref)
-  Int32[10, 9] │ (0x01, :∂𝔑, :noref)
-  Int32[9, 17] │ (0x01, :Ω°, :noref)
- Int32[17, 10] │ (0x01, :Ω°, :noref)
- Int32[13, 17] │ (0x01, :Ω°, :noref)
- Int32[17, 18] │ (0x01, :Ω°, :noref)
- Int32[18, 13] │ (0x01, :Ω°, :noref)
-             ⋮ │ ⋮
-  Int32[3, 15] │ (0x01, :Ω°, :noref)
- Int32[15, 18] │ (0x01, :Ω°, :noref)
-  Int32[18, 9] │ (0x01, :Ω°, :noref)
-  Int32[9, 15] │ (0x01, :Ω°, :noref)
-  Int32[3, 18] │ (0x01, :Ω°, :noref)
-   Int32[9, 8] │ (0x01, :∂𝔇, :noref)
-  Int32[8, 15] │ (0x01, :Ω°, :noref)
-  Int32[5, 12] │ (0x01, :∂𝔑, :noref)
-  Int32[16, 5] │ (0x01, :∂𝔑, :noref)
-   Int32[8, 7] │ (0x01, :∂𝔇, :noref)
- Int32[13, 16] │ (0x01, :∂𝔑, :noref)
-   Int32[3, 4] │ (0x01, :∂𝔑, :noref)
-  Int32[4, 18] │ (0x01, :Ω°, :noref)
-  Int32[4, 13] │ (0x01, :∂𝔑, :noref)
+HPMesh{Float64, Int64, Int8}
+  + 171 nodes.
+  + 294 triangles.
+  + 465 edges.
 ```
+
+Neumann boundary nodes can be set after creation: see [`setneumann!`](@ref).
+
+There are functions for creating simple meshes: see [`circmesh`](@ref), [`rectmesh`](@ref)
+
+There are functions for creating simple meshes: see [`circmesh`](@ref), [`rectmesh`](@ref).
 """
 function hpmesh(
         vertices, h;
@@ -383,7 +226,7 @@ function hpmesh(
         P = Int8,
         F = eltype(vertices)
     )
-    typemax(I)<typemax(Int64) && @warn "You are using $I for indices. Take into account that this imposes hard limits on the mesh: a combination of a large number of triangles and  relatively large polynomial degrees, produced along the `hp`-refinement, can give indices exceding `typemax($I)==$(typemax(I))`."
+    typemax(I) < typemax(Int64) && @warn "You are using $I for indices. Take into account that this imposes hard limits on the mesh: a combination of a large number of triangles and  relatively large polynomial degrees, produced during `hp`-refinement, can give indices exceding `typemax($I)==$(typemax(I))`."
     tri = TriangulateIO()
     tri.pointlist = F.(vertices)
     if isnothing(segments)
@@ -419,7 +262,7 @@ function setboundary!(
     (; points, edgelist) = m
     for ea in pairs(edgelist)
         e = first(ea)
-        if tag(last(ea))>0 && condition(points[e[1]]) && condition(points[e[2]])
+        if tag(last(ea)) > 0 && condition(points[e[1]]) && condition(points[e[2]])
             settag!(last(ea), P(i))
         end
     end
@@ -475,7 +318,7 @@ returns `F`
 floattype(::HPMesh{F, I, P}) where {F, I, P} = F
 
 """
-    getgen(m::HPMesh)
+    gen(m::HPMesh)
 returns the generation number of `m`. The generation number is bumped after every refinement process.     
 """
 gen(m::HPMesh) = m.gen[]
@@ -483,7 +326,7 @@ gen(m::HPMesh) = m.gen[]
     upgen!(m::HPMesh)
 Bumps the generation of a mesh. This is done after refinement.
 """
-upgen!(m::HPMesh{F,I,P}) where {F,I,P} = m.gen[] += one(I)
+upgen!(m::HPMesh{F, I, P}) where {F, I, P} = m.gen[] += one(I)
 
 """
     islocked(m::HPMesh)
@@ -494,16 +337,17 @@ islocked(m::HPMesh) = m.lock[]
     lock!(m::HPMesh)
 locks the mesh to prevent direct modification.
 """
-lock!(m::HPMesh) = m.lock[]=true
+lock!(m::HPMesh) = m.lock[] = true
 
-function Base.copy(mesh::HPMesh{F,I,P}) where {F,I,P}
-    HPMesh{F,I,P}(deepcopy(mesh.points),
-                  deepcopy(mesh.trilist),
-                  deepcopy(mesh.edgelist),
-                  copy(mesh.dofs),
-                  getgen(mesh),
-                  islocked(mesh)
-              )
+function Base.copy(mesh::HPMesh{F, I, P}) where {F, I, P}
+    return HPMesh{F, I, P}(
+        deepcopy(mesh.points),
+        deepcopy(mesh.trilist),
+        deepcopy(mesh.edgelist),
+        copy(mesh.dofs),
+        gen(mesh),
+        islocked(mesh)
+    )
 end
 
 """
@@ -512,12 +356,15 @@ retuns the edges of `m`, being `m` an `HPMesh` or an `EdgeList`.
 """
 @inline edges(list::T) where {T <: EdgeList} = keys(list)
 @inline edges(mesh::T) where {T <: HPMesh} = keys(mesh.edgelist)
+@inline edgedict(mesh::HPMesh) = mesh.edgelist
 """
   triangles(m) 
 retuns the triangles of `m`, being `m` and `HPMesh` or a `TriList`.
 """
 @inline triangles(list::T) where {T <: TriangleList} = keys(list)
 @inline triangles(mesh::T) where {T <: HPMesh} = keys(mesh.trilist)
+
+@inline tridict(mesh::HPMesh) = mesh.trilist
 
 """
   dof(m)
@@ -587,51 +434,15 @@ function psortednodes(t::Triangle{I}, mesh::HPMesh{F, I, P}) where {F, I, P}
     pind = psortperm(p)
     return p[pind], first.(eds[pind])
 end
-psortednodes(e::Edge{I},mesh::HPMesh{F,I,P}) where {F,I,P} = degree(mesh.edgelist[e]),e
-# """
-#     $(SIGNATURES)
-
-# returns a list containing the indices of the vertices of `mesh` tha lie in its boundary.
-# """
-# function boundarynodes(mesh::HPMesh{F,I,P}) where {F,I,P}
-#     (;edgelist) = mesh
-#     v = zeros(I,sum(>(0),tag.(edgelist)))
-#     i = 1
-#     for e in pairs(filter(isboundary,edgelist))
-#         if (last(e))>0
-#             for j in first(e)
-#                 if j ∉ v
-#                     v[i] = j
-#                     i   += 1
-#                 end
-#             end
-#         end
-#     end
-#     v
-# end
+psortednodes(e::Edge{I}, mesh::HPMesh{F, I, P}) where {F, I, P} = degree(mesh.edgelist[e]), e
 
 
 """
     _boundary_segments(n)
 creates pairs of indices for building a sequence of segments from a list of points.  
 """
-_boundary_segments(n) = mapreduce(i->[i,mod1(i+1,n)],hcat, 1:n)
+_boundary_segments(n) = mapreduce(i -> [i, mod1(i + 1, n)], hcat, 1:n)
 
-
-"""
-
-    compute_dimension(p₁,p₂,p₃)
-    compute_dimension(p₁,p₂)   
-    compute_dimension(p₁)
-    compute_dimension(t::Tuple)
-
-Computes the dimension of the space ℓp₁p₂p₃. 
-"""
-compute_dimension(p₁::Integer, p₂::Integer, p₃::Integer) = sum(min(p₂, p₃ - j) + 1 for j in 0:p₁);
-# compute_dimension(p₁::Integer, p₂::Integer) = compute_dimension(p₁, p₂, p₂)
-# compute_dimension(p₁::Integer) = compute_dimension(p₁, p₁)
-# compute_dimension(t::T) where {T<:AbstractArray} = compute_dimension(t...)
-compute_dimension(t::Tuple) = compute_dimension(t...)
 
 """
     degrees_of_freedom_by_edge!(mesh::HPMesh{F,I,P}) where {F<:AbstractFloat,I<:Integer,P<:Integer}
@@ -666,7 +477,7 @@ If a dictionary of degrees of freedom by edge has already been computed, it is r
 function degrees_of_freedom!(mesh::HPMesh{F, I, P}) where {F, I, P}
     (; edgelist, trilist, dofs) = mesh
     (; n, by_edge, by_tri) = dofs
-    if getgen(mesh) != getgen(dofs)
+    if gen(mesh) != gen(dofs)
         empty!(dofs)
         degrees_of_freedom_by_edge!(mesh)
         k = maximum(maximum.(by_edge)) + 1 #first non-edge dof
@@ -686,7 +497,7 @@ function degrees_of_freedom!(mesh::HPMesh{F, I, P}) where {F, I, P}
             newdofs[j:end] = k:(k + (length(newdofs) - j))
             set!(by_tri, t, newdofs)
             k += length(newdofs) - j + 1
-            setgen!(dofs,getgen(mesh))
+            setgen!(dofs, gen(mesh))
         end
         n[] = k - 1
     end
@@ -714,48 +525,33 @@ function tagged_dof(mesh::HPMesh{F, I, P}, tags) where {F, I, P}
     isempty(dofs) && throw(ArgumentError(msg))
     return _tagged_dof(mesh, tags)
 end
-function tagged_dof(cond::Function,mesh::HPMesh{F, I, P}) where {F, I, P}
+function tagged_dof(cond::Function, mesh::HPMesh{F, I, P}) where {F, I, P}
     (; dofs) = mesh
     msg = "The degrees of freedom of the mesh have not been computed."
     isempty(dofs) && throw(ArgumentError(msg))
-    return _tagged_dof(cond,mesh)
+    return _tagged_dof(cond, mesh)
 end
 
 """
     _tagged_dof(mesh::HPMesh,tags)
 internal function. Returns a list of all degrees of freedom tagged with a tag in `tag`.  
 """
-_tagged_dof(mesh::HPMesh, tags) = _tagged_dof(in(tags),mesh)
-function _tagged_dof(cond::Function,mesh::HPMesh{F,I,P}) where {F,I,P}
-    (; edgelist,dofs) = mesh
-    (;by_edge) = dofs
+_tagged_dof(mesh::HPMesh, tags) = _tagged_dof(in(tags), mesh)
+function _tagged_dof(cond::Function, mesh::HPMesh{F, I, P}) where {F, I, P}
+    (; edgelist, dofs) = mesh
+    (; by_edge) = dofs
     v = Vector{I}()
     for e in pairs(edgelist)
         if cond(tag(last(e)))
-            push!(v,by_edge[first(e)]...)
+            push!(v, by_edge[first(e)]...)
         end
     end
-    unique(v)
+    return unique(v)
 end
 
-dof(t::Triangle,mesh::HPMesh) = mesh.dofs.by_tri[t]
-dof(e::Edge,mesh::HPMesh) = mesh.dofs.by_edge[e]
+dof(t::Triangle, mesh::HPMesh) = mesh.dofs.by_tri[t]
+dof(e::Edge, mesh::HPMesh) = mesh.dofs.by_edge[e]
 ndof(mesh::HPMesh) = mesh.dofs.n[]
 elements(mesh::HPMesh) = keys(mesh.trilist)
-# """
-#     boundary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
-
-# Returns a list of the degrees of freedom lying at the boundary of the mesh.
-# Internally, it calls `degrees_of_freedom_by_edge` in order to obtain the nodal degrees of freedom. If a dof by edge dictionary has already been computed, it is recommended to run:
-
-#     boundary_dof(mesh,by_edge)
-# """
-# function boudary_dof(mesh::HPMesh{F,I,P}) where {F,I,P}
-#     (;dofs) = mesh; (;by_edge) = dofs;
-#     msg = "The degrees of freedom of the mesh have not been computed."
-#     isempty(dofs) && throw(ArgumentError(msg))
-#     tagged_dof(mesh,(1,2))
-# end
-
 
 ########

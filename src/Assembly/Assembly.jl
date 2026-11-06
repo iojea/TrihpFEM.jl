@@ -15,7 +15,7 @@ using ..Forms
 using ..Measures
 
 
-DICT_OP = Dict([(*,⊗)])
+DICT_OP = Dict([(*, ⊗)])
 
 include("reftensor.jl")
 include("collapser.jl")

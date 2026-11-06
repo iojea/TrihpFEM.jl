@@ -1,9 +1,9 @@
-const MeshElement = Union{Edge,Triangle}
+const MeshElement = Union{Edge, Triangle}
 
 
 """
-   RefTensor{D}
-   A memoisation struct for computing the local tensor corresponding to a certain basis.
+   RefTensor(t::Term)
+   creates a memoisation struct for storing local tensors or evaluations of tensors of polinomials on quadrature points. A `RefTensor` per `Term` is necessary for integration. `ConstantCoeff` `Term`s store local numeric tensors while `VariableCoeff` `Term`s store local polynomial tensors evaluated on quadrature points.  
 """
 struct RefTensor{K, T, R <: Union{Nothing, Quadrature}}
     meas::AbstractMeasure
@@ -12,7 +12,10 @@ struct RefTensor{K, T, R <: Union{Nothing, Quadrature}}
     dict::Dict{K, T}
 end
 
-function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, F, I, P,M<:AbstractMeasure{F, I, P}}
+
+#### NOTICE that the constructor for `RefTensor` does not build a complete dictionary: it only initializes it with the first possible element (p = (0,0,0)). For this reason, the constructor use the `obtainkey` function, whereas the `keybasis` function is necessary when considering a new basis.
+
+function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, F, I, P, M <: AbstractMeasure{F, I, P}}
     (; integrand, measure) = t
     (; operation) = integrand
     D = dim(measure)
@@ -20,83 +23,125 @@ function RefTensor(t::Term{N, ConstantCoeff, T, M}) where {N, T <: Tuple, F, I, 
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(StandardBasis(zeros(P, 3)...)) for _ in sfs)...,)
+    bs = ((first(StandardBasis(ntuple(_ -> zero(P), 3))) for _ in sfs)...,)
     key = obtainkey(measure, bs)
     poly_tensor = _topolytensor(globpart, bs...)
-    tensor = integrate.(poly_tensor, _val(measure)) 
+    tensor = ref_integrate.(poly_tensor, _val(measure))
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U, Nothing}(measure,globpart, nothing, d)
+    return RefTensor{K, U, Nothing}(measure, globpart, nothing, d)
 end
 
-function RefTensor(t::Term{N, VariableCoeff, T, M}) where {N, T <: Tuple, F, I, P,M<:AbstractMeasure{F, I, P}}
+function RefTensor(t::Term{N, VariableCoeff, T, M}) where {N, T <: Tuple, F, I, P, M <: AbstractMeasure{F, I, P}}
     (; integrand, measure) = t
     (; operation) = integrand
     (; mesh, sch) = measure
-    (;points,weights) = sch
+    (; points, weights) = sch
     D = dim(measure)
     v = _val(measure)
     J = _jac(v)
-    pts = _schpoints(points,v)
+    pts = _schpoints(points, v)
     op = _scalars_out(operation, F)
     globpart = global_part(op)
     sfs = get_shape_functions(operation)
     length(sfs) == N || throw(ArgumentError("Malformed term: a `Term{$N}` should be formed by $N `ShapeFunction`s, but $(length(sfs)) are present."))
-    bs = ((first(StandardBasis(zeros(P, 3)...)) for _ in sfs)...,)
+    bs = ((first(StandardBasis(ntuple(_ -> zero(P), 3))) for _ in sfs)...,)
     key = obtainkey(measure, bs)
     poly_tensor = _topolytensor(globpart, bs...)
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeArrayDefault, (J*w * poly_tensor(x) for (x, w) in zip(pts,weights)))
+    tensor = collect_as(FixedSizeArrayDefault, (J * w * poly_tensor(x) for (x, w) in zip(pts, weights)))
     U = typeof(tensor)
     K = typeof(key)
     d = Dict{K, U}(key => tensor)
-    return RefTensor{K, U, typeof(sch)}(measure,globpart, sch, d)
+    return RefTensor{K, U, typeof(sch)}(measure, globpart, sch, d)
 end
 
+"""
+   keybasis(t::Triangle,m::Measure)
+   keybasis(e::Edge,m::BoundaryMeasure)
+returns the key and the basis corresponding to a element of an `AbstractMeasure`. The key is an  `NTuple{4,P} where P<:Integer` where the first number codifies the type of element:
+- 0: Triangle
+- 1: Edge with minimum degree in the triangle (so it matches the horizontal edge in the reference triangle)
+- 2: Edge with intermediate degree in the triangle (so it matches the vertical edge in the reference triangle)
+- 3: Edge with maximum degree in the triangle (so it matches the diagonal edge in the reference triangle)
+The last three numbers in the key are the degrees of the triangle.
+
+Note that this only works for _boundary edges_, where only ONE triangle is involved. 
+"""
+function keybasis(t::Triangle, m::Measure{F, I, P}) where {F, I, P}
+    p, _ = psortednodes(t, mesh(m))
+    return ((zero(P), p...), StandardBasis(p))
+end
+function keybasis(e::Edge, m::BoundaryMeasure{F, I, P}) where {F, I, P}
+    els = elements(m)
+    isin, tok = gettoken(els, e)
+    isin || throw(ArgumentError("The `Edge` does not belong to the given `BoundaryMeasure`"))
+    _, att = gettokenvalue(els, tok)
+    adj = adjacents(att)
+    last(adj) == 0 || throw(ArgumentError("`Edge` seems to be interior to the domain."))
+    t = Triangle(e[1], e[2], adj[1])
+    p, t_eds = psortededges(t, mesh(m))
+    j = findfirst(isequal(e), t_eds)
+    return ((P(j), p...), StandardBasis(p))
+end
+
+
+"""
+    _val(::Measure)
+    _val(::BoundaryMeasure)
+    _val(::Triangle,::Measure)
+    _val(e::Edge,m::BoundaryMeasure)
+
+computes the first value of the key for the `Dict` stored un a `RefTensor`. Check [keybasis](@ref).
+"""
 _val(::Measure) = Val(0)
 _val(::BoundaryMeasure) = Val(1)
-_val(::Triangle,::Measure) = Val(0)
-function _val(e::Edge{I},meas::BoundaryMeasure) where I
+_val(::Triangle, ::Measure) = Val(0)
+function _val(e::Edge{I}, meas::BoundaryMeasure) where {I}
     m = mesh(meas)
     eds = elements(meas)
     adj = adjacents(last(eds[e]))
-    t = Triangle{I}(e[1],e[2],adj[1])
+    t = Triangle{I}(e[1], e[2], adj[1])
     _, t_eds = psortededges(t, m)
     j = findfirst(isequal(e), t_eds)
     return Val(j)
 end
 
-obtainkey(::Measure, bs) = (0,degs.(bs)...)
+"""
+   obtainkey(::AbstractMeasure,bs)
+computes the key for initiallizing the `Dict` in `RefTensor` 
+"""
+obtainkey(::Measure, bs) = (0, degs.(bs)...)
 obtainkey(::BoundaryMeasure, bs) = (1, degs.(bs)...)
 
-function (lt::RefTensor{K, T, Nothing})(el::MeshElement,bs...) where {K, T}
-    (;meas,t,dict) = lt
-    v = _val(el,meas)
-    key = _tokey(v,degs.(bs)...)
+function (lt::RefTensor{K, T, Nothing})(el::MeshElement, bs...) where {K, T}
+    (; meas, t, dict) = lt
+    v = _val(el, meas)
+    key = _tokey(v, degs.(bs)...)
     haskey(dict, key) && return dict[key]
     poly_tensor = _topolytensor(t, bs...)
-    tensor = integrate.(poly_tensor,v)
+    tensor = ref_integrate.(poly_tensor, v)
     dict[key] = tensor
     return tensor
 end
-function (lt::RefTensor{K, T, R})(el::MeshElement,bs...) where {K, T, R <: Quadrature}
-    (;meas,t,sch,dict) = lt
-    v = _val(el,meas)
+function (lt::RefTensor{K, T, R})(el::MeshElement, bs...) where {K, T, R <: Quadrature}
+    (; meas, t, sch, dict) = lt
+    v = _val(el, meas)
     J = _jac(v)
-    key = _tokey(v,degs.(bs)...)
+    key = _tokey(v, degs.(bs)...)
     (; points, weights) = sch
-    pts = _schpoints(points,v)
+    pts = _schpoints(points, v)
     haskey(lt.dict, key) && return dict[key]
     poly_tensor = _topolytensor(t, bs...)
-    
+
     # IMPORTANT: The factor 2 comes from integration on the reference triangle, with area 2.
-    tensor = collect_as(FixedSizeVectorDefault, J* poly_tensor(x) for (x, w) in zip(pts, weights))
+    tensor = collect_as(FixedSizeVectorDefault, J * poly_tensor(x) for (x, w) in zip(pts, weights))
     dict[key] = tensor
     return tensor
 end
 
-_tokey(::Val{N},a...) where N = (N,a...)
+_tokey(::Val{N}, a...) where {N} = (N, a...)
 """
    _isglobal(a)
 Decides if a factor `a` in an `Operation` belongs to its global part (`ShapeFunction`s and constants).
@@ -121,7 +166,7 @@ end
 _isscalar(::Any, _) = false
 _isscalar(::Number, _) = true
 function _isscalar(f::Function, ::Type{F}) where {F}
-    return f(zeros(F,2)) isa Number
+    return f(zeros(F, 2)) isa Number
 end
 
 """
@@ -175,12 +220,12 @@ _topolytensor(t::NTuple{1}, test) = _topolytensor(t[1], test)
 _topolytensor(t::Tuple, test) = t[2](_topolytensor(t[1], test), _topolytensor(t[3:end], test))
 
 
-_schpoints(points,::Val{0}) = points
-_schpoints(points,::Val{1}) = collect_as(FixedSizeVectorDefault,(Point2D(x,-one(x)) for x in points))
-_schpoints(points,::Val{2}) = collect_as(FixedSizeVectorDefault,(Point2D(one(x),x) for x in points))
-_schpoints(points,::Val{3}) = collect_as(FixedSizeVectorDefault,(Point2D(x,x) for x in points))
+_schpoints(points, ::Val{0}) = points
+_schpoints(points, ::Val{1}) = collect_as(FixedSizeVectorDefault, (Point2D(x, -one(x)) for x in points))
+_schpoints(points, ::Val{2}) = collect_as(FixedSizeVectorDefault, (Point2D(one(x), x) for x in points))
+_schpoints(points, ::Val{3}) = collect_as(FixedSizeVectorDefault, (Point2D(x, x) for x in points))
 
-_jac(::Val{N}) where N = 2
+_jac(::Val{N}) where {N} = 2
 _jac(::Val{3}) = 2sqrt(2)
 
 # constantcollapser(t::Tuple) = aff::AffineToRef -> _topolytensor(t,aff)

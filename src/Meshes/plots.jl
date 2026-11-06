@@ -27,13 +27,12 @@ function Makie.plot!(p::DegPlot)
     t(d) = (clamp(d, 1, md) - 1) / max(md - 1, 1) # normalized position -> full hue span
     for (k, e) in enumerate(keys(edgelist))
         segpts[2k - 1] = points[e[1]]
-        segpts[2k]     = points[e[2]]
-        segcols[k]     = sample_color(cmap, t(degree(edgelist[e])))
+        segpts[2k] = points[e[2]]
+        segcols[k] = sample_color(cmap, t(degree(edgelist[e])))
     end
     linesegments!(p, segpts; color = segcols, linewidth = p[:linewidth][])
     return p
 end
-
 
 
 """
@@ -72,7 +71,7 @@ function Makie.plot!(p::PlotHPMesh)
     for (k, e) in enumerate(keys(edgelist))
         ea = edgelist[e]
         segpts[2k - 1] = points[e[1]]
-        segpts[2k]     = points[e[2]]
+        segpts[2k] = points[e[2]]
         segcols[k] = ismarked(ea) ? _MARKED_EDGE_COLOR : _EDGE_TAG_COLORS[tag(ea)]
         ismarked(ea) && push!(marked_idx, k)
     end
@@ -83,17 +82,18 @@ function Makie.plot!(p::PlotHPMesh)
         mseg = Vector{T}(undef, 2 * length(marked_idx))
         for (j, k) in enumerate(marked_idx)
             mseg[2j - 1] = segpts[2k - 1]
-            mseg[2j]     = segpts[2k]
+            mseg[2j] = segpts[2k]
         end
-        linesegments!(p, mseg; color = _MARKED_EDGE_COLOR,
-                      linewidth = 2 * p[:linewidth][])
+        linesegments!(
+            p, mseg; color = _MARKED_EDGE_COLOR,
+            linewidth = 2 * p[:linewidth][]
+        )
     end
 
     # ---- Optional vertex annotations: one text! call ----
     if p[:annotate][]
         text!(p, points; text = string.(eachindex(points)))
     end
-
     return p
 end
 

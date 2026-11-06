@@ -18,7 +18,7 @@ Base.:*(d::Error, m::Measure) = compute_error(d::Error, m::Measure)
 function compute_error(d::Error{D, F, E}, m::Measure) where {D, F, E}
     u = exact(d)
     uₕ = numerical(d)
-    (; mesh, aux, sch) = m
+    (; mesh, sch) = m
     underlyingmesh(uₕ) === mesh || throw(ArgumentError("The numerical solution and the `Measure` are defined on different meshes."))
     err = zero(floattype(mesh))
     for el in Measures.elements(mesh)

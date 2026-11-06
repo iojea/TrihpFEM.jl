@@ -21,7 +21,7 @@ struct LegendreIterator{P <: Integer, F <: Number, X} <: AbstractBasis{1}
     LegendreIterator{P, F, X}(N) where {P, F, X} = new{P, F, X}(P(N))
 end
 LegendreIterator(N::P) where {P <: Integer} = LegendreIterator{P, Float64, :x}(N)
-LegendreIterator(t::NTuple{1,P}) where {P<:Integer} = LegendreIterator(t[1])
+LegendreIterator(t::NTuple{1, P}) where {P <: Integer} = LegendreIterator(t[1])
 
 Base.IteratorSize(::Type{<:LegendreIterator}) = Base.HasLength()
 Base.length(l::LegendreIterator{P, F, X}) where {P, F, X} = l.N + 1
@@ -68,10 +68,24 @@ struct StandardBasis{P <: Integer, F <: Number} <: AbstractBasis{2}
         return new{P, F}(p, Lx, Ly)
     end
 end
-StandardBasis(p::NTuple{3, P}) where P = StandardBasis{P, Float64}(p)
-StandardBasis(p₁::P, p₂::P, p₃::P) where P = StandardBasis((p₁, p₂, p₃))
+StandardBasis(p::NTuple{3, P}) where {P} = StandardBasis{P, Float64}(p)
+StandardBasis(p₁::P, p₂::P, p₃::P) where {P} = StandardBasis((p₁, p₂, p₃))
 Base.IteratorSize(::Type{<:StandardBasis}) = Base.HasLength()
-Base.length(sb::StandardBasis) = sum(min(sb.degs[2], sb.degs[3] - j) for j in 0:sb.degs[1]) + sb.degs[1] + 1
+
+"""
+
+    compute_dimension(p₁,p₂,p₃)
+    compute_dimension(p₁,p₂)
+    compute_dimension(p₁)
+    compute_dimension(t::Tuple)
+
+Computes the dimension of the space ℓp₁p₂p₃.
+"""
+compute_dimension(p₁::Integer, p₂::Integer, p₃::Integer) = sum(min(p₂, p₃ - j) + 1 for j in 0:p₁);
+compute_dimension(t::Tuple) = compute_dimension(t...)
+
+Base.length(sb::StandardBasis) = compute_dimension(sb.degs)
+#sum(min(sb.degs[2], sb.degs[3] - j) for j in 0:sb.degs[1]) + sb.degs[1] + 1
 
 function Base.iterate(sb::StandardBasis{P, F}) where {P, F}
     (; Lx, Ly) = sb
@@ -103,4 +117,3 @@ function _iteratey(Ly, sty, stx)
     py, stynew = iterate(Ly, sty)
     return ProductPoly(stx[2], py), (stx, stynew)
 end
-

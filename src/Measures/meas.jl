@@ -17,65 +17,31 @@ function Measure(mesh::HPMesh{F, I, P}) where {F, I, P}
 end
 
 
-struct BoundaryMeasure{F <: Real, I <: Integer, P <: Integer, Q <: Quadrature{1}} <: AbstractMeasure{F, I, P}
-    mesh::HPMesh{F, I, P}
-    kind::P
-    sch::Q
-end
-
-BoundaryMeasure(m::HPMesh{F,I,P},kind::Integer,sch::Q) where {F,I,P,Q<:Quadrature{1}} = BoundaryMeasure{F,I,P,Q}(m,kind,sch)
-
-function BoundaryMeasure(mesh::HPMesh{F, I, P}, kind:: Integer) where {F, I, P}
-    (; edgelist) = mesh
-    maxdeg = maximum(Meshes.degree.(edgelist))
-    return BoundaryMeasure(mesh, kind,2maxdeg + 1)
-end
-
-function BoundaryMeasure(mesh::HPMesh{F, I, P}, kind:: Integer,deg::Integer) where {F, I, P}
-    (; edgelist) = mesh
-    sch = quadrature(F,P,Val(1),Val(deg))
-    return BoundaryMeasure(mesh,kind,sch)
-end
-
-
 mesh(m::AbstractMeasure) = m.mesh
 
-elements(m::Measure) = pairs(m.mesh.trilist)
-elements(bm::BoundaryMeasure) = pairs(filter(e -> tag(e) == bm.kind, bm.mesh.edgelist))
-
-elementtype(::Measure{F,I,P}) where {F,I,P} = Triangle{I}
-elementtype(::BoundaryMeasure{F,I,P}) where {F,I,P} = Edge{I}
+elements(m::Measure) = m.mesh.trilist
+elementtype(::Measure{F, I, P}) where {F, I, P} = Triangle{I}
 
 dim(::Measure) = 2
-dim(::BoundaryMeasure) = 1
 
 
-
-function _extract(t::Triangle,m::Measure{F,I,P}) where {F,I,P}
-    p,_ = psortednodes(t,mesh(m))
-    return ((zero(P),p...),StandardBasis(p))
-end
-function _extract(e::Edge,m::BoundaryMeasure{F,I,P}) where {F,I,P}
-    els = elements(m)
-    isin,tok = gettoken(els,e)
-    isin || throw(ArgumentError("The `Edge` does not belong to the given `BoundaryMeasure`"))
-    _,att = gettokenvalue(els,tok)
-    adj = adjacents(att)
-    last(adj) == 0 || throw(ArgumentError("`Edge` seems to be interior to the domain."))
-    t = Triangle(e[1], e[2], adj[1])
-    p,t_eds = psortededges(t, mesh(m))
-    j = findfirst(isequal(e),t_eds)
-    return ((P(j),p...),StandardBasis(p))
-end
-
-function dof(ed::Edge, m::Measure)
+function Meshes.dof(ed::Edge, m::AbstractMeasure)
     indofs, token = gettoken(m.mesh.dofs.by_edge, ed)
     indofs || throw(ArgumentError("No degrees of freedom are associated to the edge $ed. gngn Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
     return gettokenvalue(m.mesh.dofs.by_edge, token)
 end
 
-function dof(t::Triangle, m::Measure)
+function Meshes.dof(t::Triangle, m::AbstractMeasure)
     indofs, token = gettoken(m.mesh.dofs.by_tri, t)
     indofs || throw(ArgumentError("No degrees of freedom are associated to the triangle $t.l Maybe you need to compute the degrees of freedom of the mesh, using `degrees_of_freedom!`."))
     return gettokenvalue(m.mesh.dofs.by_tri, token)
 end
+
+Meshes.dof(am::T) where {T <: AbstractMeasure} = dof(am.mesh)
+Meshes.ndof(am::T) where {T <: AbstractMeasure} = ndof(am.mesh)
+Meshes.degrees_of_freedom!(am::AbstractMeasure) = degrees_of_freedom!(am.mesh)
+Meshes.floattype(::AbstractMeasure{F, I, P}) where {F, I, P} = F
+Meshes.inttype(::AbstractMeasure{F, I, P}) where {F, I, P} = I
+Meshes.degtype(::AbstractMeasure{F, I, P}) where {F, I, P} = P
+
+tridof(m::T) where {T <: AbstractMeasure} = m.mesh.dofs.by_tri

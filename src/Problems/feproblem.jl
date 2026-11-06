@@ -13,7 +13,7 @@ Defines a Finite Element Problem (no refinement) of the form `a(u,v)=b(v)` over 
 """
 
 _toform(a::Form) = a
-_toform(a::Term{N}) where N = Form{N}((a,))
+_toform(a::Term{N}) where {N} = Form{N}((a,))
 mutable struct FEProblem{F₁, F₂} <: AbstractProblem
     a::F₁
     b::F₂
@@ -30,13 +30,14 @@ mutable struct FEProblem{F₁, F₂} <: AbstractProblem
 end
 FEProblem(a, b) = FEProblem(a, b, x -> zero(eltype(x)))
 
-mesh(p::AbstractProblem) = getmesh(first(p.a.terms))
+Forms.measure(p::AbstractProblem) = measure(first(p.a.terms))
 
 function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
-    mesh = getmesh(first(prob.a.terms))
-    (; points, edgelist, dofs) = mesh
-    vals = FixedSizeVector{floattype(mesh)}(undef, ndof(mesh))
-    dirichlet = Vector{inttype(mesh)}(undef, 0)
+    meas = measure(first(prob.a.terms))
+    msh = meas.mesh
+    (; points, edgelist, dofs) = msh
+    vals = FixedSizeVector{floattype(msh)}(undef, ndof(msh))
+    dirichlet = Vector{inttype(msh)}(undef, 0)
     for e in keys(edgelist)
         if istagged(edgelist[e], 1)
             locdof = dofs.by_edge[e]
@@ -52,9 +53,9 @@ function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
         end
     end
     unique!(dirichlet)
-    valid = setdiff(1:ndof(mesh), dirichlet)
+    valid = setdiff(1:ndof(msh), dirichlet)
     vals[valid] = prob.K[valid, valid] \ prob.rhs[valid]
-    return FESolution(mesh, vals)
+    return FESolution(msh, vals)
 end
 
 function update!(prob::FEProblem)
