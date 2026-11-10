@@ -1,3 +1,4 @@
+
 """
     abstract type CoeffType end
 An abstract type for defining a treat that allow `IntegrationTerm`s to be dispatched to different methods for integration. Exact integration for constant coefficient terms and quadrature rules for variable coefficient terms.
@@ -11,15 +12,20 @@ coefftype(_) = ConstantCoeff
 coefftype(::Function) = VariableCoeff
 Base.promote_type(::Type{ConstantCoeff}, ::Type{VariableCoeff}) = VariableCoeff
 
+###########################################################################
+##### OPERATIONS
+###########################################################################
 
-struct Operation{C <: CoeffType, U <: Tuple}
+abstract type AbstractOperation{C<:CoeffType,U<:Tuple} end
+
+struct Operation{C <: CoeffType, U <: Tuple} <: AbstractOperation{C,U}
     parts::U
     Operation{C}(t...) where {C <: CoeffType} = new{C, typeof(t)}(t)
 end
 
-Base.getindex(op::Operation, i) = getindex(op.parts, i)
-Base.length(op::Operation) = length(op.parts)
-Base.lastindex(op::Operation) = length(op)
+Base.getindex(op::AbstractOperation, i) = getindex(op.parts, i)
+Base.length(op::AbstractOperation) = length(op.parts)
+Base.lastindex(op::AbstractOperation) = length(op)
 const NumArray = Union{Number, AbstractArray}
 
 function unroll(sf::ShapeFunction)
@@ -34,12 +40,12 @@ Base.:*(a::Function, b::ShapeFunction) = Operation{VariableCoeff}(a, *, unroll(b
 Base.:*(a::ShapeFunction, b::Function) = Operation{VariableCoeff}(unroll(a)..., *, b)
 Base.:*(a::Operation{C}, b::ShapeFunction) where {C <: CoeffType} = Operation{C}(a.parts..., *, unroll(b)...)
 Base.:*(a::ShapeFunction, b::Operation{C}) where {C <: CoeffType} = Operation{C}(unroll(a)..., *, b)
-Base.:*(a::NumArray, b::Operation{C}) where {C <: CoeffType} = Operation{C}(a, *, b.parts...)
-Base.:*(a::Operation{C}, b::NumArray) where {C <: CoeffType} = Operation{C}(a.parts..., *, b)
-function Base.:*(a::Operation{C₁}, b::Operation{C₂}) where {C₁ <: CoeffType, C₂ <: CoeffType}
-    C = promote_type(C₁, C₂)
+Base.:*(a::NumArray, b::AbstractOperation{C}) where {C <: CoeffType} = Operation{C}(a, *, b.parts...)
+Base.:*(a::AbstractOperation{C}, b::NumArray) where {C <: CoeffType} = Operation{C}(a.parts..., *, b)
+function Base.:*(a::Operation{C₁}, b::Operation{C₂}) where {C₁<: CoeffType,C₂ <: CoeffType}    C = promote_type(C₁, C₂)
     return Operation{C}(a.parts..., *, b.parts...)
 end
+
 
 _adj(a::Any) = a'
 _adj(f::Function) = adjoint ∘ f
@@ -64,11 +70,11 @@ get_shape_functions(op::Operation) = filter(Base.Fix2(isa, ShapeFunction), op.pa
 """
    Integrand{C<:CoeffType,T<Tuple,N}
 An expression for integration, depending on at least one ShapeFunction. `N` is the number of `ShapeFunction`s involved  `C` the type of coefficient of the factor. `T` is a type of the form `Tuple{O1}` o `Tuple{O1,O2}`, where `O1,O2<:DiffOperator`, indicates the differential operators applied to the `ShapeFunction`s involved."""
-struct Integrand{C <: CoeffType, T <: Tuple, N}
-    operation::Operation{C, T}
+struct Integrand{C <: CoeffType, T <: Tuple, N,O <: AbstractOperation{C,T}}
+    operation::O
     function Integrand(operation::Operation{C, T}) where {C <: CoeffType, T <: Tuple}
         N = length(get_shape_functions(operation))
-        return new{C, T, N}(operation)
+        return new{C, T, N,typeof(operation)}(operation)
     end
 end
 coefftype(::Integrand{C}) where {C} = C()

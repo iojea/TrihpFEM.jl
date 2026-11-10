@@ -35,10 +35,10 @@ function assembly_matrix(term::Term{2})
 end
 function assembly_matrix(form::Form{2})
     (; terms) = form
-    meas = measure(first(terms))
-    ℓ = degrees_of_freedom!(meas)
-    N = sum(map(length, tridof(meas)) .^ 2)
-    ivec, jvec, vals = _initvectors(meas, N)
+    measure = meas(first(terms))
+    ℓ = degrees_of_freedom!(measure)
+    N = sum(map(length, tridof(measure)) .^ 2)
+    ivec, jvec, vals = _initvectors(measure, N)
     for t in terms
         add_to_matrix!(ivec, jvec, vals, t)
     end
@@ -50,15 +50,15 @@ end
    add_to_matrix!(ivec,jvec,vals,t::Term{2}) 
 """
 function add_to_matrix!(ivec, jvec, vals, t::Term{2})
-    meas = measure(t)
+    measure = meas(t)
     reftensor = RefTensor(t)
     collapser = Collapser(t)
-    nmax = maximum(length.(tridof(meas)))
-    v = zeros(floattype(meas), nmax, nmax)
+    nmax = maximum(length.(tridof(measure)))
+    v = zeros(floattype(measure), nmax, nmax)
     r = 1
-    for el in keys(elements(meas))
-        aff = affine(el, meas)
-        degs, b₁ = keybasis(el, meas)
+    for el in keys(elements(measure))
+        aff = affine(el, measure)
+        degs, b₁ = keybasis(el, measure)
         b₂ = StandardBasis(degs[2:end])
         for (j, ψ) in enumerate(b₂)
             for (i, φ) in enumerate(b₁)
@@ -66,7 +66,7 @@ function add_to_matrix!(ivec, jvec, vals, t::Term{2})
             end
         end
         C = changetostd(t, degs)
-        locdof = dof(el, meas)
+        locdof = dof(el, measure)
         dim = length(locdof)
         @views v[1:dim, 1:dim] .= jac(aff) * C' * v[1:dim, 1:dim] * C
         ivec[r:(r + dim^2 - 1)] .= repeat(locdof, dim)
@@ -94,7 +94,7 @@ function _collapse(
         el::MeshElement,
         aff::AffineToRef,
         bs...
-    ) where {K, T, R <: Quadrature}
+    ) where {K, T, R <: QuadratureRule}
     return rt(el, bs...) ⋅ c(aff, rt.sch)
 end
 
@@ -111,9 +111,9 @@ function assembly_rhs(term::Term{1})
 end
 function assembly_rhs(form::Form{1})
     (; terms) = form
-    meas = measure(first(terms))
-    ℓ = Measures.ndof(meas)
-    vals = _init_rhs(meas, ℓ)
+    measure = meas(first(terms))
+    ℓ = Measures.ndof(measure)
+    vals = _init_rhs(measure, ℓ)
     for t in terms
         add_to_rhs!(vals, t)
     end
@@ -127,21 +127,21 @@ end
 integrates `t` adding the results to `vals`.
 """
 function add_to_rhs!(vals, t::Term{1})
-    meas = measure(t)
+    measure = meas(t)
     reftensor = RefTensor(t)
     collapser = Collapser(t)
-    nmax = maximum(length.(tridof(meas)))
-    v = zeros(floattype(meas), nmax)
+    nmax = maximum(length.(tridof(measure)))
+    v = zeros(floattype(measure), nmax)
     r = 1
-    for el in keys(elements(meas))
-        degs, b = keybasis(el, meas)
-        aff = affine(el, meas)
+    for el in keys(elements(measure))
+        degs, b = keybasis(el, measure)
+        aff = affine(el, measure)
         for (i, ψ) in enumerate(b)
             v[i] = _collapse(reftensor, collapser, el, aff, ψ)
         end
         C = changetostd(t, degs)
 
-        locdof = dof(el, meas)
+        locdof = dof(el, measure)
         dim = length(locdof)
         mul!(view(vals, locdof), C', view(v, 1:dim))
         vals[locdof] .*= jac(aff)

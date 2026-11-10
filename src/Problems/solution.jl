@@ -17,3 +17,8 @@ end
 
 Meshes.mesh(s::FESolution) = s.mesh
 values(s::FESolution) = s.vals
+Forms.operator(::FESolution{O}) where O = O()
+Forms.chain_operator(::FESolution{Gradient}) = DiffMatrix()
+Forms.chain_operator(::FESolution{AdjointGradient}) = AdjointDiffMatrix()
+Forms.chain_operator(::FESolution{Identity}) = Identity()
+Forms.chain_operator(::FESolution{Laplacian}) = nothing

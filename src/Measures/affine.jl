@@ -1,4 +1,4 @@
-affine(tri::Triangle, m::Measure) = AffineToRef(mesh(m).points[tri])
+affine(tri::Triangle, m::DomainMeasure) = AffineToRef(mesh(m).points[tri])
 
 function affine(e::Edge, m::BoundaryMeasure)
     eds = elements(m)

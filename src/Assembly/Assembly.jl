@@ -5,6 +5,7 @@ using FixedSizeArrays
 using Dictionaries
 using SparseArrays
 using Collects
+using CubatureRules
 
 using ..DifferentialOperators
 using ..Meshes

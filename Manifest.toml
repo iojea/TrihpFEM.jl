@@ -2,7 +2,7 @@
 
 julia_version = "1.13.3"
 manifest_format = "2.1"
-project_hash = "0e2dd2648d4dccfc82958dbaa311f5a2753eb838"
+project_hash = "dc9d9a2d55157e78fc08bdd6f6b65a0b00a9226c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -285,10 +285,10 @@ uuid = "95dc2771-c249-4cd0-9c9f-1f3b4330693c"
 version = "0.1.9"
 
 [[deps.ConstructionBase]]
-git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"
+git-tree-sha1 = "b1bc10667320dd5367aff450a992c951ea38fbbc"
 registries = "General"
 uuid = "187b0558-2788-49d3-abe0-74a17ed4e7c9"
-version = "1.6.0"
+version = "1.6.1"
 weakdeps = ["IntervalSets", "LinearAlgebra", "StaticArrays"]
 
     [deps.ConstructionBase.extensions]
@@ -315,6 +315,21 @@ git-tree-sha1 = "a692a4c1dc59a4b8bc0b6403876eb3250fde2bc3"
 registries = "General"
 uuid = "a38c48d9-6df1-5ac9-9223-b6ada3b5572b"
 version = "0.1.0+0"
+
+[[deps.CubatureRules]]
+deps = ["InteractiveUtils", "LinearAlgebra", "MultiFloats", "PrecompileTools", "Printf", "QuadGK", "Random", "SHA", "SpecialFunctions", "StaticArrays", "TOML"]
+git-tree-sha1 = "47891e8839ef38c847b2086dfc1b73c0257dec4d"
+registries = "General"
+uuid = "0f38d63d-e18c-4973-acfc-eb502c230362"
+version = "0.1.0"
+
+    [deps.CubatureRules.extensions]
+    LebedevExt = "Lebedev"
+    QuadratureRulesExt = "QuadratureRules"
+
+    [deps.CubatureRules.weakdeps]
+    Lebedev = "c5712dd9-2571-4e23-b661-b4a261421493"
+    QuadratureRules = "a08977f5-a20d-4b99-b11f-f5ea535e0575"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -524,10 +539,10 @@ version = "0.8.6"
 
 [[deps.FixedSizeArrays]]
 deps = ["CheckedSizeProduct", "Collects", "LightBoundsErrors"]
-git-tree-sha1 = "1363e8941189139a07d3643e06dd5a0ffb921d4c"
+git-tree-sha1 = "5dee1681972b5dd347d362ae814828ed472dc7b4"
 registries = "General"
 uuid = "3821ddf9-e5b5-40d5-8e25-6813ab96b5e2"
-version = "1.5.1"
+version = "1.5.2"
 
     [deps.FixedSizeArrays.extensions]
     FixedSizeArraysAdaptExt = "Adapt"
@@ -588,6 +603,11 @@ version = "1.0.19+0"
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 version = "1.11.0"
+
+[[deps.GMP_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
+uuid = "781609d7-10c4-51f6-84f2-b8444358ff6d"
+version = "6.3.0+2"
 
 [[deps.Gamma]]
 deps = ["LogExpFunctions"]
@@ -762,10 +782,10 @@ version = "0.16.3"
 
 [[deps.IntervalArithmetic]]
 deps = ["CRlibm", "CoreMath", "MacroTools", "OpenBLASConsistentFPCSR_jll", "Printf", "Random", "RoundingEmulator"]
-git-tree-sha1 = "1c531bf0f8a5c60a340926e058fd3f209b5eef5d"
+git-tree-sha1 = "4f051d490760061dcc650a3c6c641bb0c06bb182"
 registries = "General"
 uuid = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
-version = "1.0.12"
+version = "1.0.13"
 
     [deps.IntervalArithmetic.extensions]
     IntervalArithmeticArblibExt = "Arblib"
@@ -1027,6 +1047,11 @@ version = "1.0.3"
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
 version = "1.11.0"
 
+[[deps.MPFR_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "GMP_jll", "Libdl"]
+uuid = "3a97d323-0669-5f0c-9066-3539efd106a3"
+version = "4.2.2+0"
+
 [[deps.MacroTools]]
 git-tree-sha1 = "1e0228a030642014fe5cfe68c2c0a818f9e3f522"
 registries = "General"
@@ -1092,6 +1117,23 @@ git-tree-sha1 = "283bf85d4a767481dd924dff0eee1735e95f449e"
 registries = "General"
 uuid = "46d2c3a1-f734-5fdb-9937-b9b9aeba4221"
 version = "0.2.7"
+
+[[deps.MultiFloats]]
+deps = ["LinearAlgebra", "MPFR_jll", "Printf", "Random", "SIMD"]
+git-tree-sha1 = "3c2c500a8ceda5693013ec75a414bf4d1f8ed86e"
+registries = "General"
+uuid = "bdf0d083-296b-4888-a5b6-7498122e68a5"
+version = "3.3.2"
+
+    [deps.MultiFloats.extensions]
+    MultiFloatsAMDGPUExt = "AMDGPU"
+    MultiFloatsCUDAExt = "CUDA"
+    MultiFloatsoneAPIExt = "oneAPI"
+
+    [deps.MultiFloats.weakdeps]
+    AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
+    CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    oneAPI = "8f75cd03-7ff8-4ecb-9b8f-daf728133b1b"
 
 [[deps.Netpbm]]
 deps = ["FileIO", "ImageCore", "ImageMetadata"]
@@ -1421,10 +1463,10 @@ version = "0.5.2+0"
 
 [[deps.Roots]]
 deps = ["Accessors", "CommonSolve", "Printf"]
-git-tree-sha1 = "c5e8a0a52c0d5d043214de04f11f4d9c2c6ccdb8"
+git-tree-sha1 = "15f266d7b3039ca0608d2c53bb32225b96932310"
 registries = "General"
 uuid = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
-version = "3.0.13"
+version = "3.0.14"
 
     [deps.Roots.extensions]
     RootsChainRulesCoreExt = "ChainRulesCore"
@@ -1557,10 +1599,10 @@ weakdeps = ["ChainRulesCore", "Statistics"]
     StaticArraysStatisticsExt = "Statistics"
 
 [[deps.StaticArraysCore]]
-git-tree-sha1 = "6ab403037779dae8c514bad259f32a447262455a"
+git-tree-sha1 = "bf7e2d0d9ed9ac2a652fd598c0f784910cc759f2"
 registries = "General"
 uuid = "1e83bf80-4336-4d27-bf5d-d5a4f845583c"
-version = "1.4.4"
+version = "1.4.5"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra"]
@@ -1722,7 +1764,7 @@ uuid = "f7e6ffb2-c36d-4f8f-a77e-16e897189344"
 version = "3.0.2"
 
 [[deps.TrihpFEM]]
-deps = ["Collects", "CommonSolve", "Dictionaries", "DocStringExtensions", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "StyledStrings", "Test", "Triangulate"]
+deps = ["Collects", "CommonSolve", "CubatureRules", "Dictionaries", "DocStringExtensions", "ExactPredicates", "FixedSizeArrays", "LinearAlgebra", "Makie", "Markdown", "Pkg", "Polynomials", "Printf", "SparseArrays", "StaticArrays", "StyledStrings", "Test", "Triangulate"]
 path = "."
 uuid = "6f95704f-31d0-4cfb-aa9d-6d40374f9d53"
 version = "0.1.0"

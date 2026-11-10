@@ -1,4 +1,4 @@
-struct SkeletonMeasure{F <: Real, I <: Integer, P <: Integer, Q <: Quadrature{1}} <: AbstractMeasure{F, I, P}
+struct SkeletonMeasure{F <: Real, I <: Integer, P <: Integer, Q <: QuadratureRule{1}} <: AbstractMeasure{F, I, P}
     mesh::HPMesh{F, I, P}
     kind::P
     sch::Q
@@ -14,7 +14,8 @@ end
 
 function SkeletonMeasure(mesh::HPMesh{F, I, P}, kind::Integer, deg::Integer) where {F, I, P}
     (; edgelist) = mesh
-    sch = quadrature(F, P, Val(1), Val(deg))
+    sch = rule(Interval();degree=deg)
+        #quadrature(F, P, Val(1), Val(deg))
     return SkeletonMeasure(mesh, kind, sch)
 end
 elements(bm::SkeletonMeasure) = filter(e -> tag(e) == bm.kind, bm.mesh.edgelist)

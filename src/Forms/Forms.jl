@@ -20,11 +20,11 @@ module Forms
     export Form
     export ShapeFunction
     export Integrand
-    export Operation
+    export AbstractOperation, Operation
     export Trial, Test
     export CoeffType, ConstantCoeff, VariableCoeff
     export basis, order, coefftype, operator, chain_operator
     export ∂x, ∂y, gradient, ∇, divergence, laplacian, Δ, ∫
-    export unroll, get_shape_functions, mesh, measure, changetostd
+    export unroll, get_shape_functions, mesh, meas, changetostd, _adj, isadjoint, chain_operator
 
 end; #module

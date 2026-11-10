@@ -22,9 +22,9 @@ module Problems
 
     include("solution.jl")
     include("feproblem.jl")
-    include("error.jl")
+    # include("error.jl")
     include("plots.jl")
 
-    export FEProblem, FESolution, solve, plotsol
-    export error, estimate_order
+    export FEProblem, FESolution, solve, plotsol, operator, chain_operator
+    # export error, estimate_order
 end; #module

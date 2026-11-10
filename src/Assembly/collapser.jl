@@ -51,12 +51,12 @@ _to_tensor(diffop::DiffOperator,aff::AffineToRef) = diffop(aff)
 _to_tensor(t::Tuple,aff::AffineToRef) = t[2](_to_tensor(t[1],aff),_to_tensor(t[3:end],aff))
 
 
-_to_tensor(f::Function,aff::AffineToRef,sch::Quadrature) = (f(aff(x)) for x in sch.points)
-_to_tensor(diffop::DiffOperator,aff::AffineToRef,sch::Quadrature) = diffop(aff)
-_to_tensor(t::Tuple,aff::AffineToRef,sch::Quadrature) = t[2].(_to_tensor(t[1],aff,sch),_to_tensor(t[3:end],aff,sch))
-_to_tensor(t::NTuple{1},aff::AffineToRef,sch::Quadrature) = _to_tensor(t[1],aff,sch)
+_to_tensor(f::Function,aff::AffineToRef,sch::QuadratureRule) = (f(aff(x)) for x in sch.nodes)
+_to_tensor(diffop::DiffOperator,aff::AffineToRef,sch::QuadratureRule) = diffop(aff)
+_to_tensor(t::Tuple,aff::AffineToRef,sch::QuadratureRule) = t[2].(_to_tensor(t[1],aff,sch),_to_tensor(t[3:end],aff,sch))
+_to_tensor(t::NTuple{1},aff::AffineToRef,sch::QuadratureRule) = _to_tensor(t[1],aff,sch)
 
-function (c::Collapser{T,VariableCoeff})(aff::AffineToRef,sch::Quadrature) where {T}
+function (c::Collapser{T,VariableCoeff})(aff::AffineToRef,sch::QuadratureRule) where {T}
     collect_as(FixedSizeVectorDefault,_to_tensor(c.lp,aff,sch))
 end
 

@@ -28,6 +28,7 @@ using Printf
 using SparseArrays
 using StaticArrays
 using Test
+using CubatureRules
 using Triangulate
 
 include("DifferentialOperators/DifferentialOperators.jl")
@@ -39,6 +40,7 @@ include("Measures/Measures.jl")
 include("Forms/Forms.jl")
 include("Assembly/Assembly.jl")
 include("Problems/Problems.jl")
+include("Adaptivity/Adaptivity.jl")
 
 using ..Meshes: Point2D, Edge, Triangle, HPMesh, hpmesh, plothpmesh, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
 export Point2D, Edge, Triangle, HPMesh, hpmesh, plothpmesh, edges, mark!, refine!, setdirichlet!, setneumann!, setdegrees!, degplot, circmesh, circmesh_graded_center, rectmesh, squaremesh, details
@@ -53,18 +55,22 @@ using ..PolyFields: ProductPoly, AffineToRef, LegendreIterator, StandardBasis, d
 export ProductPoly, AffineToRef, LegendreIterator, StandardBasis, degs, PolyVectorField
 
 
-using ..Integration: Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁, edge_integrate₂, edge_integrate₃
-export Quadrature, gmquadrature, ref_integrate, quadrature, edge_integrate₁, edge_integrate₂, edge_integrate₃
+using ..Integration: ref_integrate,  edge_integrate₁, edge_integrate₂, edge_integrate₃
+export  ref_integrate, edge_integrate₁, edge_integrate₂, edge_integrate₃
 
 using ..Forms: Form, Term, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, ∫, Trial, Test
 export Term, Form, Operation, ShapeFunction, CoeffType, ConstantCoeff, VariableCoeff, Trial, Test, ∫
 
-using ..Measures: Measure, BoundaryMeasure, elements
-export Measure, BoundaryMeasure, elements
+using ..Measures: DomainMeasure, BoundaryMeasure, elements
+export DomainMeasure, BoundaryMeasure, elements
 
 using ..Assembly: RefTensor, Collapser
 export RefTensor, Collapser
 
 using ..Problems: FEProblem, FESolution, solve, plotsol, error, estimate_order
 export FEProblem, FESolution, solve, plotsol, error, estimate_order
+
+using ..Adaptivity: SolOperation
+export SolOperation
+
 end

@@ -7,17 +7,17 @@ module Integration
 
     using ..PolyFields
 
-    include("repvec.jl")
-    include("gmquads.jl")
-    include("precomputed.jl")
+    # include("repvec.jl")
+    # include("gmquads.jl")
+    # include("precomputed.jl")
     include("integrate.jl")
 
-    export Quadrature
-    export gmquadrature
+    # export Quadrature
+    # export gmquadrature
     export ref_integrate
     export edge_integrate₁
     export edge_integrate₂
     export edge_integrate₃
-    export quadrature
-    export integrate
+    # export quadrature
+    # export integrate
 end; #module

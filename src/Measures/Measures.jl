@@ -3,6 +3,7 @@ module Measures
     using LinearAlgebra
     using StaticArrays
     using FixedSizeArrays
+    using CubatureRules
     using Dictionaries
 
     using ..Meshes
@@ -20,7 +21,7 @@ module Measures
     include("boundarymeas.jl")
     include("affine.jl")
 
-    export AbstractMeasure, Measure, BoundaryMeasure
+    export AbstractMeasure, DomainMeasure, BoundaryMeasure, SkeletonMeasure
     export elementtype, elements, mesh, basis, dim
     export dof, ndof, tridof
     export floattype, inttype, degtype

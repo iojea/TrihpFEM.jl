@@ -30,11 +30,11 @@ mutable struct FEProblem{F₁, F₂} <: AbstractProblem
 end
 FEProblem(a, b) = FEProblem(a, b, x -> zero(eltype(x)))
 
-Forms.measure(p::AbstractProblem) = measure(first(p.a.terms))
+Forms.meas(p::AbstractProblem) = meas(first(p.a.terms))
 
 function solve(prob::FEProblem{F₁, F₂}) where {F₁, F₂}
-    meas = measure(first(prob.a.terms))
-    msh = meas.mesh
+    measure = meas(first(prob.a.terms))
+    msh = measure.mesh
     (; points, edgelist, dofs) = msh
     vals = FixedSizeVector{floattype(msh)}(undef, ndof(msh))
     dirichlet = Vector{inttype(msh)}(undef, 0)
